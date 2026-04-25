@@ -19,7 +19,7 @@ const COLUMN_FIELDS = [
   "problem",
   "stage",
   "qty",
-  "identification",
+  "serialNumber",
   "disposition",
   "raisedTo"
 ];
@@ -119,9 +119,7 @@ const ProductionEditableProductTable = ({
   };
 
   const handleUpdate = (id, field, value) => {
-    if (isReadOnly) {
-      if (!(allowPartialEdit && field === "expectedDeliveryDate")) return;
-    }
+    if (isReadOnly) return;
     setProducts((prev) =>
       prev.map((p) => (p._pid === id ? { ...p, [field]: value } : p))
     );
@@ -133,7 +131,6 @@ const ProductionEditableProductTable = ({
         ...prod,
         productCode: p.itemCode || p.productCode || "",
         productDescription: p.itemDescription || p.productDescription || "",
-        productSegment: p.productSegment || "",
       } : prod
     ));
     setActiveDropdown(null);
@@ -141,15 +138,11 @@ const ProductionEditableProductTable = ({
   };
 
   const handleCellMouseDown = (rowIndex, colIndex, e) => {
-    // Allow mouse down if not read-only OR if it's a partial edit column
-    if (isReadOnly) {
-      const field = COLUMN_FIELDS[colIndex];
-      if (!(allowPartialEdit && field === "expectedDeliveryDate")) return;
-    }
+    if (isReadOnly) return;
     if (e.target.closest('.dropdown-container')) return;
 
     if (e.shiftKey && selection) {
-      setSelection(prev => ({ ...prev, endCol: colIndex }));
+      setSelection(prev => ({ ...prev, endCol: colIndex, endRow: rowIndex }));
     } else {
       setSelection({
         startRow: rowIndex,
@@ -172,7 +165,7 @@ const ProductionEditableProductTable = ({
       setSelection(prev => ({
         ...prev,
         endCol: colIndex,
-        endRow: prev.startRow 
+        endRow: rowIndex 
       }));
     } else if (isFilling) {
       setSelection(prev => ({
@@ -197,14 +190,13 @@ const ProductionEditableProductTable = ({
       if (maxR >= products.length) {
         const rowsToAdd = maxR - products.length + 1;
         for (let i = 0; i < rowsToAdd; i++) {
-          const newRow = {
+          newProducts.push({
             ...sourceRow,
             _pid: `p-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
             serialNumber: "", 
-            status: "Open",
+            finalStatus: "Pending",
             report: null
-          };
-          newProducts.push(newRow);
+          });
         }
       }
 
@@ -213,7 +205,7 @@ const ProductionEditableProductTable = ({
         if (r === startRow) continue; 
         for (let c = minC; c <= maxC; c++) {
           const field = COLUMN_FIELDS[c];
-          if (field !== 'productCode' && field !== '_pid') {
+          if (field && field !== 'productCode' && field !== '_pid') {
             newProducts[r] = { ...newProducts[r], [field]: sourceRow[field] };
           }
         }
@@ -236,16 +228,10 @@ const ProductionEditableProductTable = ({
             endRow: products.length + extraRows - 1
           }));
         } else if (e.clientY < rect.bottom) {
-            // Logic to shrink back if mouse moves up while filling
             const rowHeight = 40; 
             const yInTable = e.clientY - rect.top;
             const targetRow = Math.floor(yInTable / rowHeight);
-            if (targetRow >= products.length) {
-                setSelection(prev => ({ ...prev, endRow: targetRow }));
-            } else {
-                // If inside table, let standard mouseEnter handle it or just set to targetRow
-                setSelection(prev => ({ ...prev, endRow: targetRow }));
-            }
+            setSelection(prev => ({ ...prev, endRow: Math.max(0, targetRow) }));
         }
       }
     };
@@ -395,7 +381,6 @@ const ProductionEditableProductTable = ({
                                       <div className="font-bold text-gray-900 text-[0.8vw]">{p.itemDescription || p.productDescription}</div>
                                       <div className="text-[0.7vw] text-gray-700 flex items-center gap-[0.4vw] mt-[0.1vw]">
                                         <span className="bg-gray-100 px-[0.3vw] rounded font-mono border border-gray-200">{p.itemCode || p.productCode}</span>
-                                        {(p.productSegment || p.segment) && <span className="font-medium">· {p.productSegment || p.segment}</span>}
                                       </div>
                                     </div>
                                   ))
@@ -456,8 +441,20 @@ const ProductionEditableProductTable = ({
 
                         <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 6)}`} onMouseDown={(e) => handleCellMouseDown(index, 6, e)} onMouseEnter={() => handleCellMouseEnter(index, 6)}>
                           <div className="relative flex items-center group">
-                            <input type="text" autoComplete="off" value={prod.identification || ""} onChange={(e) => handleUpdate(prod._pid, "identification", e.target.value)} placeholder="Enter Batch/SN..." disabled={isReadOnly} className="w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.6vw] pr-[2.2vw] outline-none transition-all text-gray-800 font-semibold disabled:bg-transparent" />
-                            {!isReadOnly && <button type="button" className="absolute right-[0.4vw] p-[0.3vw] text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded transition-all"><ScanBarcode className="w-[1vw] h-[1vw]" /></button>}
+                            <input 
+                              type="text" 
+                              autoComplete="off" 
+                              value={prod.serialNumber || ""} 
+                              onChange={(e) => handleUpdate(prod._pid, "serialNumber", e.target.value)} 
+                              placeholder="SN-XXXX" 
+                              disabled={isReadOnly} 
+                              className="w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.6vw] pr-[2.2vw] outline-none transition-all text-gray-800 font-semibold disabled:bg-transparent" 
+                            />
+                            {!isReadOnly && (
+                              <button type="button" className="absolute right-[0.4vw] p-[0.3vw] text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded transition-all">
+                                <ScanBarcode className="w-[1vw] h-[1vw]" />
+                              </button>
+                            )}
                           </div>
                           {renderFillHandle(index, 6)}
                         </td>
@@ -505,7 +502,6 @@ const ProductionEditableProductTable = ({
                   </Draggable>
                 ))}
                 
-                {/* RESTORED: Dragging indicator */}
                 {isFilling && selection && selection.endRow >= products.length && (
                    <tr className="bg-blue-50/20 border-b-2 border-blue-400">
                      <td colSpan={10} className="py-[1vw] text-center text-blue-700 font-bold italic text-[0.8vw] bg-blue-100/50">

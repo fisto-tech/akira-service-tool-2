@@ -8,6 +8,7 @@ const serviceCallRoutes = require('./routes/serviceCall.routes');
 const notificationRoutes = require('./routes/notification.routes');
 const troubleshootRoutes = require('./routes/troubleshoot.routes');
 const serviceMaterialRoutes = require('./routes/serviceMaterial.routes');
+const productionMaterialRoutes = require('./routes/productionMaterial.routes');
 const path = require('path');
 
 const app = express();
@@ -27,6 +28,7 @@ app.use('/api/master', masterRoutes);
 app.use('/api/service-calls', serviceCallRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/service-material', serviceMaterialRoutes);
+app.use('/api/production-material', productionMaterialRoutes);
 app.use('/api', troubleshootRoutes);
 
 // Root route

@@ -2132,6 +2132,7 @@ export default function App() {
   const [boardTypes, setBoardTypes] = useState([]);
   const [reportsRowId, setReportsRowId] = useState(null);
   const [isBoardTypeMasterOpen, setIsBoardTypeMasterOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
@@ -2156,6 +2157,8 @@ export default function App() {
         setBoardTypes(boardRes.data);
       } catch (err) {
         console.error("Failed to fetch data:", err);
+      } finally {
+        setLoading(false);
       }
       setEmployees(lsLoad(EMPLOYEES_KEY, []));
     };
@@ -2369,6 +2372,13 @@ export default function App() {
     });
     return c;
   }, [entries]);
+
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center p-[10vw] gap-[1.5vw]">
+      <div className="w-[3vw] h-[3vw] border-[0.35vw] border-blue-600/20 border-t-blue-600 rounded-full animate-spin" />
+      <div className="text-blue-600 font-bold text-[1vw] uppercase tracking-widest animate-pulse">Loading Service Data...</div>
+    </div>
+  );
 
   return (
     <div className="w-full h-full font-sans text-[0.85vw]">

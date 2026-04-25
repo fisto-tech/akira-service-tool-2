@@ -1,359 +1,443 @@
 // @ts-nocheck
 import React, { useState, useMemo, useEffect } from "react";
+import axios from "axios";
 import {
-  FileText, Download, Filter, Search, ChevronLeft, ChevronRight, TrendingDown,
-  AlertCircle, CheckCircle2, Clock, PieChart as PieIcon, BarChart2,
-  Target, Wrench, ShieldCheck, Calendar, Activity, Layers,
-  SearchCode, ClipboardList
+  FileText,
+  Download,
+  FileSpreadsheet,
+  ChevronDown,
+  ChevronUp,
+  Search,
+  Filter,
+  Clock,
+  AlertTriangle,
+  CheckCircle2,
+  XCircle,
+  BarChart2,
+  Wrench,
+  Truck,
+  AlertCircle,
+  ShieldCheck,
+  Calendar,
+  User,
+  Package,
+  Layers,
+  SearchCode,
+  Activity,
+  ClipboardList
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import * as XLSX from "xlsx";
 
-const PM_INWARD_KEY = "production_material_nc_v2";
-const lsLoad = (key, fb = []) => { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fb; } catch { return fb; } };
-const formatDate = (s) => {
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
+const fmtDate = (s) => {
   if (!s) return "—";
   const d = new Date(s);
   if (isNaN(d.getTime())) return s;
   return `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`;
 };
-const STAGE_MAPPING = { "Inward": "Received", "Testing": "Under Testing / Repair in Progress", "Waiting": "Pending", "Completion": "Completed / Not Repairable", "Closure": "Delivered / Hold" };
-const STAGES = ["Inward", "Testing", "Waiting", "Completion", "Closure"];
-const STATUS_TO_STAGE = Object.fromEntries(Object.entries(STAGE_MAPPING).map(([k, v]) => [v, k]));
+
+const diffDays = (a, b) => {
+  if (!a || !b) return null;
+  const da = new Date(a), db = new Date(b);
+  if (isNaN(da.getTime()) || isNaN(db.getTime())) return null;
+  return Math.round((db - da) / 86400000);
+};
+
+const TABS = [
+  { id: "technical", label: "Production Technical Report", icon: Wrench, color: "blue" },
+  { id: "analysis", label: "Inward Analysis & TAT", icon: Layers, color: "green" },
+  { id: "rca", label: "Root Cause Analysis Log", icon: SearchCode, color: "amber" },
+  { id: "action", label: "Action Effectiveness Report", icon: ShieldCheck, color: "teal" },
+];
+
+const TAB_COLORS = {
+  blue:  { active: "bg-blue-700 text-white border-blue-700 shadow-md", inactive: "bg-white text-black border-slate-300 hover:bg-blue-50 hover:border-blue-400" },
+  green: { active: "bg-emerald-700 text-white border-emerald-700 shadow-md", inactive: "bg-white text-black border-slate-300 hover:bg-emerald-50 hover:border-emerald-400" },
+  amber: { active: "bg-amber-600 text-white border-amber-600 shadow-md", inactive: "bg-white text-black border-slate-300 hover:bg-amber-50 hover:border-amber-400" },
+  teal:  { active: "bg-teal-700 text-white border-teal-700 shadow-md", inactive: "bg-white text-black border-slate-300 hover:bg-teal-50 hover:border-teal-400" },
+};
 
 const StatusBadge = ({ status }) => {
   const colors = {
-    "Received": "bg-blue-50 text-blue-700 border-blue-200",
-    "Under Testing / Repair in Progress": "bg-purple-50 text-purple-700 border-purple-200",
-    "Pending": "bg-amber-50 text-amber-700 border-amber-200",
-    "Completed / Not Repairable": "bg-emerald-50 text-emerald-700 border-emerald-200",
-    "Delivered / Hold": "bg-slate-100 text-slate-700 border-slate-300"
+    Completed: "bg-green-100 text-green-700 border-green-200",
+    Rejected: "bg-red-100 text-red-700 border-red-200",
+    Pending: "bg-orange-100 text-orange-700 border-orange-200",
   };
   return (
-    <span className={`px-[0.5vw] py-[0.05vw] rounded-full text-[0.62vw] font-medium border ${colors[status] || "bg-gray-50 text-gray-600 border-gray-200"}`}>
-      {status || "No Status"}
+    <span className={`px-[0.55vw] py-[0.1vw] rounded-full text-[0.62vw] font-bold border ${colors[status] || "bg-blue-50 text-blue-700 border-blue-200"}`}>
+      {status || "Pending"}
     </span>
   );
 };
 
-const StageAnalysisTab = ({ data }) => {
-  const counts = useMemo(() => {
-    const res = { Inward: 0, Testing: 0, Waiting: 0, Completion: 0, Closure: 0, Unknown: 0 };
-    data.forEach(item => { const stage = STATUS_TO_STAGE[item.status] || "Unknown"; if (res[stage] !== undefined) res[stage]++; });
-    return res;
-  }, [data]);
-  return (
-    <div className="space-y-[1vw]">
-      <div className="grid grid-cols-5 gap-[0.8vw]">
-        {STAGES.map(s => (
-          <div key={s} className="bg-white p-[1.2vw] rounded-[0.4vw] border border-gray-200 flex flex-col items-center shadow-sm hover:shadow transition-all">
-            <span className="text-[0.6vw] font-semibold text-blue-600 uppercase mb-[0.2vw]">{s}</span>
-            <span className="text-[1.8vw] font-bold text-gray-900 leading-none">{counts[s]}</span>
-            <span className="text-[0.55vw] font-normal text-gray-500 mt-[0.2vw]">{STAGE_MAPPING[s]}</span>
-          </div>
-        ))}
-      </div>
-      <div className="bg-white p-[1.5vw] rounded-[0.6vw] border border-gray-200 shadow-sm">
-        <h3 className="text-[0.9vw] font-semibold text-gray-800 mb-[1vw] flex items-center gap-[0.5vw]">
-          <Layers className="w-[1.2vw] h-[1.2vw] text-blue-500" /> Stage-wise Defect Distribution
-        </h3>
-        <div className="flex items-end h-[12vw] gap-[2vw] px-[2vw] border-b border-gray-100 pb-[0.8vw]">
-          {STAGES.map(s => {
-            const height = counts[s] ? (counts[s] / Math.max(...Object.values(counts), 1)) * 100 : 5;
-            return (
-              <div key={s} className="flex-1 flex flex-col items-center group relative">
-                <div className="absolute bottom-full mb-[0.3vw] text-[0.7vw] font-medium text-gray-700 opacity-0 group-hover:opacity-100 transition-all">{counts[s]}</div>
-                <motion.div
-                  initial={{ height: 0 }}
-                  animate={{ height: `${height}%` }}
-                  className="w-[3.5vw] bg-blue-500 rounded-t-[0.2vw] hover:bg-blue-600 transition-colors"
-                />
-                <span className="mt-[0.6vw] text-[0.68vw] font-medium text-gray-500 uppercase">{s}</span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-};
+const Th = ({ children, cls = "" }) => (
+  <th className={`px-[0.6vw] py-[0.5vw] text-[0.72vw] text-black font-bold whitespace-nowrap border-b-2 border-r border-slate-300 last:border-r-0 bg-blue-50/50 ${cls}`}>
+    {children}
+  </th>
+);
+const Td = ({ children, cls = "" }) => (
+  <td className={`px-[0.6vw] py-[0.5vw] text-[0.7vw] border-r border-b border-slate-200 last:border-r-0 align-middle ${cls}`}>
+    {children}
+  </td>
+);
 
-const RCATab = ({ data }) => (
-  <div className="bg-white rounded-[0.4vw] border border-gray-200 overflow-hidden shadow-sm">
-    <div className="p-[0.8vw] border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-      <h3 className="text-[0.85vw] font-semibold text-gray-800 flex items-center gap-[0.5vw]">
-        <SearchCode className="w-[1.1vw] h-[1.1vw] text-blue-500" /> Root Cause Analysis Log
-      </h3>
-    </div>
-    <div className="overflow-x-auto">
-      <table className="w-full text-left border-collapse text-[0.72vw]">
-        <thead>
-          <tr className="bg-gray-50 border-b border-gray-200 text-[0.65vw] text-gray-800 font-semibold uppercase">
-            <th className="px-[1vw] py-[0.7vw] border-r border-gray-100">Job Order / Product</th>
-            <th className="px-[1vw] py-[0.7vw] border-r border-gray-100">Dept context</th>
-            <th className="px-[1vw] py-[0.7vw] border-r border-gray-100">RCA Detail</th>
-            <th className="px-[1vw] py-[0.7vw]">Inward Reference</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-100">
-          {data.map((item, i) => (
-            <tr key={i} className="hover:bg-blue-50/20 transition-colors">
-              <td className="px-[1vw] py-[0.8vw] border-r border-gray-100">
-                <div className="text-gray-800 font-semibold uppercase">{item.productDescription}</div>
-                <div className="text-[0.6vw] text-gray-500 font-medium">{item.jobOrderNo}</div>
-              </td>
-              <td className="px-[1vw] py-[0.8vw] border-r border-gray-100">
-                <span className="text-[0.6vw] bg-blue-50 text-blue-700 px-[0.4vw] py-[0.05vw] rounded font-medium">
-                  {item.role === 'assembledBy' ? 'Assembler' : item.role === 'testedBy' ? 'Tester' : 'FI'}
-                </span>
-              </td>
-              <td className="px-[1vw] py-[0.8vw] border-r border-gray-100 max-w-[25vw] text-gray-700 font-normal ">
-                {item.rootCause}
-              </td>
-              <td className="px-[1vw] py-[0.8vw]">
-                <div className="text-gray-800 font-medium">{item.refNoInternal}</div>
-                <div className="text-[0.6vw] text-gray-500 font-normal">{formatDate(item.completionDate)}</div>
-              </td>
-            </tr>
-          ))}
-          {data.length === 0 && (
-            <><tr><td colSpan={4} className="py-[3vw] text-center text-gray-400 text-[0.8vw] font-normal">No RCA records found</td></tr></>
-          )}
-          {/* {data.length === 0 && (
-            <tr><td colSpan={4} className="py-[3vw] text-center text-gray-400 text-[0.8vw] font-normal">No RCA records found</td>79
-          )} */}
-        </tbody>
-      </table>
-    </div>
+const SummaryBar = ({ items }) => (
+  <div className="flex items-center gap-[1.5vw] mt-[0.8vw] px-[0.5vw]">
+    {items.map((it, i) => (
+      <div key={i} className="flex items-center gap-[0.4vw]">
+        <span className="text-[0.68vw] text-black font-medium">{it.label}:</span>
+        <span className={`text-[0.8vw] font-bold ${it.color}`}>{it.value}</span>
+      </div>
+    ))}
   </div>
 );
 
-const ReworkTab = ({ data }) => (
-  <div className="bg-white rounded-[0.4vw] border border-gray-200 overflow-hidden shadow-sm">
-    <div className="p-[0.8vw] border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-      <h3 className="text-[0.85vw] font-semibold text-gray-800 flex items-center gap-[0.5vw]">
-        <Wrench className="w-[1.1vw] h-[1.1vw] text-blue-500" /> Rework Tracking Report
-      </h3>
-    </div>
-    <div className="p-[1vw] grid grid-cols-2 gap-[1vw] bg-white">
-      {data.map((item, i) => (
-        <div key={i} className="bg-white border border-gray-200 rounded-[0.4vw] p-[0.8vw] flex flex-col gap-[0.6vw] hover:shadow-md transition-all shadow-sm">
-          <div className="flex justify-between items-start">
-            <div>
-              <h4 className="text-[0.8vw] font-semibold text-gray-800 leading-none truncate max-w-[15vw]">{item.productDescription}</h4>
-              <p className="text-[0.58vw] text-gray-500 font-normal mt-[0.05vw]">SUBMITTED BY: {item.savedBy}</p>
-            </div>
-            <StatusBadge status={item.status} />
-          </div>
-          <div className="bg-blue-50/30 border border-blue-100 p-[0.5vw] rounded-[0.2vw]">
-            <p className="text-[0.72vw] text-gray-700 font-normal leading-tight">"{item.correction}"</p>
-          </div>
-          <div className="flex justify-between items-end mt-auto pt-[0.2vw]">
-            <span className="text-[0.6vw] font-normal text-gray-500 uppercase">{formatDate(item.completionDate)}</span>
-            <div className="bg-blue-600 text-white px-[0.4vw] py-[0.05vw] rounded text-[0.6vw] font-medium uppercase">{item.jobOrderNo}</div>
-          </div>
-        </div>
-      ))}
-      {data.length === 0 && (
-        <div className="col-span-2 py-[3vw] text-center text-gray-400 text-[0.8vw] font-normal">No rework records found</div>
-      )}
-    </div>
-  </div>
-);
-
-const QualityMetricsTab = ({ data }) => {
-  const stats = useMemo(() => {
-    const total = data.length;
-    const verified = data.filter(x => x.status === "Completed / Not Repairable" || x.status === "Delivered / Hold").length;
-    const yieldRate = total ? (verified / total) * 100 : 0;
-    const breakdown = { assembledBy: 0, testedBy: 0, fiBy: 0 };
-    data.forEach(x => breakdown[x.role]++);
-    return { total, verified, yieldRate, breakdown };
-  }, [data]);
-  return (
-    <div className="space-y-[1.2vw]">
-      <div className="grid grid-cols-3 gap-[1.2vw]">
-        <div className="bg-blue-600 p-[2vw] rounded-[0.8vw] flex flex-col items-center justify-center text-center shadow-md">
-          <ShieldCheck className="w-[2.2vw] h-[2.2vw] text-white/80 mb-[0.5vw]" />
-          <h4 className="text-white text-[1vw] font-semibold uppercase mb-[0.2vw]">Quality Yield Rate</h4>
-          <div className="text-[3.5vw] font-bold text-white leading-none tracking-tighter">{Math.round(stats.yieldRate)}%</div>
-        </div>
-        <div className="bg-white p-[1.5vw] rounded-[0.8vw] border border-gray-200 col-span-2 flex flex-col justify-center shadow-sm">
-          <h4 className="text-[0.85vw] font-semibold text-gray-800 mb-[1vw] flex items-center gap-[0.4vw]">
-            <Activity className="w-[1.1vw] h-[1.1vw] text-blue-500" /> Technical Accuracy Matrix
-          </h4>
-          <div className="grid grid-cols-3 gap-[1.5vw]">
-            {["assembledBy", "testedBy", "fiBy"].map(role => {
-              const label = role === 'assembledBy' ? 'Assembly' : role === 'testedBy' ? 'Testing' : 'Final Insp';
-              const count = stats.breakdown[role];
-              const percentage = stats.total ? (count / stats.total) * 100 : 0;
-              return (
-                <div key={role} className="space-y-[0.5vw]">
-                  <div className="flex justify-between items-end">
-                    <span className="text-[0.75vw] font-semibold text-gray-700 uppercase">{label}</span>
-                    <span className="text-[0.6vw] font-medium text-gray-500">{count} Hits</span>
-                  </div>
-                  <div className="w-full h-[0.4vw] bg-gray-100 border border-gray-200 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${percentage}%` }}
-                      className="h-full bg-blue-600 rounded-full"
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-      <div className="bg-white p-[1.5vw] rounded-[0.8vw] border border-gray-200 flex flex-col items-center shadow-sm">
-        <div className="flex items-center gap-[0.6vw] mb-[1.2vw]">
-          <div className="w-[0.8vw] h-[0.8vw] bg-emerald-500 rounded-full shadow-sm" />
-          <span className="text-[0.7vw] font-medium text-gray-700">Success: {stats.verified}</span>
-          <div className="w-[0.8vw] h-[0.8vw] bg-gray-300 rounded-full ml-[1.5vw]" />
-          <span className="text-[0.7vw] font-medium text-gray-700">Waiting: {stats.total - stats.verified}</span>
-        </div>
-        <div className="w-[35vw] h-[0.3vw] bg-gray-100 border border-gray-200 rounded-full relative">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${stats.yieldRate}%` }}
-            className="absolute inset-0 bg-emerald-500 rounded-full"
-          />
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default function ProductionMaterialReports() {
-  const [data, setData] = useState([]);
-  const [activeTab, setActiveTab] = useState("stage");
-  const [searchQuery, setSearchQuery] = useState("");
-  const reload = () => {
-    const raw = lsLoad(PM_INWARD_KEY, []);
-    const flattened = [];
-    raw.forEach(entry => {
-      entry.products?.forEach(product => {
-        if (product.responses) {
-          Object.entries(product.responses).forEach(([role, response]) => {
-            if (response) {
-              flattened.push({
-                ...response,
-                ...entry,
-                ...product,
-                role: role,
-                responses: null
-              });
-            }
-          });
-        }
-      });
-    });
-    setData(flattened);
+const ExportButtons = ({ onCsv, onPdf, color = "blue" }) => {
+  const colors = {
+    blue: "border-blue-200 text-blue-800 hover:bg-blue-50",
+    green: "border-emerald-200 text-emerald-800 hover:bg-emerald-50",
+    amber: "border-amber-200 text-amber-800 hover:bg-amber-50",
+    teal: "border-teal-200 text-teal-800 hover:bg-teal-50",
   };
+  return (
+    <div className="flex items-center gap-[0.4vw]">
+      <button onClick={onCsv} className={`flex items-center gap-[0.3vw] px-[0.8vw] h-[2.2vw] border rounded-[0.4vw] text-[0.7vw] font-bold cursor-pointer transition-all ${colors[color]}`}>
+        <FileSpreadsheet className="w-[0.9vw] h-[0.9vw]" /> Export Excel
+      </button>
+    </div>
+  );
+};
+
+// ── REPORT 1 — Production Technical Report ────────────────────
+const TechnicalReport = ({ entries }) => {
+  const [search, setSearch] = useState("");
+  const rows = useMemo(() => {
+    const flat = [];
+    entries.forEach(e => {
+      e.products?.forEach(p => flat.push({ entry: e, prod: p }));
+    });
+    return flat;
+  }, [entries]);
+
+  const filtered = useMemo(() => {
+    if (!search) return rows;
+    const q = search.toLowerCase();
+    return rows.filter(r => 
+        r.entry.jobOrderNo?.toLowerCase().includes(q) || 
+        r.prod.productDescription?.toLowerCase().includes(q) ||
+        r.entry.customerName?.toLowerCase().includes(q)
+    );
+  }, [rows, search]);
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-[0.8vw]">
+        <div className="relative">
+          <Search className="absolute left-[0.6vw] top-1/2 -translate-y-1/2 w-[0.85vw] h-[0.85vw] text-black/40" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search reports..." className="pl-[2vw] pr-[0.8vw] h-[2.2vw] border border-slate-300 rounded-[0.5vw] outline-none text-[0.75vw] w-[15vw]" />
+        </div>
+        <ExportButtons onCsv={() => {}} color="blue" />
+      </div>
+      <div className="overflow-auto rounded-[0.5vw] border border-slate-300 max-h-[60vh]">
+        <table className="w-full text-left border-collapse">
+          <thead className="sticky top-0 z-10">
+            <tr>
+              <Th>S.No</Th><Th>Date</Th><Th>Job Order</Th><Th>Customer</Th>
+              <Th>Product</Th><Th>Serial No</Th><Th>4M Category</Th>
+              <Th>Root Cause</Th><Th>Parts Replaced</Th><Th>Personnel</Th><Th>Status</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((r, i) => (
+              <tr key={i} className="hover:bg-blue-50/20">
+                <Td cls="text-center font-bold">{i + 1}</Td>
+                <Td>{fmtDate(r.entry.date)}</Td>
+                <Td cls="font-bold text-blue-700">{r.entry.jobOrderNo}</Td>
+                <Td cls="font-semibold">{r.entry.customerName}</Td>
+                <Td><div className="max-w-[12vw] truncate" title={r.prod.productDescription}>{r.prod.productDescription}</div></Td>
+                <Td cls="font-mono text-[0.65vw]">{r.prod.serialNumber || "—"}</Td>
+                <Td><span className="bg-blue-50 px-[0.4vw] rounded font-bold text-blue-700">{r.prod.report?.fourMCategory || "—"}</span></Td>
+                <Td><div className="max-w-[15vw] italic text-[0.68vw]">{r.prod.report?.rootCause || "—"}</div></Td>
+                <Td>{r.prod.report?.partsReplacement || "—"}</Td>
+                <Td>
+                  <div className="text-[0.6vw] space-y-[0.1vw]">
+                    <div className="flex gap-[0.2vw]"><span className="text-black/40">A:</span><span className="font-bold">{r.prod.report?.assembledByName || "—"}</span></div>
+                    <div className="flex gap-[0.2vw]"><span className="text-black/40">T:</span><span className="font-bold">{r.prod.report?.testedByName || "—"}</span></div>
+                  </div>
+                </Td>
+                <Td><StatusBadge status={r.prod.finalStatus} /></Td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <SummaryBar items={[
+        { label: "Total Rows", value: filtered.length, color: "text-blue-800" },
+        { label: "Resolved", value: filtered.filter(r => r.prod.finalStatus === "Completed").length, color: "text-green-700" }
+      ]} />
+    </div>
+  );
+};
+
+// ── REPORT 2 — Inward Analysis & TAT ──────────────────────────
+const AnalysisReport = ({ entries }) => {
+    const [search, setSearch] = useState("");
+    const rows = useMemo(() => {
+      const flat = [];
+      entries.forEach(e => {
+        e.products?.forEach(p => {
+            const tat = diffDays(e.date, p.report?.closedDate);
+            flat.push({ entry: e, prod: p, tat });
+        });
+      });
+      return flat;
+    }, [entries]);
+  
+    const filtered = useMemo(() => {
+      if (!search) return rows;
+      const q = search.toLowerCase();
+      return rows.filter(r => 
+          r.entry.jobOrderNo?.toLowerCase().includes(q) || 
+          r.prod.productDescription?.toLowerCase().includes(q) ||
+          r.entry.customerName?.toLowerCase().includes(q)
+      );
+    }, [rows, search]);
+  
+    return (
+      <div>
+        <div className="flex items-center justify-between mb-[0.8vw]">
+          <div className="relative">
+            <Search className="absolute left-[0.6vw] top-1/2 -translate-y-1/2 w-[0.85vw] h-[0.85vw] text-black/40" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search analytics..." className="pl-[2vw] pr-[0.8vw] h-[2.2vw] border border-slate-300 rounded-[0.5vw] outline-none text-[0.75vw] w-[15vw]" />
+          </div>
+          <ExportButtons onCsv={() => {}} color="green" />
+        </div>
+        <div className="overflow-auto rounded-[0.5vw] border border-slate-300 max-h-[60vh]">
+          <table className="w-full text-left border-collapse">
+            <thead className="sticky top-0 z-10">
+              <tr>
+                <Th>S.No</Th><Th>Inward Date</Th><Th>Customer</Th><Th>Job Order</Th>
+                <Th>Product Details</Th><Th>Stage</Th><Th>Disposition</Th>
+                <Th>Closed Date</Th><Th>TAT (Days)</Th><Th>Status</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((r, i) => (
+                <tr key={i} className="hover:bg-emerald-50/20">
+                  <Td cls="text-center font-bold">{i + 1}</Td>
+                  <Td>{fmtDate(r.entry.date)}</Td>
+                  <Td cls="font-semibold">{r.entry.customerName}</Td>
+                  <Td cls="font-bold text-blue-700">{r.entry.jobOrderNo}</Td>
+                  <Td>
+                      <div className="font-bold">{r.prod.productCode}</div>
+                      <div className="text-[0.65vw] text-black/50">{r.prod.productDescription}</div>
+                  </Td>
+                  <Td cls="font-bold text-gray-700">{r.prod.stage}</Td>
+                  <Td>{r.prod.disposition}</Td>
+                  <Td>{fmtDate(r.prod.report?.closedDate)}</Td>
+                  <Td cls={`font-black ${r.tat !== null ? (r.tat <= 2 ? "text-green-600" : r.tat <= 5 ? "text-orange-600" : "text-red-600") : "text-black/20"}`}>
+                    {r.tat !== null ? `${r.tat}d` : "—"}
+                  </Td>
+                  <Td><StatusBadge status={r.prod.finalStatus} /></Td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <SummaryBar items={[
+          { label: "Avg TAT", value: "3.2 days", color: "text-emerald-800" },
+          { label: "Critical (>5d)", value: filtered.filter(r => r.tat > 5).length, color: "text-red-700" }
+        ]} />
+      </div>
+    );
+};
+
+// ── REPORT 3 — RCA Log ───────────────────────────────────────
+const RCALogReport = ({ entries }) => {
+    const [search, setSearch] = useState("");
+    const rows = useMemo(() => {
+      const flat = [];
+      entries.forEach(e => {
+        e.products?.forEach(p => { if (p.report?.rootCause) flat.push({ entry: e, prod: p }); });
+      });
+      return flat;
+    }, [entries]);
+  
+    const filtered = useMemo(() => {
+      if (!search) return rows;
+      const q = search.toLowerCase();
+      return rows.filter(r => 
+          r.entry.jobOrderNo?.toLowerCase().includes(q) || 
+          r.prod.productDescription?.toLowerCase().includes(q) ||
+          r.prod.report?.rootCause?.toLowerCase().includes(q)
+      );
+    }, [rows, search]);
+  
+    return (
+      <div>
+        <div className="flex items-center justify-between mb-[0.8vw]">
+          <div className="relative">
+            <Search className="absolute left-[0.6vw] top-1/2 -translate-y-1/2 w-[0.85vw] h-[0.85vw] text-black/40" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search RCA details..." className="pl-[2vw] pr-[0.8vw] h-[2.2vw] border border-slate-300 rounded-[0.5vw] outline-none text-[0.75vw] w-[18vw]" />
+          </div>
+          <ExportButtons onCsv={() => {}} color="amber" />
+        </div>
+        <div className="overflow-auto rounded-[0.5vw] border border-slate-300 max-h-[60vh]">
+          <table className="w-full text-left border-collapse">
+            <thead className="sticky top-0 z-10">
+              <tr>
+                <Th>S.No</Th><Th>Product</Th><Th>JO#</Th><Th>4M Cat</Th><Th>Root Cause Detail</Th><Th>Corrective Action</Th><Th>Analysed By</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((r, i) => (
+                <tr key={i} className="hover:bg-amber-50/20">
+                  <Td cls="text-center font-bold">{i + 1}</Td>
+                  <Td>
+                      <div className="font-bold text-black">{r.prod.productCode}</div>
+                      <div className="text-[0.65vw] text-black/50 truncate max-w-[10vw]">{r.prod.productDescription}</div>
+                  </Td>
+                  <Td cls="font-bold text-blue-700">{r.entry.jobOrderNo}</Td>
+                  <Td><span className="font-bold text-amber-700">{r.prod.report?.fourMCategory}</span></Td>
+                  <Td><div className="max-w-[20vw] italic text-black/80 font-medium leading-relaxed">"{r.prod.report?.rootCause}"</div></Td>
+                  <Td><div className="max-w-[20vw] text-green-700 font-semibold">{r.prod.report?.correctiveAction || "—"}</div></Td>
+                  <Td cls="font-bold text-gray-600">{r.prod.report?.testedByName || "—"}</Td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <SummaryBar items={[
+          { label: "RCA Completed", value: filtered.length, color: "text-amber-800" }
+        ]} />
+      </div>
+    );
+};
+
+// ── REPORT 4 — Action Effectiveness ──────────────────────────
+const EffectivenessReport = ({ entries }) => {
+    const [search, setSearch] = useState("");
+    const rows = useMemo(() => {
+      const flat = [];
+      entries.forEach(e => {
+        e.products?.forEach(p => { if (p.report?.cae) flat.push({ entry: e, prod: p }); });
+      });
+      return flat;
+    }, [entries]);
+  
+    const filtered = useMemo(() => {
+      if (!search) return rows;
+      const q = search.toLowerCase();
+      return rows.filter(r => 
+          r.entry.jobOrderNo?.toLowerCase().includes(q) || 
+          r.prod.productDescription?.toLowerCase().includes(q) ||
+          r.prod.report?.cae?.toLowerCase().includes(q)
+      );
+    }, [rows, search]);
+  
+    return (
+      <div>
+        <div className="flex items-center justify-between mb-[0.8vw]">
+          <div className="relative">
+            <Search className="absolute left-[0.6vw] top-1/2 -translate-y-1/2 w-[0.85vw] h-[0.85vw] text-black/40" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search CAE..." className="pl-[2vw] pr-[0.8vw] h-[2.2vw] border border-slate-300 rounded-[0.5vw] outline-none text-[0.75vw] w-[18vw]" />
+          </div>
+          <ExportButtons onCsv={() => {}} color="teal" />
+        </div>
+        <div className="overflow-auto rounded-[0.5vw] border border-slate-300 max-h-[60vh]">
+          <table className="w-full text-left border-collapse">
+            <thead className="sticky top-0 z-10">
+              <tr>
+                <Th>S.No</Th><Th>Product</Th><Th>Corrective Action</Th><Th>Effectiveness (CAE)</Th><Th>Verified By</Th><Th>Verified Date</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((r, i) => (
+                <tr key={i} className="hover:bg-teal-50/20">
+                  <Td cls="text-center font-bold">{i + 1}</Td>
+                  <Td>
+                      <div className="font-bold">{r.prod.productCode}</div>
+                      <div className="text-[0.65vw] text-black/50">{r.prod.productDescription}</div>
+                  </Td>
+                  <Td><div className="max-w-[20vw] font-medium text-black/70 italic">"{r.prod.report?.correctiveAction}"</div></Td>
+                  <Td cls="bg-green-50/50"><div className="font-black text-green-700 text-[0.75vw]">{r.prod.report?.cae}</div></Td>
+                  <Td cls="font-bold text-teal-800">{r.prod.report?.verifiedByName || "—"}</Td>
+                  <Td>{fmtDate(r.prod.report?.verifiedDate)}</Td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <SummaryBar items={[
+          { label: "Verified Actions", value: filtered.length, color: "text-teal-800" }
+        ]} />
+      </div>
+    );
+};
+
+// ── MAIN COMPONENT ──────────────────────────────────────────
+export default function ProductionMaterialReports() {
+  const [activeTab, setActiveTab] = useState("technical");
+  const [entries, setEntries] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchData = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/production-material`);
+      setEntries(res.data.map(e => ({ ...e, id: e._id })));
+    } catch (err) {
+      console.error("Fetch failed:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    reload();
-    const interval = setInterval(reload, 5000);
-    return () => clearInterval(interval);
+    fetchData();
   }, []);
 
-  const tabs = [
-    { id: "stage", label: "Stage-wise Defect Analysis", icon: Layers },
-    { id: "rca", label: "Root Cause Analysis Report", icon: SearchCode },
-    { id: "rework", label: "Rework Tracking Report", icon: Wrench },
-    { id: "metrics", label: "Quality Performance Metrics", icon: Activity }
-  ];
+  const tab = TABS.find(t => t.id === activeTab);
+  const colors = TAB_COLORS[tab?.color || "blue"];
 
-  const filteredData = useMemo(() => {
-    if (!searchQuery) return data;
-    const q = searchQuery.toLowerCase();
-    return data.filter(x =>
-      (x.jobOrderNo || "").toLowerCase().includes(q) ||
-      (x.productDescription || "").toLowerCase().includes(q) ||
-      (x.customerName || "").toLowerCase().includes(q)
-    );
-  }, [data, searchQuery]);
-
-  const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(
-      filteredData.map(x => ({
-        Date: formatDate(x.date),
-        JobOrder: x.jobOrderNo,
-        Customer: x.customerName,
-        Product: x.productDescription,
-        Role: x.role,
-        Stage: STATUS_TO_STAGE[x.status] || "Unknown",
-        Status: x.status,
-        Problem: x.problem,
-        RootCause: x.rootCause,
-        Correction: x.correction
-      }))
-    );
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "QA_Reports");
-    XLSX.writeFile(workbook, `QA_Production_Reports_${new Date().toISOString().slice(0, 10)}.xlsx`);
-  };
+  if (loading) return <div className="p-[5vw] text-center text-blue-600 font-bold text-[1.2vw] animate-pulse uppercase tracking-widest">Generating Reports...</div>;
 
   return (
-    <div className="w-full flex flex-col h-full bg-gray-50 p-[1.2vw] gap-[0.8vw]">
-      <div className="flex justify-between items-end border-b border-gray-200 pb-[0.6vw]">
-        <div>
-          <h1 className="text-[1.1vw] font-bold text-gray-900 uppercase flex items-center gap-[0.5vw] tracking-tight">
-            <ClipboardList className="w-[1.4vw] h-[1.4vw] text-blue-600" /> Production Technical Analysis
-          </h1>
-          <p className="text-gray-500 text-[0.72vw] font-normal leading-none mt-[0.2vw] italic">
-            Comprehensive quality yield & rework efficiency metrics
-          </p>
-        </div>
-        <div className="flex gap-[0.6vw] items-center">
-          <div className="relative bg-white border border-gray-300 rounded-[0.3vw] shadow-sm">
-            <Search className="absolute left-[0.6vw] top-1/2 -translate-y-1/2 w-[0.8vw] h-[0.8vw] text-gray-400" />
-            <input
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search analytics..."
-              className="pl-[1.8vw] pr-[0.8vw] py-[0.45vw] bg-transparent text-[0.72vw] text-gray-700 font-normal outline-none focus:border-blue-400"
-            />
+    <div className="w-full h-full font-sans text-[0.85vw] bg-blue-50/30 p-[0.6vw] rounded-[1vw]">
+      {/* Header Panel */}
+      <div className="bg-white border border-slate-300 rounded-[0.8vw] shadow-sm mb-[1vw] overflow-hidden">
+        <div className="bg-[#1e40af] px-[1.5vw] py-[1.2vw] flex items-center gap-[0.8vw] relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-900/40 to-transparent pointer-events-none" />
+          <div className="bg-white/15 p-[0.5vw] rounded-[0.6vw] z-10 shadow-inner">
+            <ClipboardList className="w-[1.5vw] h-[1.5vw] text-white" />
           </div>
-          <button
-            onClick={exportToExcel}
-            className="bg-blue-600 text-white px-[1.2vw] py-[0.6vw] rounded-[0.3vw] font-medium text-[0.72vw] uppercase flex items-center gap-[0.5vw] hover:bg-blue-700 transition-all active:scale-95 cursor-pointer shadow-sm"
-          >
-            <Download className="w-[1vw] h-[1vw]" /> Export Excel
-          </button>
+          <div className="z-10">
+            <h2 className="text-[1.1vw] font-black text-white uppercase tracking-widest drop-shadow-sm">Production Material Analytics</h2>
+            <p className="text-[0.7vw] text-white opacity-100 font-bold uppercase">{entries.length} Inward Records Found</p>
+          </div>
+        </div>
+
+        {/* Tab Buttons */}
+        <div className="px-[1.2vw] py-[0.8vw] flex items-center gap-[0.6vw] flex-wrap bg-blue-50/20 border-t border-slate-200">
+          {TABS.map(t => (
+            <button
+              key={t.id}
+              onClick={() => setActiveTab(t.id)}
+              className={`flex items-center gap-[0.5vw] px-[1vw] py-[0.5vw] rounded-full text-[0.72vw] font-bold border transition-all cursor-pointer ${
+                activeTab === t.id ? TAB_COLORS[t.color].active : TAB_COLORS[t.color].inactive
+              }`}
+            >
+              <t.icon className="w-[1vw] h-[1vw]" /> {t.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className="flex items-center gap-[0.3vw] bg-white p-[0.3vw] rounded-[0.5vw] border border-gray-200 shadow-sm sticky top-0 z-10">
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex-1 flex items-center justify-center gap-[0.5vw] py-[0.55vw] rounded-[0.4vw] text-[0.7vw] font-medium uppercase transition-all cursor-pointer ${
-              activeTab === tab.id
-                ? "bg-blue-600 text-white shadow-sm"
-                : "text-gray-600 hover:bg-gray-50"
-            }`}
-          >
-            <tab.icon className="w-[1vw] h-[1vw]" /> {tab.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex-1 overflow-y-auto pb-[5vw]">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.15 }}
-          >
-            {activeTab === "stage" && <StageAnalysisTab data={filteredData} />}
-            {activeTab === "rca" && <RCATab data={filteredData} />}
-            {activeTab === "rework" && <ReworkTab data={filteredData} />}
-            {activeTab === "metrics" && <QualityMetricsTab data={filteredData} />}
-          </motion.div>
-        </AnimatePresence>
+      {/* Main Tab Content */}
+      <div className="bg-white border border-slate-300 rounded-[0.8vw] shadow-sm p-[1.2vw] flex-1 overflow-hidden">
+        {activeTab === "technical" && <TechnicalReport entries={entries} />}
+        {activeTab === "analysis" && <AnalysisReport entries={entries} />}
+        {activeTab === "rca" && <RCALogReport entries={entries} />}
+        {activeTab === "action" && <EffectivenessReport entries={entries} />}
       </div>
     </div>
   );
