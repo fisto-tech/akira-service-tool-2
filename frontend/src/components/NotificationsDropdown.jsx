@@ -35,7 +35,7 @@ const NotificationsDropdown = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const mainTabs = ['All', 'Service Call', 'Service Material', 'Production NC'];
+  const mainTabs = ['All', 'Service Call'];
   const subTabs = ['all', 'Assignment', 'Escalation', 'Critical'];
 
   const filteredNotifications = useMemo(() => {

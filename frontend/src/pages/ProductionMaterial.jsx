@@ -911,16 +911,22 @@ export default function ProductionMaterial() {
                         {isPageSelected ? <CheckCircle className="w-[1.2vw] h-[1.2vw] text-blue-600" /> : <div className="w-[1.1vw] h-[1.1vw] border-2 border-gray-300 rounded"></div>}
                       </button>
                     </th>
-                    {["S.No", "Date", "Job Order No", "Customer", "Cus Code", "Category"].map(h => (
-                      <th key={h} rowSpan={2} className="px-[0.6vw] py-[0.5vw] font-semibold text-black text-center border-b-2 border-r border-gray-300 whitespace-nowrap text-[0.78vw] align-middle bg-blue-50">{h}</th>
-                    ))}
+                    {["S.No", "Date", "Job Order No", "Customer", "Cus Code", "Category"].map(h => {
+                      const minW = h === "Customer" ? "180px" : (h === "Job Order No" ? "140px" : "80px");
+                      return (
+                        <th key={h} rowSpan={2} style={{ minWidth: minW }} className="px-[0.6vw] py-[0.5vw] font-bold text-black text-center border-b-2 border-r border-gray-300 whitespace-nowrap text-[0.78vw] align-middle bg-blue-50">{h}</th>
+                      );
+                    })}
                     <th colSpan={7} className="px-[0.6vw] py-[0.4vw] font-semibold text-black border-b border-r border-gray-300 text-center text-[0.78vw] bg-blue-100/50">Product Manifest Details</th>
                     <th rowSpan={2} className="px-[0.8vw] py-[0.5vw] font-semibold text-black text-center border-b-2 border-l border-gray-300 whitespace-nowrap text-[0.78vw] align-middle bg-blue-50 sticky right-0 z-30 shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.05)]">Actions</th>
                   </tr>
                   <tr>
-                    {["Item Code", "Description", "Stage", "Qty", "Serial/Batch", "Final Status", "Final Remarks"].map((h, i) => (
-                      <th key={h} className="px-[0.6vw] py-[0.4vw] font-semibold text-blue-800 text-center border-b-2 border-r border-gray-300 whitespace-nowrap text-[0.72vw] bg-blue-50">{h}</th>
-                    ))}
+                    {["Item Code", "Description", "Stage", "Qty", "Serial/Batch", "Final Status", "Final Remarks"].map((h, i) => {
+                      const minW = h === "Description" ? "220px" : (h === "Final Remarks" ? "180px" : (h === "Qty" ? "120px" : "110px"));
+                      return (
+                        <th key={h} style={{ minWidth: minW }} className={`px-[0.6vw] py-[0.4vw] font-bold text-black border-b-2 border-r border-gray-300 whitespace-nowrap text-[0.72vw] bg-blue-50 ${h === "Qty" ? "text-center" : "text-center"}`}>{h}</th>
+                      );
+                    })}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">

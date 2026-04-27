@@ -1760,44 +1760,56 @@ const AdminTableView = ({
                 )}
               </button>
             </th>
-            {["S.No", "Date", "Customer Name", "Category"].map((h) => (
-              <th
-                key={h}
-                rowSpan={2}
-                className="px-[0.6vw] py-[0.5vw] font-semibold text-black text-center border-b-2 border-r border-gray-300 whitespace-nowrap text-[0.78vw] align-middle bg-blue-50"
-              >
-                {h}
-              </th>
-            ))}
+            {["S.No", "Date", "Customer Name", "Category"].map((h) => {
+              const minW = h === "Customer Name" ? "200px" : "100px";
+              return (
+                <th
+                  key={h}
+                  rowSpan={2}
+                  style={{ minWidth: minW }}
+                  className="px-[0.6vw] py-[0.5vw] font-bold text-black text-center border-b-2 border-r border-gray-300 whitespace-nowrap text-[0.78vw] align-middle bg-blue-50"
+                >
+                  {h}
+                </th>
+              );
+            })}
             <th
               colSpan={PRODUCT_SUB_COLS.length}
-              className="px-[0.6vw] py-[0.4vw] font-semibold text-black border-b border-r border-gray-300 text-center text-[0.78vw] bg-blue-100"
+              className="px-[0.6vw] py-[0.4vw] font-bold text-black border-b border-r border-gray-300 text-center text-[0.78vw] bg-blue-100"
             >
               Products
             </th>
-            {["Edit", "Reports", "Final Status", "Remarks", "Delay"].map((h) => (
-              <th
-                key={h}
-                rowSpan={2}
-                className="px-[0.6vw] py-[0.5vw] font-semibold text-black text-center border-b-2 border-r border-gray-300 last:border-r-0 whitespace-nowrap text-[0.78vw] align-middle bg-blue-50"
-              >
-                {h}
-              </th>
-            ))}
+            {["Edit", "Reports", "Final Status", "Remarks", "Delay"].map((h) => {
+              const minW = h === "Remarks" ? "180px" : (h === "Final Status" ? "140px" : "100px");
+              return (
+                <th
+                  key={h}
+                  rowSpan={2}
+                  style={{ minWidth: minW }}
+                  className="px-[0.6vw] py-[0.5vw] font-bold text-black text-center border-b-2 border-r border-gray-300 last:border-r-0 whitespace-nowrap text-[0.78vw] align-middle bg-blue-50"
+                >
+                  {h}
+                </th>
+              );
+            })}
           </tr>
           <tr>
-            {PRODUCT_SUB_COLS.map((h, i) => (
-              <th
-                key={h}
-                className={`px-[0.6vw] py-[0.4vw] font-bold text-black text-center border-b-2 border-r border-gray-300 whitespace-nowrap text-[0.72vw] bg-blue-50 ${
-                  i === PRODUCT_SUB_COLS.length - 1
-                    ? "border-r border-gray-300"
-                    : ""
-                }`}
-              >
-                {h}
-              </th>
-            ))}
+            {PRODUCT_SUB_COLS.map((h, i) => {
+              const minW = h === "Product" ? "220px" : "140px";
+              return (
+                <th
+                  key={h}
+                  style={{ minWidth: minW }}
+                  className={`px-[0.6vw] py-[0.4vw] font-bold text-black text-center border-b-2 border-r border-gray-300 whitespace-nowrap text-[0.72vw] bg-blue-50 ${
+                    i === PRODUCT_SUB_COLS.length - 1
+                      ? "border-r border-gray-300"
+                      : ""
+                  }`}
+                >
+                  {h}
+                </th>
+              );
+            })}
           </tr>
         </thead>
 

@@ -289,20 +289,20 @@ const ProductionEditableProductTable = ({
       className="w-full overflow-x-auto border border-gray-200 rounded-[0.6vw] bg-white mb-[15vw]"
     >
       <table className="w-full border-collapse text-[0.8vw]">
-        <thead className="bg-gray-100 border-b border-gray-300">
+        <thead className="bg-blue-50/80 border-b border-gray-300 sticky top-0 z-20 shadow-sm">
           <tr>
-            {!isReadOnly && <th className="w-[3vw] py-[0.8vw] px-[0.5vw]"></th>}
-            <th className="w-[3vw] py-[0.8vw] px-[0.5vw] text-left text-gray-700 font-bold uppercase tracking-wider">#</th>
-            <th className="min-w-[15vw] py-[0.8vw] px-[0.8vw] text-left text-gray-700 font-bold uppercase tracking-wider">Product Description</th>
-            <th className="w-[8vw] py-[0.8vw] px-[0.8vw] text-left text-gray-700 font-bold uppercase tracking-wider">Code</th>
-            <th className="w-[8vw] py-[0.8vw] px-[0.8vw] text-left text-gray-700 font-bold uppercase tracking-wider">Board Type</th>
-            <th className="w-[12vw] py-[0.8vw] px-[0.8vw] text-left text-gray-700 font-bold uppercase tracking-wider">Problem</th>
-            <th className="w-[8vw] py-[0.8vw] px-[0.8vw] text-left text-gray-700 font-bold uppercase tracking-wider">Stage</th>
-            <th className="w-[5vw] py-[0.8vw] px-[0.8vw] text-left text-gray-700 font-bold uppercase tracking-wider">Qty</th>
-            <th className="w-[10vw] py-[0.8vw] px-[0.8vw] text-left text-gray-700 font-bold uppercase tracking-wider">Batch / SN</th>
-            <th className="w-[8vw] py-[0.8vw] px-[0.8vw] text-left text-gray-700 font-bold uppercase tracking-wider">Disposition</th>
-            <th className="w-[10vw] py-[0.8vw] px-[0.8vw] text-left text-gray-700 font-bold uppercase tracking-wider">Raised To</th>
-            {!isReadOnly && <th className="w-[7vw] py-[0.8vw] px-[0.8vw] text-center text-gray-700 font-bold uppercase tracking-wider">Actions</th>}
+            {!isReadOnly && <th className="w-[4vw] min-w-[60px] py-[0.8vw] px-[0.5vw]"></th>}
+            <th className="w-[4vw] min-w-[60px] py-[0.8vw] px-[0.5vw] text-center text-black font-bold uppercase tracking-wider whitespace-nowrap">#</th>
+            <th className="min-w-[30vw] py-[0.8vw] px-[0.8vw] text-left text-black font-bold uppercase tracking-wider whitespace-nowrap">Product Description</th>
+            <th className="w-[12vw] min-w-[150px] py-[0.8vw] px-[0.8vw] text-left text-black font-bold uppercase tracking-wider whitespace-nowrap">Code</th>
+            <th className="w-[12vw] min-w-[160px] py-[0.8vw] px-[0.8vw] text-left text-black font-bold uppercase tracking-wider whitespace-nowrap">Board Type</th>
+            <th className="w-[15vw] min-w-[200px] py-[0.8vw] px-[0.8vw] text-left text-black font-bold uppercase tracking-wider whitespace-nowrap">Problem</th>
+            <th className="w-[10vw] min-w-[140px] py-[0.8vw] px-[0.8vw] text-left text-black font-bold uppercase tracking-wider whitespace-nowrap">Stage</th>
+            <th className="w-[7vw] min-w-[120px] py-[0.8vw] px-[0.8vw] text-center text-black font-bold uppercase tracking-wider whitespace-nowrap">Qty</th>
+            <th className="w-[12vw] min-w-[180px] py-[0.8vw] px-[0.8vw] text-left text-black font-bold uppercase tracking-wider whitespace-nowrap">Batch / SN</th>
+            <th className="w-[10vw] min-w-[150px] py-[0.8vw] px-[0.8vw] text-left text-black font-bold uppercase tracking-wider whitespace-nowrap">Disposition</th>
+            <th className="w-[12vw] min-w-[180px] py-[0.8vw] px-[0.8vw] text-left text-black font-bold uppercase tracking-wider whitespace-nowrap">Raised To</th>
+            {!isReadOnly && <th className="w-[10vw] min-w-[120px] py-[0.8vw] px-[0.8vw] text-center text-black font-bold uppercase tracking-wider whitespace-nowrap">Actions</th>}
           </tr>
         </thead>
         <DragDropContext onDragEnd={onDragEnd}>
@@ -327,7 +327,7 @@ const ProductionEditableProductTable = ({
                             <GripVertical className="w-[1vw] h-[1vw] text-gray-700 cursor-grab active:cursor-grabbing" />
                           </td>
                         )}
-                        <td className="py-[0.6vw] px-[0.5vw] text-center align-middle font-bold text-gray-800 border border-gray-300">
+                        <td className="py-[0.6vw] px-[0.5vw] text-center align-middle font-bold text-black border border-gray-300">
                           {index + 1}
                         </td>
                         
@@ -354,7 +354,7 @@ const ProductionEditableProductTable = ({
                               onClick={(e) => openDropdown(prod._pid, e.currentTarget.parentElement.parentElement)}
                               placeholder={customerCode ? "Search or enter description..." : "Select customer first"}
                               disabled={!customerCode || isReadOnly}
-                              className={`w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.6vw] outline-none transition-all text-gray-800 font-semibold disabled:bg-transparent cursor-text description-input`}
+                              className={`w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.6vw] outline-none transition-all text-black font-bold disabled:bg-transparent cursor-text description-input`}
                             />
                             {!isReadOnly && customerCode && (
                               <Search className="w-[0.8vw] h-[0.8vw] text-gray-700 absolute right-[0.6vw] pointer-events-none group-focus-within:text-blue-500" />
@@ -393,7 +393,7 @@ const ProductionEditableProductTable = ({
                         </td>
 
                         <td className={`py-[0.6vw] px-[0.8vw] relative ${getCellClass(index, 1)}`} onMouseDown={(e) => handleCellMouseDown(index, 1, e)} onMouseEnter={() => handleCellMouseEnter(index, 1)}>
-                          <div className="text-gray-800 px-[0.6vw] py-[0.4vw] rounded-[0.3vw] font-bold text-[0.75vw]">{prod.productCode || "—"}</div>
+                          <div className="text-black px-[0.6vw] py-[0.4vw] rounded-[0.3vw] font-bold text-[0.75vw]">{prod.productCode || "—"}</div>
                           {renderFillHandle(index, 1)}
                         </td>
 
@@ -402,7 +402,7 @@ const ProductionEditableProductTable = ({
                             value={prod.boardType || ""}
                             onChange={(e) => handleUpdate(prod._pid, "boardType", e.target.value)}
                             disabled={isReadOnly}
-                            className="w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.2vw] outline-none transition-all text-gray-800 font-semibold disabled:bg-transparent"
+                            className="w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.2vw] outline-none transition-all text-black font-bold disabled:bg-transparent"
                           >
                             <option value="">Select</option>
                             {boardTypes.map(bt => (
@@ -414,7 +414,7 @@ const ProductionEditableProductTable = ({
 
                         <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 3)}`} onMouseDown={(e) => handleCellMouseDown(index, 3, e)} onMouseEnter={() => handleCellMouseEnter(index, 3)}>
                           <div className="relative flex items-center group">
-                            <input type="text" autoComplete="off" value={prod.problem || ""} onChange={(e) => handleUpdate(prod._pid, "problem", e.target.value)} placeholder="Problem Description" disabled={isReadOnly} className="w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.6vw] outline-none transition-all text-gray-800 font-semibold disabled:bg-transparent" />
+                            <input type="text" autoComplete="off" value={prod.problem || ""} onChange={(e) => handleUpdate(prod._pid, "problem", e.target.value)} placeholder="Problem Description" disabled={isReadOnly} className="w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.6vw] outline-none transition-all text-black font-bold disabled:bg-transparent" />
                           </div>
                           {renderFillHandle(index, 3)}
                         </td>
@@ -424,7 +424,7 @@ const ProductionEditableProductTable = ({
                             value={prod.stage || ""}
                             onChange={(e) => handleUpdate(prod._pid, "stage", e.target.value)}
                             disabled={isReadOnly}
-                            className="w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.2vw] outline-none transition-all text-gray-800 font-semibold disabled:bg-transparent"
+                            className="w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.2vw] outline-none transition-all text-black font-bold disabled:bg-transparent"
                           >
                             <option value="">Select</option>
                             {stageOptions.map(s => (
@@ -435,7 +435,7 @@ const ProductionEditableProductTable = ({
                         </td>
 
                         <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 5)}`} onMouseDown={(e) => handleCellMouseDown(index, 5, e)} onMouseEnter={() => handleCellMouseEnter(index, 5)}>
-                          <input type="number" min="1" value={prod.qty} onChange={(e) => handleUpdate(prod._pid, "qty", e.target.value)} disabled={isReadOnly} className="w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.6vw] outline-none transition-all text-gray-800 font-bold disabled:bg-transparent" />
+                          <input type="number" min="1" value={prod.qty} onChange={(e) => handleUpdate(prod._pid, "qty", e.target.value)} disabled={isReadOnly} className="w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.6vw] outline-none transition-all text-black font-bold text-center disabled:bg-transparent" />
                           {renderFillHandle(index, 5)}
                         </td>
 
@@ -448,7 +448,7 @@ const ProductionEditableProductTable = ({
                               onChange={(e) => handleUpdate(prod._pid, "serialNumber", e.target.value)} 
                               placeholder="SN-XXXX" 
                               disabled={isReadOnly} 
-                              className="w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.6vw] pr-[2.2vw] outline-none transition-all text-gray-800 font-semibold disabled:bg-transparent" 
+                              className="w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.6vw] pr-[2.2vw] outline-none transition-all text-black font-bold disabled:bg-transparent" 
                             />
                             {!isReadOnly && (
                               <button type="button" className="absolute right-[0.4vw] p-[0.3vw] text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded transition-all">
@@ -464,7 +464,7 @@ const ProductionEditableProductTable = ({
                             value={prod.disposition || ""}
                             onChange={(e) => handleUpdate(prod._pid, "disposition", e.target.value)}
                             disabled={isReadOnly}
-                            className="w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.2vw] outline-none transition-all text-gray-800 font-semibold disabled:bg-transparent"
+                            className="w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.2vw] outline-none transition-all text-black font-bold disabled:bg-transparent"
                           >
                             <option value="">Select</option>
                             {dispositionOptions.map(opt => (
@@ -479,7 +479,7 @@ const ProductionEditableProductTable = ({
                             value={prod.raisedTo || ""}
                             onChange={(e) => handleUpdate(prod._pid, "raisedTo", e.target.value)}
                             disabled={isReadOnly}
-                            className="w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.2vw] outline-none transition-all text-gray-800 font-semibold disabled:bg-transparent"
+                            className="w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.2vw] outline-none transition-all text-black font-bold disabled:bg-transparent"
                           >
                             <option value="">Select</option>
                             {employees.map(e => (
