@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import {
   Package, Clock, User, CheckCircle, AlertCircle, X, Eye, Send,
   Phone, Mail, MapPin, FileText, Calendar, Hash, Tag, Wrench,
-  AlertTriangle, Info, ChevronRight, Shield, Plus,
+  AlertTriangle, Info, ChevronRight, ChevronLeft, Shield, Plus, Edit3,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
@@ -10,7 +10,7 @@ import axios from "axios";
 const API_URL = import.meta.env.VITE_API_URL;
 
 // ── Storage Keys ───────────────────────────────────────────────────────────────
-const INWARD_KEY    = "service_material_inward_v2";
+const INWARD_KEY = "service_material_inward_v2";
 const EMPLOYEES_KEY = "employees";
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -26,12 +26,12 @@ const fmtDate = (d) => {
 // ── Badge ─────────────────────────────────────────────────────────────────────
 const Badge = ({ label, color = "gray", size = "sm" }) => {
   const colorMap = {
-    green:  "bg-emerald-50 text-emerald-700 border-emerald-200",
-    blue:   "bg-blue-50 text-blue-700 border-blue-200",
-    slate:  "bg-slate-100 text-slate-600 border-slate-200",
-    gray:   "bg-gray-100 text-gray-600 border-gray-200",
-    black:  "bg-gray-900 text-white border-gray-900",
-    red:    "bg-red-50 text-red-700 border-red-200",
+    green: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    blue: "bg-blue-50 text-blue-700 border-blue-200",
+    slate: "bg-slate-100 text-slate-600 border-slate-200",
+    gray: "bg-gray-100 text-gray-600 border-gray-200",
+    black: "bg-gray-900 text-white border-gray-900",
+    red: "bg-red-50 text-red-700 border-red-200",
     orange: "bg-orange-50 text-orange-700 border-orange-200",
     purple: "bg-purple-50 text-purple-700 border-purple-200",
   };
@@ -49,12 +49,12 @@ const Badge = ({ label, color = "gray", size = "sm" }) => {
 
 // ── Status Configuration ──────────────────────────────────────────────────────
 const STATUS_CONFIG = {
-  "Open":               { color: "gray",   icon: AlertCircle,    bg: "bg-gray-100",   border: "border-gray-400",   text: "text-gray-700" },
-  "Under Testing":      { color: "blue",   icon: Wrench,         bg: "bg-blue-100",   border: "border-blue-300",   text: "text-blue-800" },
-  "Repair in Progress": { color: "orange", icon: Wrench,         bg: "bg-orange-100", border: "border-orange-300", text: "text-orange-800" },
-  "Pending":            { color: "slate",  icon: Clock,          bg: "bg-slate-100",  border: "border-slate-300",  text: "text-slate-800" },
-  "Completed":          { color: "green",  icon: CheckCircle,    bg: "bg-green-100",  border: "border-green-300",  text: "text-green-800" },
-  "Not Repairable":     { color: "red",    icon: AlertTriangle,  bg: "bg-red-100",    border: "border-red-300",    text: "text-red-800" },
+  "Open": { color: "gray", icon: AlertCircle, bg: "bg-gray-100", border: "border-gray-400", text: "text-gray-700" },
+  "Under Testing": { color: "blue", icon: Wrench, bg: "bg-blue-100", border: "border-blue-300", text: "text-blue-800" },
+  "Repair in Progress": { color: "orange", icon: Wrench, bg: "bg-orange-100", border: "border-orange-300", text: "text-orange-800" },
+  "Pending": { color: "slate", icon: Clock, bg: "bg-slate-100", border: "border-slate-300", text: "text-slate-800" },
+  "Completed": { color: "green", icon: CheckCircle, bg: "bg-green-100", border: "border-green-300", text: "text-green-800" },
+  "Not Repairable": { color: "red", icon: AlertTriangle, bg: "bg-red-100", border: "border-red-300", text: "text-red-800" },
 };
 
 // ── Read-only Input Field ─────────────────────────────────────────────────────
@@ -170,8 +170,8 @@ const ServiceResponseModal = ({ entry, product, employees, fourMCategories, onSa
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-[2vw]">
-      <motion.div 
-        initial={{ scale: 0.95, opacity: 0, y: 10 }} 
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0, y: 10 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.95, opacity: 0 }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
@@ -195,7 +195,7 @@ const ServiceResponseModal = ({ entry, product, employees, fourMCategories, onSa
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-[1.5vw] space-y-[1.5vw] text-black bg-gray-50/20">
-          
+
           {/* Reference Information Section */}
           <div className="bg-white rounded-[0.6vw] border border-gray-300 shadow-sm overflow-hidden">
             <div className="bg-blue-50 px-[1vw] py-[0.6vw] border-b border-blue-100 flex items-center gap-[0.5vw]">
@@ -265,8 +265,8 @@ const ServiceResponseModal = ({ entry, product, employees, fourMCategories, onSa
                   <label className="text-[0.8vw] font-semibold text-black">
                     Error Code
                   </label>
-                  <input 
-                    value={formData.errorCode} 
+                  <input
+                    value={formData.errorCode}
                     onChange={e => {
                       sp("errorCode", e.target.value);
                       setShowErrorCodeSuggestions(true);
@@ -276,13 +276,13 @@ const ServiceResponseModal = ({ entry, product, employees, fourMCategories, onSa
                     onBlur={() => setTimeout(() => setShowErrorCodeSuggestions(false), 200)}
                     onKeyDown={handleErrorCodeKeyDown}
                     placeholder="Enter error code..."
-                    className="border border-gray-300 rounded-[0.4vw] py-[0.5vw] px-[0.6vw] text-[0.78vw] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm w-full" 
+                    className="border border-gray-300 rounded-[0.4vw] py-[0.5vw] px-[0.6vw] text-[0.78vw] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm w-full"
                   />
                   {showErrorCodeSuggestions && filteredErrorCodeSuggestions.length > 0 && (
                     <ul className="absolute z-50 w-full bg-white border border-gray-300 rounded-[0.4vw] shadow-xl max-h-[12vw] overflow-y-auto top-[100%] mt-[0.2vw]">
                       {filteredErrorCodeSuggestions.map((opt, i) => (
-                        <li 
-                          key={i} 
+                        <li
+                          key={i}
                           onClick={() => {
                             sp("errorCode", opt);
                             setShowErrorCodeSuggestions(false);
@@ -299,8 +299,8 @@ const ServiceResponseModal = ({ entry, product, employees, fourMCategories, onSa
                   <label className="text-[0.8vw] font-semibold text-black">
                     Problem Description <span className="text-red-500">*</span>
                   </label>
-                  <input 
-                    value={formData.problemDescription} 
+                  <input
+                    value={formData.problemDescription}
                     onChange={e => {
                       sp("problemDescription", e.target.value);
                       setShowSuggestions(true);
@@ -310,13 +310,13 @@ const ServiceResponseModal = ({ entry, product, employees, fourMCategories, onSa
                     onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                     onKeyDown={handleKeyDown}
                     placeholder="Enter problem identification..."
-                    className="border border-gray-300 rounded-[0.4vw] py-[0.5vw] px-[0.6vw] text-[0.78vw] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm w-full" 
+                    className="border border-gray-300 rounded-[0.4vw] py-[0.5vw] px-[0.6vw] text-[0.78vw] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm w-full"
                   />
                   {showSuggestions && filteredSuggestions.length > 0 && (
                     <ul className="absolute z-50 w-full bg-white border border-gray-300 rounded-[0.4vw] shadow-xl max-h-[12vw] overflow-y-auto top-[100%] mt-[0.2vw]">
                       {filteredSuggestions.map((opt, i) => (
-                        <li 
-                          key={i} 
+                        <li
+                          key={i}
                           onClick={() => {
                             sp("problemDescription", opt);
                             setShowSuggestions(false);
@@ -452,13 +452,13 @@ const ServiceResponseModal = ({ entry, product, employees, fourMCategories, onSa
 
 // ── Status Chips Configuration ─────────────────────────────────────────────
 const STATUS_CHIPS = [
-  { label: "All",                color: "bg-blue-600",   inactive: "text-gray-500 bg-gray-100", active: "bg-blue-600 text-white" },
-  { label: "Open",               color: "bg-gray-400",   inactive: "text-gray-600 bg-gray-100", active: "bg-gray-600 text-white" },
-  { label: "Under Testing",      color: "bg-blue-400",   inactive: "text-blue-700 bg-blue-50",  active: "bg-blue-500 text-white" },
+  { label: "All", color: "bg-blue-600", inactive: "text-gray-500 bg-gray-100", active: "bg-blue-600 text-white" },
+  { label: "Open", color: "bg-gray-400", inactive: "text-gray-600 bg-gray-100", active: "bg-gray-600 text-white" },
+  { label: "Under Testing", color: "bg-blue-400", inactive: "text-blue-700 bg-blue-50", active: "bg-blue-500 text-white" },
   { label: "Repair in Progress", color: "bg-orange-500", inactive: "text-orange-700 bg-orange-50", active: "bg-orange-500 text-white" },
-  { label: "Pending",            color: "bg-slate-500",  inactive: "text-slate-700 bg-slate-50", active: "bg-slate-500 text-white" },
-  { label: "Completed",          color: "bg-emerald-500", inactive: "text-emerald-700 bg-emerald-50", active: "bg-emerald-500 text-white" },
-  { label: "Not Repairable",     color: "bg-red-500",    inactive: "text-red-700 bg-red-50",    active: "bg-red-500 text-white" },
+  { label: "Pending", color: "bg-slate-500", inactive: "text-slate-700 bg-slate-50", active: "bg-slate-500 text-white" },
+  { label: "Completed", color: "bg-emerald-500", inactive: "text-emerald-700 bg-emerald-50", active: "bg-emerald-500 text-white" },
+  { label: "Not Repairable", color: "bg-red-500", inactive: "text-red-700 bg-red-50", active: "bg-red-500 text-white" },
 ];
 
 const StatsBar = ({ items, activeFilter, onFilterChange }) => {
@@ -476,14 +476,13 @@ const StatsBar = ({ items, activeFilter, onFilterChange }) => {
       {STATUS_CHIPS.map(chip => {
         const isActive = activeFilter === chip.label;
         const count = chip.label === "All" ? counts.All : (counts[chip.label] || 0);
-        
+
         return (
           <button
             key={chip.label}
             onClick={() => onFilterChange(chip.label)}
-            className={`flex items-center gap-[0.4vw] px-[0.8vw] py-[0.4vw] rounded-full border border-[0.15vw] transition-all text-[0.72vw] font-semibold cursor-pointer ${
-              isActive ? chip.active + " border-gray-100" : chip.inactive + " border-gray-200 hover:border-gray-300"
-            }`}
+            className={`flex items-center gap-[0.4vw] px-[0.8vw] py-[0.4vw] rounded-full border border-[0.15vw] transition-all text-[0.72vw] font-semibold cursor-pointer ${isActive ? chip.active + " border-gray-100" : chip.inactive + " border-gray-200 hover:border-gray-300"
+              }`}
           >
             <div className={`w-[0.5vw] h-[0.5vw] rounded-full ${isActive ? "bg-white" : chip.color}`} />
             <span>{chip.label}</span>
@@ -524,15 +523,88 @@ const ClaimButton = ({ onClaim }) => (
   </button>
 );
 
+// ── Service Info Modal (Read-only) ───────────────────────────────────────────
+const ServiceInfoModal = ({ entry, product, onClose }) => {
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-[2vw]">
+      <motion.div 
+        initial={{ scale: 0.95, opacity: 0 }} 
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        className="bg-white w-[55vw] max-h-[90vh] rounded-[1vw] shadow-2xl overflow-hidden flex flex-col border border-gray-400"
+      >
+        <div className="bg-gray-900 px-[1.5vw] py-[1vw] flex justify-between items-center">
+          <div className="flex items-center gap-[0.8vw]">
+            <Info className="w-[1.2vw] h-[1.2vw] text-blue-400" />
+            <h3 className="text-[1.1vw] font-bold text-white uppercase tracking-tight">Service Record Details</h3>
+          </div>
+          <button onClick={onClose} className="w-[2vw] h-[2vw] rounded-full bg-white/10 hover:bg-white/30 flex items-center justify-center text-white cursor-pointer transition-all">
+            <X className="w-[1.1vw] h-[1.1vw]" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-[1.5vw] space-y-[1.5vw] bg-gray-50/50">
+          <div className="grid grid-cols-2 gap-[1.5vw]">
+            <div className="space-y-[1vw]">
+               <h4 className="text-[0.85vw] font-bold text-blue-700 border-b border-blue-100 pb-[0.3vw]">Inward Information</h4>
+               <div className="grid grid-cols-1 gap-[0.8vw]">
+                 <RefInput label="Registration Date" value={fmtDate(entry.date)} />
+                 <RefInput label="Job Order No" value={entry.jobOrderNo} />
+                 <RefInput label="Reference No" value={entry.refNoInternal} />
+                 <RefInput label="Customer" value={entry.customerName} />
+               </div>
+            </div>
+            <div className="space-y-[1vw]">
+               <h4 className="text-[0.85vw] font-bold text-emerald-700 border-b border-emerald-100 pb-[0.3vw]">Product Details</h4>
+               <div className="grid grid-cols-1 gap-[0.8vw]">
+                 <RefInput label="Description" value={product.productDescription} />
+                 <RefInput label="Code" value={product.productCode} />
+                 <RefInput label="Qty" value={product.qty || "1"} />
+                 <RefInput label="Serial Number" value={product.serialNumber} />
+                 <RefInput label="Board Type" value={product.boardType} />
+               </div>
+            </div>
+          </div>
+
+          {product.report && (
+            <div className="space-y-[1vw] mt-[1vw] p-[1vw] bg-white rounded-[0.6vw] border border-gray-200">
+               <h4 className="text-[0.85vw] font-bold text-gray-800 border-b border-gray-100 pb-[0.3vw]">Technical Report</h4>
+               <div className="grid grid-cols-2 gap-[1vw]">
+                 <RefInput label="Root Cause" value={product.report.rootCause} span={2} />
+                 <RefInput label="Corrective Action" value={product.report.correctiveAction} span={2} />
+                 <RefInput label="Parts Replaced" value={product.report.partsReplacement} span={2} />
+                 <RefInput label="Fault Found" value={product.report.faultFound} span={2} />
+                 <RefInput label="Verified By" value={product.report.verifiedByName} />
+                 <RefInput label="Status" value={product.report.status} />
+               </div>
+            </div>
+          )}
+        </div>
+        <div className="p-[1vw] border-t border-gray-200 bg-gray-50 text-right">
+          <button onClick={onClose} className="px-[1.5vw] py-[0.5vw] bg-gray-800 text-white rounded-[0.4vw] font-bold text-[0.8vw] cursor-pointer">Close View</button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function ServiceMaterialInwardResponse({ currentUser: propUser }) {
-  const [entries,     setEntries]     = useState([]);
-  const [employees,   setEmployees]   = useState([]);
+  const [entries, setEntries] = useState([]);
+  const [employees, setEmployees] = useState([]);
   const [fourMCategories, setFourMCategories] = useState([]);
   const [currentUser, setCurrentUser] = useState(propUser || null);
-  const [selected,    setSelected]    = useState(null);
-  const [hoveredRow,  setHoveredRow]  = useState(null);
+  const [selected, setSelected] = useState(null);
+  const [infoSelected, setInfoSelected] = useState(null);
+  const [hoveredRow, setHoveredRow] = useState(null);
   const [filterStatus, setFilterStatus] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  // Reset pagination when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterStatus]);
 
   // Load current user from storage if not provided
   useEffect(() => { if (propUser) setCurrentUser(propUser); }, [propUser]);
@@ -546,7 +618,7 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
         try {
           const parsed = JSON.parse(raw);
           if (parsed?.userId || parsed?.id) { setCurrentUser(parsed); return; }
-        } catch {}
+        } catch { }
       }
     }
   }, [propUser]);
@@ -588,21 +660,28 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
         }
       });
     });
-    return res;
+    return res.sort((a, b) => (a.entry.customerName || "").localeCompare(b.entry.customerName || ""));
   }, [entries, filterStatus]);
+
+  const paginatedItems = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return myItems.slice(startIndex, startIndex + itemsPerPage);
+  }, [myItems, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(myItems.length / itemsPerPage);
 
   const { errorCodeHistory, problemDescHistory } = useMemo(() => {
     const codes = new Set();
     const descs = new Set();
     entries.forEach(e => {
-        e.products?.forEach(p => {
-            if (p.report?.errorCode) codes.add(p.report.errorCode);
-            if (p.report?.problemDescription) descs.add(p.report.problemDescription);
-        });
+      e.products?.forEach(p => {
+        if (p.report?.errorCode) codes.add(p.report.errorCode);
+        if (p.report?.problemDescription) descs.add(p.report.problemDescription);
+      });
     });
-    return { 
-        errorCodeHistory: Array.from(codes),
-        problemDescHistory: Array.from(descs)
+    return {
+      errorCodeHistory: Array.from(codes),
+      problemDescHistory: Array.from(descs)
     };
   }, [entries]);
 
@@ -637,22 +716,23 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
 
   // Table columns configuration
   const columns = [
-    { key: "sno",      label: "S.No",        width: "w-[3vw]",   align: "text-center" },
-    { key: "date",     label: "Date",        width: "w-[7vw]",   align: "text-left" },
-    { key: "ref",      label: "Ref No",      width: "w-[7vw]",   align: "text-left" },
-    { key: "customer", label: "Customer",    width: "w-[12vw]",  align: "text-left" },
-    { key: "product",  label: "Product",     width: "w-[12vw]",  align: "text-left" },
-    { key: "board",    label: "Board Type",  width: "w-[8vw]",   align: "text-left" },
-    { key: "serial",   label: "Serial No",   width: "w-[8vw]",   align: "text-left" },
-    { key: "status",   label: "Status",      width: "w-[10vw]",  align: "text-center" },
-    { key: "remarks",   label: "Remarks",      width: "w-[10vw]",  align: "text-center" },
-    { key: "action",   label: "Action",      width: "w-[6vw]",   align: "text-center" },
+    { key: "sno", label: "S.No", width: "w-[3vw]", align: "text-center" },
+    { key: "date", label: "Date", width: "w-[7vw]", align: "text-left" },
+    { key: "ref", label: "Ref No", width: "w-[7vw]", align: "text-left" },
+    { key: "customer", label: "Customer", width: "w-[12vw]", align: "text-left" },
+    { key: "product", label: "Product", width: "w-[12vw]", align: "text-left" },
+    { key: "board", label: "Board Type", width: "w-[8vw]", align: "text-left" },
+    { key: "serial", label: "Serial No", width: "w-[8vw]", align: "text-left" },
+    { key: "status", label: "Status", width: "w-[10vw]", align: "text-center" },
+    { key: "remarks", label: "Remarks", width: "w-[10vw]", align: "text-center" },
+    { key: "info", label: "Info", width: "w-[4vw]", align: "text-center" },
+    { key: "action", label: "Action", width: "w-[7vw]", align: "text-center" },
   ];
 
   return (
     <div className="w-full font-sans">
       {/* Header */}
-      <div className="flex items-center justify-between mb-[1vw]">
+      <div className="flex items-center justify-between mb-[1vw] bg-white p-[0.8vw] rounded-[0.8vw] border border-gray-200 shadow-sm">
         <div className="flex items-center gap-[0.6vw]">
           <div className="w-[2.2vw] h-[2.2vw] rounded-[0.5vw] bg-gradient-to-br from-blue-700 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-800/20">
             <Package className="w-[1.1vw] h-[1.1vw] text-white" />
@@ -662,30 +742,60 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
             <p className="text-[0.68vw] text-gray-500 font-medium italic">Service material inward items and reporting</p>
           </div>
         </div>
-        {myItems.length >= 0 && (
-          <StatsBar 
-            items={entries.flatMap(e => e.products?.map(p => ({ product: p })) || [])} 
-            activeFilter={filterStatus} 
-            onFilterChange={setFilterStatus} 
-          />
-        )}
+
+        <div className="flex items-center gap-[1.2vw]">
+          {/* Quick Pagination (Top) */}
+          {myItems.length > 0 && (
+            <div className="flex items-center gap-[0.6vw] bg-blue-50/50 px-[0.8vw] py-[0.4vw] rounded-full border border-blue-100 shadow-inner">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                className="w-[1.4vw] h-[1.4vw] flex items-center justify-center rounded-full bg-white border border-blue-200 text-blue-600 hover:bg-blue-600 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm"
+              >
+                <ChevronLeft className="w-[0.8vw] h-[0.8vw]" />
+              </button>
+              <div className="flex items-center gap-[0.3vw] min-w-[4.5vw] justify-center">
+                <span className="text-[0.75vw] font-bold text-blue-700">{currentPage}</span>
+                <span className="text-[0.65vw] font-medium text-blue-300 italic">of</span>
+                <span className="text-[0.75vw] font-bold text-gray-600">{totalPages || 1}</span>
+              </div>
+              <button
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                className="w-[1.4vw] h-[1.4vw] flex items-center justify-center rounded-full bg-white border border-blue-200 text-blue-600 hover:bg-blue-600 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm"
+              >
+                <ChevronRight className="w-[0.8vw] h-[0.8vw]" />
+              </button>
+            </div>
+          )}
+
+          <div className="h-[2vw] w-[1px] bg-gray-200 mx-[0.2vw]" />
+
+          {myItems.length >= 0 && (
+            <StatsBar
+              items={entries.flatMap(e => e.products?.map(p => ({ product: p })) || [])}
+              activeFilter={filterStatus}
+              onFilterChange={setFilterStatus}
+            />
+          )}
+        </div>
       </div>
 
       {/* Content */}
       {myItems.length === 0 ? (
         <EmptyState />
       ) : (
-        <div className="bg-white rounded-[0.6vw] border border-gray-300 overflow-hidden shadow-sm">
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-max border-collapse">
+        <div className="bg-white rounded-[0.6vw] border border-gray-300 overflow-hidden shadow-sm flex flex-col h-fit max-h-[72vh]">
+          {/* Table Container with Internal Scroll */}
+          <div className="overflow-auto flex-1">
+            <table className="w-full min-w-max border-separate border-spacing-0">
               {/* Table Header */}
-              <thead>
-                <tr className="bg-blue-50/50 border-b-2 border-blue-100">
+              <thead className="sticky top-0 z-20 shadow-sm">
+                <tr className="bg-blue-50/95 backdrop-blur-md">
                   {columns.map((col) => (
-                    <th 
+                    <th
                       key={col.key}
-                      className={`${col.width} ${col.align} px-[0.8vw] py-[0.8vw] text-[0.82vw] font-semibold text-black uppercase whitespace-nowrap opacity-90 border border-gray-300`}
+                      className={`${col.width} ${col.align} px-[0.8vw] py-[0.8vw] text-[0.82vw] font-semibold text-black uppercase whitespace-nowrap border-b border-r border-blue-200 last:border-r-0`}
                     >
                       {col.label}
                     </th>
@@ -695,137 +805,215 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
 
               {/* Table Body */}
               <tbody className="divide-y divide-gray-100">
-                {myItems.map(({ entry, product }, idx) => {
-                  const pStatus = product.status || product.report?.status || "Open";
-                  const pRemark = product.remark || product.report?.currentRemark || "—";
-                  const statusCfg = STATUS_CONFIG[pStatus] || STATUS_CONFIG["Open"];
-                  const StatusIcon = statusCfg.icon;
-                  const isHovered = hoveredRow === idx;
+                {(() => {
+                  let lastCustomer = null;
+                  return paginatedItems.map(({ entry, product }, idx) => {
+                    const isNewCustomer = entry.customerName !== lastCustomer;
+                    lastCustomer = entry.customerName;
 
-                  return (
-                    <motion.tr
-                      key={`${entry.id}-${product._pid}`}
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.03 }}
-                      onMouseEnter={() => setHoveredRow(idx)}
-                      onMouseLeave={() => setHoveredRow(null)}
-                      className={`transition-all duration-150 ${isHovered ? "bg-gray-50" : "bg-white"}`}
-                    >
-                      {/* S.No */}
-                      <td className="px-[0.8vw] py-[0.7vw] text-center border border-gray-300">
-                        <span className="inline-flex items-center justify-center w-[1.5vw] h-[1.5vw] rounded-full bg-gray-100 text-[0.68vw] font-bold text-gray-600">
-                          {idx + 1}
-                        </span>
-                      </td>
+                    const pStatus = product.status || product.report?.status || "Open";
+                    const pRemark = product.remark || product.report?.currentRemark || "—";
+                    const statusCfg = STATUS_CONFIG[pStatus] || STATUS_CONFIG["Open"];
+                    const StatusIcon = statusCfg.icon;
+                    const isHovered = hoveredRow === idx;
 
-                      {/* Date */}
-                      <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
-                        <div className="flex items-center gap-[0.3vw]">
-                          <Calendar className="w-[0.75vw] h-[0.75vw] text-blue-600" />
-                          <span className="text-[0.75vw] text-gray-700 font-medium">
-                            {entry.date ? fmtDate(entry.date) : "—"}
-                          </span>
-                        </div>
-                      </td>
-
-                      {/* Ref No */}
-                      <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
-                        <span className="text-[0.75vw] font-bold text-gray-800 ">
-                          {entry.refNoCustomer || entry.refNo || "—"}
-                        </span>
-                      </td>
-
-                      {/* Customer */}
-                      <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
-                        <div className="flex items-center gap-[0.5vw]">
-                          <div className="w-[1.6vw] h-[1.6vw] rounded-full bg-gradient-to-br from-blue-700 to-blue-600 flex items-center justify-center text-white text-[0.55vw] font-bold flex-shrink-0">
-                            {entry.customerName?.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase() || "?"}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="text-[0.75vw] font-semibold text-gray-800 break-words whitespace-normal">{entry.customerName}</div>
-                            <div className="text-[0.65vw] text-gray-600 mt-[.2vw]">CUS: {entry.customerCode || "—"}</div>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Product */}
-                      <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
-                        <div className="min-w-0">
-                          <div className="text-[0.75vw] font-semibold text-gray-800 break-words whitespace-normal" title={product.productDescription}>
-                            {product.productDescription}
-                          </div>
-                          <div className="text-[0.65vw] text-gray-600 mt-[.2vw]">{product.productCode || "—"}</div>
-                        </div>
-                      </td>
-
-                      {/* Board Type */}
-                      <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
-                        <span className="text-[0.75vw] font-semibold text-gray-700">
-                          {product.boardType || "—"}
-                        </span>
-                      </td>
-
-                      {/* Serial No */}
-                      <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
-                        <span className="text-[0.75vw]  font-semibold text-gray-700">
-                          {product.serialNumber || "—"}
-                        </span>
-                      </td>
-
-                      {/* Status */}
-                      <td className="px-[0.8vw] py-[0.7vw] text-center border border-gray-300">
-                        <span className={`inline-flex items-center gap-[0.3vw] px-[0.6vw] py-[0.25vw] rounded-full border text-[0.68vw] font-semibold ${statusCfg.bg} ${statusCfg.border} ${statusCfg.text}`}>
-                          <StatusIcon className="w-[0.8vw] h-[0.8vw]" />
-                          {pStatus}
-                        </span>
-                      </td>
-                      
-                      {/* Remarks */}
-                      <td className="px-[0.8vw] py-[0.7vw] text-center border border-gray-300 text-[0.75vw] text-gray-700 font-medium">
-                        {pRemark}
-                      </td>
-
-                      {/* Action */}
-                      <td className="px-[0.8vw] py-[0.7vw] text-center border border-gray-300">
-                        {product.assignedTo ? (
-                          product.assignedTo === (currentUser?.userId || currentUser?.id) ? (
-                            <button
-                                onClick={() => setSelected({ entry, product })}
-                                className={`inline-flex items-center gap-[0.25vw] px-[0.7vw] py-[0.35vw] rounded-[0.35vw] text-[0.85vw] font-semibold cursor-pointer transition-all ${
-                                    isHovered 
-                                    ? "bg-blue-600 text-white shadow-md shadow-blue-900/10 scale-105" 
-                                    : "bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-100"
-                                }`}
-                            >
-                                <Eye className="w-[0.75vw] h-[0.75vw]" />
-                                Report
-                            </button>
-                          ) : (
-                            <div className="flex flex-col items-center gap-[0.2vw]">
-                                <Badge label="Claimed" color="slate" size="xs" />
-                                <span className="text-[0.6vw] text-gray-800 font-bold">{product.assignedToName}</span>
-                            </div>
-                          )
-                        ) : (
-                          <ClaimButton onClaim={() => claimProduct(entry.id, product._pid)} />
+                    return (
+                      <React.Fragment key={`${entry.id}-${product._pid}`}>
+                        {isNewCustomer && (
+                          <tr className="bg-blue-50/40 border-y border-blue-100 sticky top-[2.8vw] z-10 backdrop-blur-sm">
+                            <td colSpan={columns.length} className="px-[1vw] py-[0.5vw] border-b border-blue-100">
+                              <div className="flex items-center gap-[0.6vw]">
+                                <div className="w-[0.35vw] h-[1.1vw] bg-blue-600 rounded-full" />
+                                <span className="text-[0.82vw] font-bold text-blue-800 uppercase tracking-wide">
+                                  {entry.customerName}
+                                </span>
+                                <span className="text-[0.62vw] text-blue-600 font-bold px-[0.5vw] py-[0.05vw] bg-white rounded-full border border-blue-200 ml-[0.4vw] shadow-sm">
+                                  {entry.customerCode || "N/A"}
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
                         )}
-                      </td>
-                    </motion.tr>
-                  );
-                })}
+                        <motion.tr
+                          initial={{ opacity: 0, y: 5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: (idx % itemsPerPage) * 0.03 }}
+                          onMouseEnter={() => setHoveredRow(idx)}
+                          onMouseLeave={() => setHoveredRow(null)}
+                          className={`transition-all duration-150 ${isHovered ? "bg-blue-50/30" : "bg-white"}`}
+                        >
+                          {/* S.No */}
+                          <td className="px-[0.8vw] py-[0.7vw] text-center border border-gray-300">
+                            <span className="inline-flex items-center justify-center w-[1.5vw] h-[1.5vw] rounded-full bg-gray-100 text-[0.68vw] font-bold text-gray-600">
+                              {((currentPage - 1) * itemsPerPage) + idx + 1}
+                            </span>
+                          </td>
+
+                          {/* Date */}
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                            <div className="flex items-center gap-[0.3vw]">
+                              <Calendar className="w-[0.75vw] h-[0.75vw] text-blue-600" />
+                              <span className="text-[0.75vw] text-gray-700 font-medium">
+                                {entry.date ? fmtDate(entry.date) : "—"}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* Ref No */}
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                            <span className="text-[0.75vw] font-semibold text-gray-800 ">
+                              {entry.refNoCustomer || entry.refNo || "—"}
+                            </span>
+                          </td>
+
+                          {/* Customer */}
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                            <div className="flex items-center gap-[0.5vw]">
+                              <div className="w-[1.6vw] h-[1.6vw] rounded-full bg-gradient-to-br from-blue-700 to-blue-600 flex items-center justify-center text-white text-[0.55vw] font-bold flex-shrink-0">
+                                {entry.customerName?.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase() || "?"}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="text-[0.75vw] font-semibold text-gray-800 break-words whitespace-normal">{entry.customerName}</div>
+                                <div className="text-[0.65vw] text-gray-600 mt-[.2vw]">CUS: {entry.customerCode || "—"}</div>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Product */}
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                            <div className="min-w-0">
+                              <div className="text-[0.75vw] font-semibold text-gray-800 break-words whitespace-normal" title={product.productDescription}>
+                                {product.productDescription}
+                              </div>
+                              <div className="text-[0.65vw] text-gray-600 mt-[.2vw]">{product.productCode || "—"}</div>
+                            </div>
+                          </td>
+
+                          {/* Board Type */}
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                            <span className="text-[0.75vw] font-semibold text-gray-700">
+                              {product.boardType || "—"}
+                            </span>
+                          </td>
+
+                          {/* Serial No */}
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                            <span className="text-[0.75vw]  font-semibold text-gray-700">
+                              {product.serialNumber || "—"}
+                            </span>
+                          </td>
+
+                          {/* Status */}
+                          <td className="px-[0.8vw] py-[0.7vw] text-center border border-gray-300">
+                            <span className={`inline-flex items-center gap-[0.3vw] px-[0.6vw] py-[0.25vw] rounded-full border text-[0.68vw] font-semibold ${statusCfg.bg} ${statusCfg.border} ${statusCfg.text}`}>
+                              <StatusIcon className="w-[0.8vw] h-[0.8vw]" />
+                              {pStatus}
+                            </span>
+                          </td>
+
+                          {/* Remarks */}
+                          <td className="px-[0.8vw] py-[0.7vw] text-center border border-gray-300 text-[0.75vw] text-gray-700 font-semibold">
+                            {pRemark}
+                          </td>
+
+                          {/* Info */}
+                          <td className="px-[0.8vw] py-[0.7vw] text-center border border-gray-300">
+                             <button 
+                               onClick={() => setInfoSelected({ entry, product })}
+                               className="w-[1.8vw] h-[1.8vw] rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all cursor-pointer shadow-sm border border-blue-100 mx-auto"
+                               title="View Details"
+                             >
+                               <Eye className="w-[0.9vw] h-[0.9vw]" />
+                             </button>
+                          </td>
+
+                          {/* Action */}
+                          <td className="px-[0.8vw] py-[0.7vw] text-center border border-gray-300">
+                            {product.assignedTo ? (
+                              product.assignedTo === (currentUser?.userId || currentUser?.id) ? (
+                                <button
+                                  onClick={() => setSelected({ entry, product })}
+                                  className={`inline-flex items-center gap-[0.25vw] px-[0.7vw] py-[0.35vw] rounded-[0.35vw] text-[0.85vw] font-semibold cursor-pointer transition-all ${isHovered
+                                      ? "bg-blue-600 text-white shadow-md shadow-blue-900/10 scale-105"
+                                      : "bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-100"
+                                    }`}
+                                >
+                                  <Edit3 className="w-[0.75vw] h-[0.75vw]" />
+                                  Report
+                                </button>
+                              ) : (
+                                <div className="flex flex-col items-center gap-[0.2vw]">
+                                  <Badge label="Claimed" color="slate" size="xs" />
+                                  <span className="text-[0.6vw] text-gray-800 font-bold">{product.assignedToName}</span>
+                                </div>
+                              )
+                            ) : (
+                              <ClaimButton onClaim={() => claimProduct(entry.id, product._pid)} />
+                            )}
+                          </td>
+                        </motion.tr>
+                      </React.Fragment>
+                    );
+                  });
+                })()}
               </tbody>
             </table>
           </div>
 
           {/* Table Footer */}
-          <div className="bg-gray-50 border-t border-gray-200 px-[1vw] py-[0.5vw] flex items-center justify-between">
-            <span className="text-[0.72vw] text-gray-500">
-              Showing <strong className="text-gray-700">{myItems.length}</strong> assigned {myItems.length === 1 ? "product" : "products"}
-            </span>
-            <div className="flex items-center gap-[0.3vw] text-[0.68vw] text-gray-800">
-              <Clock className="w-[0.85vw] h-[0.85vw]" />
-              Auto-refreshes every 3 seconds
+          <div className="bg-gray-50 border-t border-gray-200 px-[1.2vw] py-[0.6vw] flex items-center justify-between">
+            <div className="flex items-center gap-[1.5vw]">
+              <span className="text-[0.72vw] text-gray-500 font-medium">
+                Showing <strong className="text-gray-800">{paginatedItems.length}</strong> of <strong className="text-gray-800">{myItems.length}</strong> assigned products
+              </span>
+
+              {/* Pagination Controls */}
+              <div className="flex items-center gap-[1vw] border-l border-gray-300 pl-[1.5vw]">
+                <div className="flex items-center gap-[0.5vw]">
+                  <span className="text-[0.68vw] text-gray-500 font-bold uppercase tracking-wider">Rows per page:</span>
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => {
+                      setItemsPerPage(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="bg-white border border-gray-300 rounded-[0.3vw] px-[0.4vw] py-[0.15vw] text-[0.72vw] font-bold text-blue-700 outline-none focus:border-blue-500 transition-all cursor-pointer shadow-sm"
+                  >
+                    {[10, 20, 50, 100].map(v => <option key={v} value={v}>{v}</option>)}
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-[0.6vw]">
+                  <button
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    className="p-[0.3vw] rounded-[0.4vw] bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm group"
+                    title="Previous Page"
+                  >
+                    <ChevronLeft className="w-[1vw] h-[1vw] text-gray-600 group-hover:text-blue-600" />
+                  </button>
+
+                  <div className="flex items-center gap-[0.4vw] px-[0.6vw] py-[0.15vw] bg-blue-50 border border-blue-100 rounded-[0.3vw]">
+                    <span className="text-[0.72vw] font-bold text-blue-700">{currentPage}</span>
+                    <span className="text-[0.65vw] font-medium text-blue-300">/</span>
+                    <span className="text-[0.72vw] font-bold text-gray-600">{totalPages || 1}</span>
+                  </div>
+
+                  <button
+                    disabled={currentPage >= totalPages}
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    className="p-[0.3vw] rounded-[0.4vw] bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm group"
+                    title="Next Page"
+                  >
+                    <ChevronRight className="w-[1vw] h-[1vw] text-gray-600 group-hover:text-blue-600" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-[0.4vw] px-[0.8vw] py-[0.3vw] bg-emerald-50 border border-emerald-100 rounded-full">
+              <div className="w-[0.4vw] h-[0.4vw] rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[0.65vw] font-bold text-emerald-700 uppercase tracking-widest">Live Sync Enabled</span>
             </div>
           </div>
         </div>
@@ -846,6 +1034,15 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
             fourMCategories={fourMCategories}
             errorCodeHistory={errorCodeHistory}
             problemDescHistory={problemDescHistory}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {infoSelected && (
+          <ServiceInfoModal
+            entry={infoSelected.entry}
+            product={infoSelected.product}
+            onClose={() => setInfoSelected(null)}
           />
         )}
       </AnimatePresence>

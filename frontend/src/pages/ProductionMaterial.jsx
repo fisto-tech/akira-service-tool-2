@@ -912,14 +912,14 @@ export default function ProductionMaterial() {
                       </button>
                     </th>
                     {["S.No", "Date", "Job Order No", "Customer", "Cus Code", "Category"].map(h => (
-                      <th key={h} rowSpan={2} className="px-[0.6vw] py-[0.5vw] font-bold text-blue-900 text-center border-b-2 border-r border-gray-300 whitespace-nowrap text-[0.78vw] align-middle bg-blue-50">{h}</th>
+                      <th key={h} rowSpan={2} className="px-[0.6vw] py-[0.5vw] font-semibold text-black text-center border-b-2 border-r border-gray-300 whitespace-nowrap text-[0.78vw] align-middle bg-blue-50">{h}</th>
                     ))}
-                    <th colSpan={7} className="px-[0.6vw] py-[0.4vw] font-bold text-blue-900 border-b border-r border-gray-300 text-center text-[0.78vw] bg-blue-100/50">Product Manifest Details</th>
-                    <th rowSpan={2} className="px-[0.8vw] py-[0.5vw] font-bold text-blue-900 text-center border-b-2 border-l border-gray-300 whitespace-nowrap text-[0.78vw] align-middle bg-blue-50 sticky right-0 z-30 shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.05)]">Actions</th>
+                    <th colSpan={7} className="px-[0.6vw] py-[0.4vw] font-semibold text-black border-b border-r border-gray-300 text-center text-[0.78vw] bg-blue-100/50">Product Manifest Details</th>
+                    <th rowSpan={2} className="px-[0.8vw] py-[0.5vw] font-semibold text-black text-center border-b-2 border-l border-gray-300 whitespace-nowrap text-[0.78vw] align-middle bg-blue-50 sticky right-0 z-30 shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.05)]">Actions</th>
                   </tr>
                   <tr>
                     {["Item Code", "Description", "Stage", "Qty", "Serial/Batch", "Final Status", "Final Remarks"].map((h, i) => (
-                      <th key={h} className="px-[0.6vw] py-[0.4vw] font-bold text-blue-800 text-center border-b-2 border-r border-gray-300 whitespace-nowrap text-[0.72vw] bg-blue-50">{h}</th>
+                      <th key={h} className="px-[0.6vw] py-[0.4vw] font-semibold text-blue-800 text-center border-b-2 border-r border-gray-300 whitespace-nowrap text-[0.72vw] bg-blue-50">{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -939,20 +939,20 @@ export default function ProductionMaterial() {
                                 </button>
                               </td>
                               <td rowSpan={span} className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-bold text-gray-900 text-[0.78vw]">{(currentPage - 1) * ITEMS_PER_PAGE + i + 1}</td>
-                              <td rowSpan={span} className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-bold text-gray-700 text-[0.78vw]">{fmtDate(row.date)}</td>
-                              <td rowSpan={span} className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center text-[0.78vw] font-bold text-blue-700">{row.jobOrderNo || "—"}</td>
-                              <td rowSpan={span} className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-bold text-gray-900 text-[0.75vw] max-w-[10vw] truncate">{row.customerName || "—"}</td>
-                              <td rowSpan={span} className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle font-bold text-gray-600 text-[0.72vw]">{row.customerCode || "—"}</td>
-                              <td rowSpan={span} className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle"><span className="text-[0.68vw] font-bold bg-blue-100 text-blue-700 px-[0.4vw] py-[0.1vw] rounded">{row.category || "—"}</span></td>
+                              <td rowSpan={span} className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-gray-700 text-[0.78vw]">{fmtDate(row.date)}</td>
+                              <td rowSpan={span} className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center text-[0.78vw] font-semibold text-blue-700">{row.jobOrderNo || "—"}</td>
+                              <td rowSpan={span} className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-gray-900 text-[0.75vw] max-w-[10vw] truncate">{row.customerName || "—"}</td>
+                              <td rowSpan={span} className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle font-semibold text-gray-600 text-[0.72vw]">{row.customerCode || "—"}</td>
+                              <td rowSpan={span} className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle"><span className="text-[0.68vw] font-semibold bg-blue-100 text-blue-700 px-[0.4vw] py-[0.1vw] rounded">{row.category || "—"}</span></td>
                             </>
                           )}
-                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle font-bold text-gray-600 text-[0.72vw]">{prod.productCode || "—"}</td>
-                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-bold text-gray-900 text-[0.72vw] truncate max-w-[10vw]">{prod.productDescription || "—"}</td>
-                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle"><span className="text-[0.72vw] font-bold text-gray-900">{prod.stage || "Assembly"}</span></td>
-                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle font-black text-black text-[0.75vw]">{prod.qty || "1"}</td>
-                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-bold text-gray-700 text-[0.72vw]">{prod.serialNumber || "—"}</td>
+                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle font-semibold text-gray-600 text-[0.72vw]">{prod.productCode || "—"}</td>
+                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-gray-900 text-[0.72vw] truncate max-w-[10vw]">{prod.productDescription || "—"}</td>
+                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle"><span className="text-[0.72vw] font-semibold text-gray-900">{prod.stage || "Assembly"}</span></td>
+                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle font-semibold text-black text-[0.75vw]">{prod.qty || "1"}</td>
+                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-gray-700 text-[0.72vw]">{prod.serialNumber || "—"}</td>
                           <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center"><FinalStatusCell row={row} prod={prod} onUpdateProduct={onUpdateProduct} /></td>
-                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-bold text-gray-900 text-[0.72vw] truncate max-w-[10vw]">{prod.finalStatusRemarks || "—"}</td>
+                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-gray-900 text-[0.72vw] truncate max-w-[10vw]">{prod.finalStatusRemarks || "—"}</td>
                           {pi === 0 && (
                             <td rowSpan={span} className={`px-[0.8vw] py-[0.7vw] text-center align-middle border-l border-gray-200 sticky right-0 z-10 shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.05)] ${isSelected ? "bg-blue-50/50" : "bg-white"}`}>
                               <div className="flex items-center justify-center gap-[0.6vw]">

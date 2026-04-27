@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   Package, Clock, User, CheckCircle, AlertCircle, X, Eye, Send,
   FileText, Calendar, Hash, Tag, Wrench,
-  AlertTriangle, Info, ChevronDown, Plus, Search, Check, Edit3
+  AlertTriangle, Info, ChevronDown, ChevronLeft, ChevronRight, Plus, Search, Check, Edit3
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
@@ -393,7 +393,69 @@ const ProductionResponseModal = ({ entry, product, employees, fourMCategories, o
   );
 };
 
-// ── Main Page Component ────────────────────────────────────────────────────────
+// ── Production Info Modal (Read-only) ───────────────────────────────────────────
+const ProductionInfoModal = ({ entry, product, onClose }) => {
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-[2vw]">
+      <motion.div 
+        initial={{ scale: 0.95, opacity: 0 }} 
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        className="bg-white w-[50vw] max-h-[90vh] rounded-[1vw] shadow-2xl overflow-hidden flex flex-col border border-gray-400"
+      >
+        <div className="bg-gray-900 px-[1.5vw] py-[1vw] flex justify-between items-center">
+          <div className="flex items-center gap-[0.8vw]">
+            <Info className="w-[1.2vw] h-[1.2vw] text-blue-400" />
+            <h3 className="text-[1.1vw] font-bold text-white uppercase tracking-tight">Technical Record Details</h3>
+          </div>
+          <button onClick={onClose} className="w-[2vw] h-[2vw] rounded-full bg-white/10 hover:bg-white/30 flex items-center justify-center text-white cursor-pointer transition-all">
+            <X className="w-[1.1vw] h-[1.1vw]" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-[1.5vw] space-y-[1.5vw] bg-gray-50/50">
+          <div className="grid grid-cols-2 gap-[1.5vw]">
+            <div className="space-y-[1vw]">
+               <h4 className="text-[0.85vw] font-bold text-blue-700 border-b border-blue-100 pb-[0.3vw]">Inward Information</h4>
+               <div className="grid grid-cols-1 gap-[0.8vw]">
+                 <RefInput label="Registration Date" value={fmtDate(entry.date)} />
+                 <RefInput label="Job Order No" value={entry.jobOrderNo} />
+                 <RefInput label="Reference No" value={entry.refNoInternal} />
+                 <RefInput label="Customer" value={entry.customerName} />
+               </div>
+            </div>
+            <div className="space-y-[1vw]">
+               <h4 className="text-[0.85vw] font-bold text-emerald-700 border-b border-emerald-100 pb-[0.3vw]">Product Details</h4>
+               <div className="grid grid-cols-1 gap-[0.8vw]">
+                 <RefInput label="Description" value={product.productDescription} />
+                 <RefInput label="Code" value={product.productCode} />
+                 <RefInput label="Qty" value={product.qty || "1"} />
+                 <RefInput label="Serial Number" value={product.serialNumber} />
+                 <RefInput label="Current Status" value={product.report?.status || "Open"} />
+               </div>
+            </div>
+          </div>
+
+          {product.report && (
+            <div className="space-y-[1vw] mt-[1vw] p-[1vw] bg-white rounded-[0.6vw] border border-gray-200">
+               <h4 className="text-[0.85vw] font-bold text-gray-800 border-b border-gray-100 pb-[0.3vw]">Technical Report</h4>
+               <div className="grid grid-cols-2 gap-[1vw]">
+                 <RefInput label="Root Cause" value={product.report.rootCause} span={2} />
+                 <RefInput label="Corrective Action" value={product.report.correctiveAction} span={2} />
+                 <RefInput label="Parts Replaced" value={product.report.partsReplacement} span={2} />
+                 <RefInput label="Verified By" value={product.report.verifiedByName} />
+                 <RefInput label="Closed Date" value={fmtDate(product.report.closedDate)} />
+               </div>
+            </div>
+          )}
+        </div>
+        <div className="p-[1vw] border-t border-gray-200 bg-gray-50 text-right">
+          <button onClick={onClose} className="px-[1.5vw] py-[0.5vw] bg-gray-800 text-white rounded-[0.4vw] font-bold text-[0.8vw] cursor-pointer">Close View</button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
 export default function ProductionMaterialResponse() {
   const { toast } = useNotification();
   const [entries, setEntries] = useState([]);
@@ -401,8 +463,16 @@ export default function ProductionMaterialResponse() {
   const [fourMCategories, setFourMCategories] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [selected, setSelected] = useState(null);
+  const [infoSelected, setInfoSelected] = useState(null);
   const [filterStatus, setFilterStatus] = useState("All");
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  // Reset pagination when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterStatus]);
 
   // Load User
   useEffect(() => {
@@ -473,8 +543,15 @@ export default function ProductionMaterialResponse() {
         }
       });
     });
-    return list;
+    return list.sort((a, b) => (a.entry.customerName || "").localeCompare(b.entry.customerName || ""));
   }, [entries, filterStatus]);
+
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return allProducts.slice(startIndex, startIndex + itemsPerPage);
+  }, [allProducts, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(allProducts.length / itemsPerPage);
 
   const caeHistory = useMemo(() => {
     const set = new Set();
@@ -498,30 +575,59 @@ export default function ProductionMaterialResponse() {
             <Package className="w-[1.4vw] h-[1.4vw] text-white" />
           </div>
           <div>
-            <h1 className="text-[1.2vw] font-black text-gray-900 tracking-tight">PRODUCTION RESPONSE PANEL</h1>
-            <p className="text-[0.75vw] text-gray-500 font-bold uppercase tracking-widest mt-[0.1vw]">Resolution & Technical Reporting</p>
+            <h1 className="text-[1.2vw] font-bold text-blue-600 ">PRODUCTION NC</h1>
+            <p className="text-[0.75vw] text-gray-500 font-medium italic">Resolution & Technical Reporting</p>
           </div>
         </div>
 
-        {/* Stats Bar */}
-        <div className="flex items-center gap-[0.6vw]">
-          {["All", "Open", "Under Testing", "Repair in Progress", "Pending", "Completed", "Not Repairable"].map(label => {
-            const count = label === "All" 
-              ? entries.reduce((acc, e) => acc + (e.products?.length || 0), 0)
-              : entries.reduce((acc, e) => acc + (e.products?.filter(p => (p.report?.status || "Open") === label).length || 0), 0);
-            const active = filterStatus === label;
-            
-            return (
-              <button
-                key={label}
-                onClick={() => setFilterStatus(label)}
-                className={`px-[0.8vw] py-[0.4vw] rounded-full text-[0.72vw] font-bold flex items-center gap-[0.4vw] transition-all border-2 cursor-pointer shadow-sm ${active ? "bg-blue-600 border-blue-600 text-white" : "bg-white border-gray-200 text-gray-600 hover:border-blue-400"}`}
+        <div className="flex items-center gap-[1.2vw]">
+          {/* Quick Pagination (Top) */}
+          {allProducts.length > 0 && (
+            <div className="flex items-center gap-[0.6vw] bg-blue-50/50 px-[0.8vw] py-[0.4vw] rounded-full border border-blue-100 shadow-inner">
+              <button 
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                className="w-[1.4vw] h-[1.4vw] flex items-center justify-center rounded-full bg-white border border-blue-200 text-blue-600 hover:bg-blue-600 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm"
               >
-                <span>{label}</span>
-                <span className={`px-[0.4vw] py-[0.05vw] rounded-full text-[0.65vw] ${active ? "bg-white/20" : "bg-gray-100"}`}>{count}</span>
+                <ChevronLeft className="w-[0.8vw] h-[0.8vw]" />
               </button>
-            );
-          })}
+              <div className="flex items-center gap-[0.3vw] min-w-[4.5vw] justify-center">
+                <span className="text-[0.75vw] font-bold text-blue-700">{currentPage}</span>
+                <span className="text-[0.65vw] font-medium text-blue-300 italic">of</span>
+                <span className="text-[0.75vw] font-bold text-gray-600">{totalPages || 1}</span>
+              </div>
+              <button 
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                className="w-[1.4vw] h-[1.4vw] flex items-center justify-center rounded-full bg-white border border-blue-200 text-blue-600 hover:bg-blue-600 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm"
+              >
+                <ChevronRight className="w-[0.8vw] h-[0.8vw]" />
+              </button>
+            </div>
+          )}
+
+          <div className="h-[2vw] w-[1px] bg-gray-200 mx-[0.2vw]" />
+
+          {/* Stats Bar */}
+          <div className="flex items-center gap-[0.6vw]">
+            {["All", "Open", "Under Testing", "Repair in Progress", "Pending", "Completed", "Not Repairable"].map(label => {
+              const count = label === "All" 
+                ? entries.reduce((acc, e) => acc + (e.products?.length || 0), 0)
+                : entries.reduce((acc, e) => acc + (e.products?.filter(p => (p.report?.status || "Open") === label).length || 0), 0);
+              const active = filterStatus === label;
+              
+              return (
+                <button
+                  key={label}
+                  onClick={() => setFilterStatus(label)}
+                  className={`px-[0.8vw] py-[0.4vw] rounded-full text-[0.72vw] font-bold flex items-center gap-[0.4vw] transition-all border-2 cursor-pointer shadow-sm ${active ? "bg-blue-600 border-blue-600 text-white" : "bg-white border-gray-200 text-gray-600 hover:border-blue-400"}`}
+                >
+                  <span>{label}</span>
+                  <span className={`px-[0.4vw] py-[0.05vw] rounded-full text-[0.65vw] ${active ? "bg-white/20" : "bg-gray-100"}`}>{count}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -532,74 +638,189 @@ export default function ProductionMaterialResponse() {
           <p className="text-[1.1vw] font-bold text-gray-500">No records found for the selected filter.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-[0.8vw] border border-gray-300 shadow-md overflow-hidden">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="bg-blue-50/50 border-b-2 border-blue-100">
-                <th className="px-[1vw] py-[1vw] text-[0.8vw] font-bold text-blue-900 uppercase text-center border-r border-gray-200">SNo</th>
-                <th className="px-[1vw] py-[1vw] text-[0.8vw] font-bold text-blue-900 uppercase text-left border-r border-gray-200">Registration</th>
-                <th className="px-[1vw] py-[1vw] text-[0.8vw] font-bold text-blue-900 uppercase text-left border-r border-gray-200">Customer</th>
-                <th className="px-[1vw] py-[1vw] text-[0.8vw] font-bold text-blue-900 uppercase text-left border-r border-gray-200">Product Details</th>
-                <th className="px-[1vw] py-[1vw] text-[0.8vw] font-bold text-blue-900 uppercase text-center border-r border-gray-200">Status</th>
-                <th className="px-[1vw] py-[1vw] text-[0.8vw] font-bold text-blue-900 uppercase text-center">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {allProducts.map(({ entry, product }, idx) => {
-                const status = product.report?.status || "Open";
-                const cfg = STATUS_CONFIG[status] || STATUS_CONFIG["Open"];
-                const isMyClaim = product.assignedTo === (currentUser?.userId || currentUser?.id);
-                
-                return (
-                  <tr key={`${entry.id}-${product._pid}`} className="hover:bg-blue-50/20 transition-colors group">
-                    <td className="px-[1vw] py-[1vw] text-center border-r border-gray-200">
-                      <span className="w-[1.8vw] h-[1.8vw] rounded-full bg-gray-100 flex items-center justify-center text-[0.75vw] font-bold text-gray-600 mx-auto group-hover:bg-blue-100 group-hover:text-blue-700 transition-all">{idx + 1}</span>
-                    </td>
-                    <td className="px-[1vw] py-[1vw] border-r border-gray-200">
-                      <div className="flex flex-col gap-[0.2vw]">
-                        <div className="text-[0.8vw] font-bold text-gray-900 flex items-center gap-[0.3vw]"><Hash className="w-[0.7vw] h-[0.7vw] text-blue-600" />{entry.refNoInternal}</div>
-                        <div className="text-[0.7vw] font-medium text-gray-500 flex items-center gap-[0.3vw]"><Calendar className="w-[0.7vw] h-[0.7vw]" />{fmtDate(entry.date)}</div>
-                        <div className="text-[0.7vw] font-bold text-blue-600 mt-[0.1vw]">JO: {entry.jobOrderNo}</div>
-                      </div>
-                    </td>
-                    <td className="px-[1vw] py-[1vw] border-r border-gray-200">
-                      <div className="text-[0.8vw] font-bold text-gray-900 truncate max-w-[12vw]">{entry.customerName}</div>
-                      <div className="text-[0.7vw] font-medium text-gray-500 mt-[0.1vw]">Code: {entry.customerCode}</div>
-                    </td>
-                    <td className="px-[1vw] py-[1vw] border-r border-gray-200">
-                      <div className="text-[0.8vw] font-bold text-blue-700 leading-tight">{product.productDescription}</div>
-                      <div className="flex items-center gap-[0.8vw] mt-[0.3vw]">
-                        <span className="text-[0.68vw] bg-gray-100 px-[0.4vw] py-[0.1vw] rounded font-bold">Qty: {product.qty}</span>
-                        <span className="text-[0.68vw] text-gray-500 font-bold">S/N: {product.serialNumber}</span>
-                      </div>
-                    </td>
-                    <td className="px-[1vw] py-[1vw] text-center border-r border-gray-200">
-                      <span className={`inline-flex items-center gap-[0.3vw] px-[0.6vw] py-[0.25vw] rounded-full border text-[0.7vw] font-bold ${cfg.bg} ${cfg.border} ${cfg.text}`}>
-                        <cfg.icon className="w-[0.8vw] h-[0.8vw]" />
-                        {status}
-                      </span>
-                    </td>
-                    <td className="px-[1vw] py-[1vw] text-center">
-                      {!product.assignedTo ? (
-                        <button onClick={() => claimProduct(entry.id, product._pid)} className="bg-emerald-600 hover:bg-emerald-700 text-white px-[1vw] py-[0.5vw] rounded-[0.4vw] text-[0.75vw] font-bold shadow-md shadow-emerald-100 transition-all active:scale-95 flex items-center gap-[0.4vw] mx-auto cursor-pointer">
-                          <Plus className="w-[0.9vw] h-[0.9vw]" /> Claim Item
-                        </button>
-                      ) : isMyClaim ? (
-                        <button onClick={() => setSelected({ entry, product })} className="bg-blue-600 hover:bg-blue-700 text-white px-[1vw] py-[0.5vw] rounded-[0.4vw] text-[0.75vw] font-bold shadow-md shadow-blue-100 transition-all active:scale-95 flex items-center gap-[0.4vw] mx-auto cursor-pointer">
-                          <Edit3 className="w-[0.9vw] h-[0.9vw]" /> Update Report
-                        </button>
-                      ) : (
-                        <div className="flex flex-col items-center gap-[0.2vw]">
-                          <Badge label="Assigned" color="slate" size="xs" />
-                          <span className="text-[0.65vw] font-bold text-gray-500 truncate max-w-[6vw]">{product.assignedToName}</span>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div className="bg-white rounded-[0.8vw] border border-gray-300 shadow-md overflow-hidden flex flex-col max-h-[70vh]">
+          <div className="overflow-auto flex-1">
+            <table className="w-full border-separate border-spacing-0">
+              <thead className="sticky top-0 z-20 shadow-sm">
+                <tr className="bg-blue-50/95 backdrop-blur-md">
+                  <th className="px-[0.8vw] py-[0.8vw] text-[0.82vw] font-bold text-black uppercase text-center border-b border-r border-blue-200">SNo</th>
+                  <th className="px-[0.8vw] py-[0.8vw] text-[0.82vw] font-bold text-black uppercase text-left border-b border-r border-blue-200">Date</th>
+                  <th className="px-[0.8vw] py-[0.8vw] text-[0.82vw] font-bold text-black uppercase text-left border-b border-r border-blue-200">Registration</th>
+                  <th className="px-[0.8vw] py-[0.8vw] text-[0.82vw] font-bold text-black uppercase text-left border-b border-r border-blue-200">Customer</th>
+                  <th className="px-[0.8vw] py-[0.8vw] text-[0.82vw] font-bold text-black uppercase text-left border-b border-r border-blue-200">Product</th>
+                  <th className="px-[0.8vw] py-[0.8vw] text-[0.82vw] font-bold text-black uppercase text-center border-b border-r border-blue-200">Qty</th>
+                  <th className="px-[0.8vw] py-[0.8vw] text-[0.82vw] font-bold text-black uppercase text-center border-b border-r border-blue-200">Status</th>
+                  <th className="px-[0.8vw] py-[0.8vw] text-[0.82vw] font-bold text-black uppercase text-center border-b border-r border-blue-200">Info</th>
+                  <th className="px-[0.8vw] py-[0.8vw] text-[0.82vw] font-bold text-black uppercase text-center border-b border-blue-200">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {(() => {
+                  let lastCustomer = null;
+                  return paginatedProducts.map(({ entry, product }, idx) => {
+                    const isNewCustomer = entry.customerName !== lastCustomer;
+                    lastCustomer = entry.customerName;
+
+                    const status = product.report?.status || "Open";
+                    const cfg = STATUS_CONFIG[status] || STATUS_CONFIG["Open"];
+                    const isMyClaim = product.assignedTo === (currentUser?.userId || currentUser?.id);
+                    
+                    return (
+                      <React.Fragment key={`${entry.id}-${product._pid}`}>
+                        {isNewCustomer && (
+                          <tr className="bg-blue-50/40 border-y border-blue-100 sticky top-[2.4vw] z-10 backdrop-blur-sm">
+                            <td colSpan={9} className="px-[1vw] py-[0.5vw] border-b border-blue-100 border-r border-gray-300">
+                              <div className="flex items-center gap-[0.6vw]">
+                                <div className="w-[0.35vw] h-[1.1vw] bg-blue-600 rounded-full" />
+                                <span className="text-[0.82vw] font-bold text-blue-800 uppercase tracking-wide">
+                                  {entry.customerName}
+                                </span>
+                                <span className="text-[0.62vw] text-blue-600 font-bold px-[0.5vw] py-[0.05vw] bg-white rounded-full border border-blue-200 ml-[0.4vw] shadow-sm">
+                                  {entry.customerCode || "N/A"}
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                        <tr className="hover:bg-blue-50/20 transition-colors group">
+                          {/* SNo */}
+                          <td className="px-[0.8vw] py-[1vw] text-center border-r border-b border-gray-200">
+                            <span className="w-[1.8vw] h-[1.8vw] rounded-full bg-gray-100 flex items-center justify-center text-[0.75vw] font-bold text-gray-600 mx-auto group-hover:bg-blue-100 group-hover:text-blue-700 transition-all">
+                              {((currentPage - 1) * itemsPerPage) + idx + 1}
+                            </span>
+                          </td>
+
+                          {/* Date */}
+                          <td className="px-[0.8vw] py-[1vw] border-r border-b border-gray-200">
+                            <div className="text-[0.75vw] font-semibold text-gray-800 flex items-center gap-[0.3vw]">
+                              <Calendar className="w-[0.75vw] h-[0.75vw] text-blue-600" />
+                              {fmtDate(entry.date)}
+                            </div>
+                          </td>
+
+                          {/* Registration */}
+                          <td className="px-[0.8vw] py-[1vw] border-r border-b border-gray-200">
+                            <div className="flex flex-col gap-[0.2vw]">
+                              <div className="text-[0.8vw] font-semibold text-gray-900 flex items-center gap-[0.3vw]"><Hash className="w-[0.7vw] h-[0.7vw] text-blue-600" />{entry.refNoInternal}</div>
+                              <div className="text-[0.7vw] font-semibold text-blue-600 mt-[0.1vw]">JO: {entry.jobOrderNo}</div>
+                            </div>
+                          </td>
+
+                          {/* Customer */}
+                          <td className="px-[0.8vw] py-[1vw] border-r border-b border-gray-200">
+                            <div className="text-[0.8vw] font-semibold text-gray-900 truncate max-w-[12vw]">{entry.customerName}</div>
+                            <div className="text-[0.7vw] font-medium text-gray-500 mt-[0.1vw]">Code: {entry.customerCode}</div>
+                          </td>
+
+                          {/* Product */}
+                          <td className="px-[0.8vw] py-[1vw] border-r border-b border-gray-200">
+                            <div className="text-[0.8vw] font-semibold text-blue-700 leading-tight">{product.productDescription}</div>
+                            <div className="text-[0.68vw] text-gray-500 font-semibold mt-[0.3vw]">S/N: {product.serialNumber || "—"}</div>
+                          </td>
+
+                          {/* Qty */}
+                          <td className="px-[0.8vw] py-[1vw] text-center border-r border-b border-gray-200">
+                            <span className="text-[0.8vw] font-black text-gray-800">{product.qty || "1"}</span>
+                          </td>
+
+                          {/* Status */}
+                          <td className="px-[0.8vw] py-[1vw] text-center border-r border-b border-gray-200">
+                            <span className={`inline-flex items-center gap-[0.3vw] px-[0.6vw] py-[0.25vw] rounded-full border text-[0.7vw] font-semibold ${cfg.bg} ${cfg.border} ${cfg.text}`}>
+                              <cfg.icon className="w-[0.8vw] h-[0.8vw]" />
+                              {status}
+                            </span>
+                          </td>
+
+                          {/* Info */}
+                          <td className="px-[0.8vw] py-[1vw] text-center border-r border-b border-gray-200">
+                            <button 
+                              onClick={() => setInfoSelected({ entry, product })}
+                              className="w-[2vw] h-[2vw] rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all cursor-pointer shadow-sm border border-blue-100"
+                              title="View Full Info"
+                            >
+                              <Eye className="w-[1vw] h-[1vw]" />
+                            </button>
+                          </td>
+
+                          {/* Action */}
+                          <td className="px-[0.8vw] py-[1vw] text-center border-b border-gray-200">
+                            {!product.assignedTo ? (
+                              <button onClick={() => claimProduct(entry.id, product._pid)} className="bg-emerald-600 hover:bg-emerald-700 text-white px-[1vw] py-[0.5vw] rounded-[0.4vw] text-[0.75vw] font-bold shadow-md shadow-emerald-100 transition-all active:scale-95 flex items-center gap-[0.4vw] mx-auto cursor-pointer">
+                                <Plus className="w-[0.9vw] h-[0.9vw]" /> Claim Item
+                              </button>
+                            ) : isMyClaim ? (
+                              <button onClick={() => setSelected({ entry, product })} className="bg-blue-600 hover:bg-blue-700 text-white px-[1vw] py-[0.5vw] rounded-[0.4vw] text-[0.75vw] font-bold shadow-md shadow-blue-100 transition-all active:scale-95 flex items-center gap-[0.4vw] mx-auto cursor-pointer">
+                                <Edit3 className="w-[0.9vw] h-[0.9vw]" /> Update Report
+                              </button>
+                            ) : (
+                              <div className="flex flex-col items-center gap-[0.2vw]">
+                                <Badge label="Assigned" color="slate" size="xs" />
+                                <span className="text-[0.65vw] font-bold text-gray-500 truncate max-w-[6vw]">{product.assignedToName}</span>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      </React.Fragment>
+                    );
+                  });
+                })()}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Table Footer */}
+          <div className="bg-gray-50 border-t border-gray-200 px-[1.2vw] py-[0.6vw] flex items-center justify-between">
+            <div className="flex items-center gap-[1.5vw]">
+              <span className="text-[0.72vw] text-gray-500 font-medium">
+                Showing <strong className="text-gray-700">{paginatedProducts.length}</strong> of <strong className="text-gray-700">{allProducts.length}</strong> assigned products
+              </span>
+              
+              <div className="flex items-center gap-[1vw] border-l border-gray-300 pl-[1.5vw]">
+                <div className="flex items-center gap-[0.5vw]">
+                  <span className="text-[0.68vw] text-gray-500 font-bold uppercase tracking-wider">Rows per page:</span>
+                  <select 
+                    value={itemsPerPage} 
+                    onChange={(e) => {
+                      setItemsPerPage(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="bg-white border border-gray-300 rounded-[0.3vw] px-[0.4vw] py-[0.15vw] text-[0.72vw] font-bold text-blue-700 outline-none focus:border-blue-500 transition-all cursor-pointer shadow-sm"
+                  >
+                    {[10, 20, 50, 100].map(v => <option key={v} value={v}>{v}</option>)}
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-[0.6vw]">
+                  <button 
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    className="p-[0.3vw] rounded-[0.4vw] bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm group"
+                  >
+                    <ChevronLeft className="w-[1vw] h-[1vw] text-gray-600 group-hover:text-blue-600" />
+                  </button>
+                  
+                  <div className="flex items-center gap-[0.4vw] px-[0.6vw] py-[0.15vw] bg-blue-50 border border-blue-100 rounded-[0.3vw]">
+                    <span className="text-[0.72vw] font-bold text-blue-700">{currentPage}</span>
+                    <span className="text-[0.65vw] font-medium text-blue-300">/</span>
+                    <span className="text-[0.72vw] font-bold text-gray-600">{totalPages || 1}</span>
+                  </div>
+
+                  <button 
+                    disabled={currentPage >= totalPages}
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    className="p-[0.3vw] rounded-[0.4vw] bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm group"
+                  >
+                    <ChevronRight className="w-[1vw] h-[1vw] text-gray-600 group-hover:text-blue-600" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-[0.4vw] px-[0.8vw] py-[0.3vw] bg-emerald-50 border border-emerald-100 rounded-full">
+              <div className="w-[0.4vw] h-[0.4vw] rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[0.65vw] font-bold text-emerald-700 uppercase tracking-widest">Live Sync Enabled</span>
+            </div>
+          </div>
         </div>
       )}
 
@@ -614,6 +835,17 @@ export default function ProductionMaterialResponse() {
             onClose={() => setSelected(null)}
             onSave={handleSaveReport}
             caeHistory={caeHistory}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Info Modal */}
+      <AnimatePresence>
+        {infoSelected && (
+          <ProductionInfoModal
+            entry={infoSelected.entry}
+            product={infoSelected.product}
+            onClose={() => setInfoSelected(null)}
           />
         )}
       </AnimatePresence>
