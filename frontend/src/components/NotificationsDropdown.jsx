@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Bell, 
-  Settings, 
-  Trash2, 
-  CheckCheck, 
-  Filter, 
+import {
+  Bell,
+  Settings,
+  Trash2,
+  CheckCheck,
+  Filter,
   Clock,
   AlertCircle,
   UserCheck,
@@ -21,7 +21,7 @@ const NotificationsDropdown = () => {
   const [activeMainTab, setActiveMainTab] = useState('All');
   const [activeSubTab, setActiveSubTab] = useState('all');
   const [onlyUnread, setOnlyUnread] = useState(false);
-  const [sortOrder, setSortOrder] = useState('Desc'); 
+  const [sortOrder, setSortOrder] = useState('Desc');
   const dropdownRef = useRef(null);
   const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification, requestPermission } = useSocket();
 
@@ -87,10 +87,10 @@ const NotificationsDropdown = () => {
   return (
     <div className="relative" ref={dropdownRef}>
       {/* Bell Icon Button */}
-      <button 
+      <button
         onClick={() => {
-            setIsOpen(!isOpen);
-            requestPermission();
+          setIsOpen(!isOpen);
+          requestPermission();
         }}
         className={`relative p-[0.5vw] rounded-full border transition-all cursor-pointer group ${isOpen ? 'bg-blue-50 border-blue-200' : 'bg-white border-slate-200 hover:border-blue-300'}`}
       >
@@ -116,7 +116,7 @@ const NotificationsDropdown = () => {
               <div className="flex items-center justify-between mb-[0.8vw]">
                 <h3 className="text-[1.1vw] font-semibold text-black">Notifications</h3>
                 <div className="flex items-center gap-[0.8vw]">
-                  <button 
+                  <button
                     onClick={() => setSortOrder(s => s === 'Asc' ? 'Desc' : 'Asc')}
                     className="flex items-center gap-[0.3vw] text-[0.75vw] font-medium text-black hover:text-blue-600 transition-colors cursor-pointer"
                   >
@@ -124,7 +124,7 @@ const NotificationsDropdown = () => {
                   </button>
                   <div className="flex items-center gap-[0.4vw]">
                     <span className="text-[0.75vw] font-medium text-black">Only Unread</span>
-                    <button 
+                    <button
                       onClick={() => setOnlyUnread(!onlyUnread)}
                       className={`relative w-[2vw] h-[1.1vw] rounded-full transition-colors border ${onlyUnread ? 'bg-blue-600 border-blue-700' : 'bg-slate-200 border-slate-300'}`}
                     >
@@ -185,11 +185,11 @@ const NotificationsDropdown = () => {
               )}
 
               <div className="flex justify-end mt-[0.4vw]">
-                <button 
-                    onClick={markAllAsRead}
-                    className="text-[0.7vw] font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-[0.2vw] cursor-pointer"
+                <button
+                  onClick={markAllAsRead}
+                  className="text-[0.7vw] font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-[0.2vw] cursor-pointer"
                 >
-                    <CheckCheck className="w-[0.8vw] h-[0.8vw]" /> Mark all as read
+                  <CheckCheck className="w-[0.8vw] h-[0.8vw]" /> Mark all as read
                 </button>
               </div>
             </div>
@@ -221,31 +221,31 @@ const NotificationsDropdown = () => {
                         <div className="flex items-start justify-between mb-[0.1vw]">
                           <h4 className="text-[0.85vw] font-semibold text-black truncate pr-[1vw]">{n.title}</h4>
                           <div className="flex items-center gap-[0.4vw]">
-                             {n.priority === 'Critical' && (
-                               <span className="bg-red-50 text-red-600 text-[0.6vw] font-bold px-[0.4vw] py-[0.05vw] rounded-full border border-red-100">CRITICAL</span>
-                             )}
-                             <button 
+                            {n.priority === 'Critical' && (
+                              <span className="bg-red-50 text-red-600 text-[0.6vw] font-bold px-[0.4vw] py-[0.05vw] rounded-full border border-red-100">CRITICAL</span>
+                            )}
+                            <button
                               onClick={(e) => {
-                                  e.stopPropagation();
-                                  deleteNotification(n._id);
+                                e.stopPropagation();
+                                deleteNotification(n._id);
                               }}
                               className="opacity-0 group-hover:opacity-100 p-[0.2vw] text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
-                             >
-                               <Trash2 className="w-[0.75vw] h-[0.75vw]" />
-                             </button>
+                            >
+                              <Trash2 className="w-[0.75vw] h-[0.75vw]" />
+                            </button>
                           </div>
                         </div>
                         <p className="text-[0.75vw] text-black opacity-80 leading-snug mb-[0.4vw] font-normal">{n.message}</p>
-                        
+
                         <div className="flex items-center justify-between pt-[0.4vw] border-t border-slate-50">
                           <div className="flex items-center gap-[0.3vw] text-[0.65vw] font-medium text-black opacity-60">
                             <Clock className="w-[0.7vw] h-[0.7vw]" />
                             {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
                           </div>
                           {n.data?.callNumber && (
-                              <div className="text-[0.65vw] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-[0.4vw] py-[0.05vw] rounded-[0.2vw]">
-                                #{n.data.callNumber}
-                              </div>
+                            <div className="text-[0.65vw] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-[0.4vw] py-[0.05vw] rounded-[0.2vw]">
+                              #{n.data.callNumber}
+                            </div>
                           )}
                         </div>
                       </div>
@@ -257,9 +257,9 @@ const NotificationsDropdown = () => {
 
             {/* Footer */}
             <div className="p-[0.6vw] border-t border-slate-100 bg-slate-50/50 flex justify-center">
-               <button className="text-[0.75vw] font-medium text-black opacity-70 hover:opacity-100 flex items-center gap-[0.3vw] transition-all cursor-pointer">
-                 <Settings className="w-[0.8vw] h-[0.8vw]" /> Notification Settings
-               </button>
+              <button className="text-[0.75vw] font-medium text-black opacity-70 hover:opacity-100 flex items-center gap-[0.3vw] transition-all cursor-pointer">
+                <Settings className="w-[0.8vw] h-[0.8vw]" /> Notification Settings
+              </button>
             </div>
           </motion.div>
         )}

@@ -51,10 +51,10 @@ const TABS = [
 ];
 
 const TAB_COLORS = {
-  blue:  { active: "bg-blue-700 text-white border-blue-700 shadow-md", inactive: "bg-white text-black border-slate-300 hover:bg-blue-50 hover:border-blue-400" },
+  blue: { active: "bg-blue-700 text-white border-blue-700 shadow-md", inactive: "bg-white text-black border-slate-300 hover:bg-blue-50 hover:border-blue-400" },
   green: { active: "bg-emerald-700 text-white border-emerald-700 shadow-md", inactive: "bg-white text-black border-slate-300 hover:bg-emerald-50 hover:border-emerald-400" },
   amber: { active: "bg-amber-600 text-white border-amber-600 shadow-md", inactive: "bg-white text-black border-slate-300 hover:bg-amber-50 hover:border-amber-400" },
-  teal:  { active: "bg-teal-700 text-white border-teal-700 shadow-md", inactive: "bg-white text-black border-slate-300 hover:bg-teal-50 hover:border-teal-400" },
+  teal: { active: "bg-teal-700 text-white border-teal-700 shadow-md", inactive: "bg-white text-black border-slate-300 hover:bg-teal-50 hover:border-teal-400" },
 };
 
 const StatusBadge = ({ status }) => {
@@ -122,10 +122,10 @@ const TechnicalReport = ({ entries }) => {
   const filtered = useMemo(() => {
     if (!search) return rows;
     const q = search.toLowerCase();
-    return rows.filter(r => 
-        r.entry.jobOrderNo?.toLowerCase().includes(q) || 
-        r.prod.productDescription?.toLowerCase().includes(q) ||
-        r.entry.customerName?.toLowerCase().includes(q)
+    return rows.filter(r =>
+      r.entry.jobOrderNo?.toLowerCase().includes(q) ||
+      r.prod.productDescription?.toLowerCase().includes(q) ||
+      r.entry.customerName?.toLowerCase().includes(q)
     );
   }, [rows, search]);
 
@@ -136,7 +136,7 @@ const TechnicalReport = ({ entries }) => {
           <Search className="absolute left-[0.6vw] top-1/2 -translate-y-1/2 w-[0.85vw] h-[0.85vw] text-black/40" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search reports..." className="pl-[2vw] pr-[0.8vw] h-[2.2vw] border border-slate-300 rounded-[0.5vw] outline-none text-[0.75vw] w-[15vw]" />
         </div>
-        <ExportButtons onCsv={() => {}} color="blue" />
+        <ExportButtons onCsv={() => { }} color="blue" />
       </div>
       <div className="overflow-auto rounded-[0.5vw] border border-slate-300 max-h-[60vh]">
         <table className="w-full text-left border-collapse">
@@ -181,198 +181,198 @@ const TechnicalReport = ({ entries }) => {
 
 // ── REPORT 2 — Inward Analysis & TAT ──────────────────────────
 const AnalysisReport = ({ entries }) => {
-    const [search, setSearch] = useState("");
-    const rows = useMemo(() => {
-      const flat = [];
-      entries.forEach(e => {
-        e.products?.forEach(p => {
-            const tat = diffDays(e.date, p.report?.closedDate);
-            flat.push({ entry: e, prod: p, tat });
-        });
+  const [search, setSearch] = useState("");
+  const rows = useMemo(() => {
+    const flat = [];
+    entries.forEach(e => {
+      e.products?.forEach(p => {
+        const tat = diffDays(e.date, p.report?.closedDate);
+        flat.push({ entry: e, prod: p, tat });
       });
-      return flat;
-    }, [entries]);
-  
-    const filtered = useMemo(() => {
-      if (!search) return rows;
-      const q = search.toLowerCase();
-      return rows.filter(r => 
-          r.entry.jobOrderNo?.toLowerCase().includes(q) || 
-          r.prod.productDescription?.toLowerCase().includes(q) ||
-          r.entry.customerName?.toLowerCase().includes(q)
-      );
-    }, [rows, search]);
-  
-    return (
-      <div>
-        <div className="flex items-center justify-between mb-[0.8vw]">
-          <div className="relative">
-            <Search className="absolute left-[0.6vw] top-1/2 -translate-y-1/2 w-[0.85vw] h-[0.85vw] text-black/40" />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search analytics..." className="pl-[2vw] pr-[0.8vw] h-[2.2vw] border border-slate-300 rounded-[0.5vw] outline-none text-[0.75vw] w-[15vw]" />
-          </div>
-          <ExportButtons onCsv={() => {}} color="green" />
-        </div>
-        <div className="overflow-auto rounded-[0.5vw] border border-slate-300 max-h-[60vh]">
-          <table className="w-full text-left border-collapse">
-            <thead className="sticky top-0 z-10">
-              <tr>
-                <Th>S.No</Th><Th>Inward Date</Th><Th>Customer</Th><Th>Job Order</Th>
-                <Th>Product Details</Th><Th>Stage</Th><Th>Disposition</Th>
-                <Th>Closed Date</Th><Th>TAT (Days)</Th><Th>Status</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((r, i) => (
-                <tr key={i} className="hover:bg-emerald-50/20">
-                  <Td cls="text-center font-bold">{i + 1}</Td>
-                  <Td>{fmtDate(r.entry.date)}</Td>
-                  <Td cls="font-semibold">{r.entry.customerName}</Td>
-                  <Td cls="font-bold text-blue-700">{r.entry.jobOrderNo}</Td>
-                  <Td>
-                      <div className="font-bold">{r.prod.productCode}</div>
-                      <div className="text-[0.65vw] text-black/50">{r.prod.productDescription}</div>
-                  </Td>
-                  <Td cls="font-bold text-gray-700">{r.prod.stage}</Td>
-                  <Td>{r.prod.disposition}</Td>
-                  <Td>{fmtDate(r.prod.report?.closedDate)}</Td>
-                  <Td cls={`font-black ${r.tat !== null ? (r.tat <= 2 ? "text-green-600" : r.tat <= 5 ? "text-orange-600" : "text-red-600") : "text-black/20"}`}>
-                    {r.tat !== null ? `${r.tat}d` : "—"}
-                  </Td>
-                  <Td><StatusBadge status={r.prod.finalStatus} /></Td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <SummaryBar items={[
-          { label: "Avg TAT", value: "3.2 days", color: "text-emerald-800" },
-          { label: "Critical (>5d)", value: filtered.filter(r => r.tat > 5).length, color: "text-red-700" }
-        ]} />
-      </div>
+    });
+    return flat;
+  }, [entries]);
+
+  const filtered = useMemo(() => {
+    if (!search) return rows;
+    const q = search.toLowerCase();
+    return rows.filter(r =>
+      r.entry.jobOrderNo?.toLowerCase().includes(q) ||
+      r.prod.productDescription?.toLowerCase().includes(q) ||
+      r.entry.customerName?.toLowerCase().includes(q)
     );
+  }, [rows, search]);
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-[0.8vw]">
+        <div className="relative">
+          <Search className="absolute left-[0.6vw] top-1/2 -translate-y-1/2 w-[0.85vw] h-[0.85vw] text-black/40" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search analytics..." className="pl-[2vw] pr-[0.8vw] h-[2.2vw] border border-slate-300 rounded-[0.5vw] outline-none text-[0.75vw] w-[15vw]" />
+        </div>
+        <ExportButtons onCsv={() => { }} color="green" />
+      </div>
+      <div className="overflow-auto rounded-[0.5vw] border border-slate-300 max-h-[60vh]">
+        <table className="w-full text-left border-collapse">
+          <thead className="sticky top-0 z-10">
+            <tr>
+              <Th>S.No</Th><Th>Inward Date</Th><Th>Customer</Th><Th>Job Order</Th>
+              <Th>Product Details</Th><Th>Stage</Th><Th>Disposition</Th>
+              <Th>Closed Date</Th><Th>TAT (Days)</Th><Th>Status</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((r, i) => (
+              <tr key={i} className="hover:bg-emerald-50/20">
+                <Td cls="text-center font-bold">{i + 1}</Td>
+                <Td>{fmtDate(r.entry.date)}</Td>
+                <Td cls="font-semibold">{r.entry.customerName}</Td>
+                <Td cls="font-bold text-blue-700">{r.entry.jobOrderNo}</Td>
+                <Td>
+                  <div className="font-bold">{r.prod.productCode}</div>
+                  <div className="text-[0.65vw] text-black/50">{r.prod.productDescription}</div>
+                </Td>
+                <Td cls="font-bold text-gray-700">{r.prod.stage}</Td>
+                <Td>{r.prod.disposition}</Td>
+                <Td>{fmtDate(r.prod.report?.closedDate)}</Td>
+                <Td cls={`font-black ${r.tat !== null ? (r.tat <= 2 ? "text-green-600" : r.tat <= 5 ? "text-orange-600" : "text-red-600") : "text-black/20"}`}>
+                  {r.tat !== null ? `${r.tat}d` : "—"}
+                </Td>
+                <Td><StatusBadge status={r.prod.finalStatus} /></Td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <SummaryBar items={[
+        { label: "Avg TAT", value: "3.2 days", color: "text-emerald-800" },
+        { label: "Critical (>5d)", value: filtered.filter(r => r.tat > 5).length, color: "text-red-700" }
+      ]} />
+    </div>
+  );
 };
 
 // ── REPORT 3 — RCA Log ───────────────────────────────────────
 const RCALogReport = ({ entries }) => {
-    const [search, setSearch] = useState("");
-    const rows = useMemo(() => {
-      const flat = [];
-      entries.forEach(e => {
-        e.products?.forEach(p => { if (p.report?.rootCause) flat.push({ entry: e, prod: p }); });
-      });
-      return flat;
-    }, [entries]);
-  
-    const filtered = useMemo(() => {
-      if (!search) return rows;
-      const q = search.toLowerCase();
-      return rows.filter(r => 
-          r.entry.jobOrderNo?.toLowerCase().includes(q) || 
-          r.prod.productDescription?.toLowerCase().includes(q) ||
-          r.prod.report?.rootCause?.toLowerCase().includes(q)
-      );
-    }, [rows, search]);
-  
-    return (
-      <div>
-        <div className="flex items-center justify-between mb-[0.8vw]">
-          <div className="relative">
-            <Search className="absolute left-[0.6vw] top-1/2 -translate-y-1/2 w-[0.85vw] h-[0.85vw] text-black/40" />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search RCA details..." className="pl-[2vw] pr-[0.8vw] h-[2.2vw] border border-slate-300 rounded-[0.5vw] outline-none text-[0.75vw] w-[18vw]" />
-          </div>
-          <ExportButtons onCsv={() => {}} color="amber" />
-        </div>
-        <div className="overflow-auto rounded-[0.5vw] border border-slate-300 max-h-[60vh]">
-          <table className="w-full text-left border-collapse">
-            <thead className="sticky top-0 z-10">
-              <tr>
-                <Th>S.No</Th><Th>Product</Th><Th>JO#</Th><Th>4M Cat</Th><Th>Root Cause Detail</Th><Th>Corrective Action</Th><Th>Analysed By</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((r, i) => (
-                <tr key={i} className="hover:bg-amber-50/20">
-                  <Td cls="text-center font-bold">{i + 1}</Td>
-                  <Td>
-                      <div className="font-bold text-black">{r.prod.productCode}</div>
-                      <div className="text-[0.65vw] text-black/50 truncate max-w-[10vw]">{r.prod.productDescription}</div>
-                  </Td>
-                  <Td cls="font-bold text-blue-700">{r.entry.jobOrderNo}</Td>
-                  <Td><span className="font-bold text-amber-700">{r.prod.report?.fourMCategory}</span></Td>
-                  <Td><div className="max-w-[20vw] italic text-black/80 font-medium leading-relaxed">"{r.prod.report?.rootCause}"</div></Td>
-                  <Td><div className="max-w-[20vw] text-green-700 font-semibold">{r.prod.report?.correctiveAction || "—"}</div></Td>
-                  <Td cls="font-bold text-gray-600">{r.prod.report?.testedByName || "—"}</Td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <SummaryBar items={[
-          { label: "RCA Completed", value: filtered.length, color: "text-amber-800" }
-        ]} />
-      </div>
+  const [search, setSearch] = useState("");
+  const rows = useMemo(() => {
+    const flat = [];
+    entries.forEach(e => {
+      e.products?.forEach(p => { if (p.report?.rootCause) flat.push({ entry: e, prod: p }); });
+    });
+    return flat;
+  }, [entries]);
+
+  const filtered = useMemo(() => {
+    if (!search) return rows;
+    const q = search.toLowerCase();
+    return rows.filter(r =>
+      r.entry.jobOrderNo?.toLowerCase().includes(q) ||
+      r.prod.productDescription?.toLowerCase().includes(q) ||
+      r.prod.report?.rootCause?.toLowerCase().includes(q)
     );
+  }, [rows, search]);
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-[0.8vw]">
+        <div className="relative">
+          <Search className="absolute left-[0.6vw] top-1/2 -translate-y-1/2 w-[0.85vw] h-[0.85vw] text-black/40" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search RCA details..." className="pl-[2vw] pr-[0.8vw] h-[2.2vw] border border-slate-300 rounded-[0.5vw] outline-none text-[0.75vw] w-[18vw]" />
+        </div>
+        <ExportButtons onCsv={() => { }} color="amber" />
+      </div>
+      <div className="overflow-auto rounded-[0.5vw] border border-slate-300 max-h-[60vh]">
+        <table className="w-full text-left border-collapse">
+          <thead className="sticky top-0 z-10">
+            <tr>
+              <Th>S.No</Th><Th>Product</Th><Th>JO#</Th><Th>4M Cat</Th><Th>Root Cause Detail</Th><Th>Corrective Action</Th><Th>Analysed By</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((r, i) => (
+              <tr key={i} className="hover:bg-amber-50/20">
+                <Td cls="text-center font-bold">{i + 1}</Td>
+                <Td>
+                  <div className="font-bold text-black">{r.prod.productCode}</div>
+                  <div className="text-[0.65vw] text-black/50 truncate max-w-[10vw]">{r.prod.productDescription}</div>
+                </Td>
+                <Td cls="font-bold text-blue-700">{r.entry.jobOrderNo}</Td>
+                <Td><span className="font-bold text-amber-700">{r.prod.report?.fourMCategory}</span></Td>
+                <Td><div className="max-w-[20vw] italic text-black/80 font-medium leading-relaxed">"{r.prod.report?.rootCause}"</div></Td>
+                <Td><div className="max-w-[20vw] text-green-700 font-semibold">{r.prod.report?.correctiveAction || "—"}</div></Td>
+                <Td cls="font-bold text-gray-600">{r.prod.report?.testedByName || "—"}</Td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <SummaryBar items={[
+        { label: "RCA Completed", value: filtered.length, color: "text-amber-800" }
+      ]} />
+    </div>
+  );
 };
 
 // ── REPORT 4 — Action Effectiveness ──────────────────────────
 const EffectivenessReport = ({ entries }) => {
-    const [search, setSearch] = useState("");
-    const rows = useMemo(() => {
-      const flat = [];
-      entries.forEach(e => {
-        e.products?.forEach(p => { if (p.report?.cae) flat.push({ entry: e, prod: p }); });
-      });
-      return flat;
-    }, [entries]);
-  
-    const filtered = useMemo(() => {
-      if (!search) return rows;
-      const q = search.toLowerCase();
-      return rows.filter(r => 
-          r.entry.jobOrderNo?.toLowerCase().includes(q) || 
-          r.prod.productDescription?.toLowerCase().includes(q) ||
-          r.prod.report?.cae?.toLowerCase().includes(q)
-      );
-    }, [rows, search]);
-  
-    return (
-      <div>
-        <div className="flex items-center justify-between mb-[0.8vw]">
-          <div className="relative">
-            <Search className="absolute left-[0.6vw] top-1/2 -translate-y-1/2 w-[0.85vw] h-[0.85vw] text-black/40" />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search CAE..." className="pl-[2vw] pr-[0.8vw] h-[2.2vw] border border-slate-300 rounded-[0.5vw] outline-none text-[0.75vw] w-[18vw]" />
-          </div>
-          <ExportButtons onCsv={() => {}} color="teal" />
-        </div>
-        <div className="overflow-auto rounded-[0.5vw] border border-slate-300 max-h-[60vh]">
-          <table className="w-full text-left border-collapse">
-            <thead className="sticky top-0 z-10">
-              <tr>
-                <Th>S.No</Th><Th>Product</Th><Th>Corrective Action</Th><Th>Effectiveness (CAE)</Th><Th>Verified By</Th><Th>Verified Date</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((r, i) => (
-                <tr key={i} className="hover:bg-teal-50/20">
-                  <Td cls="text-center font-bold">{i + 1}</Td>
-                  <Td>
-                      <div className="font-bold">{r.prod.productCode}</div>
-                      <div className="text-[0.65vw] text-black/50">{r.prod.productDescription}</div>
-                  </Td>
-                  <Td><div className="max-w-[20vw] font-medium text-black/70 italic">"{r.prod.report?.correctiveAction}"</div></Td>
-                  <Td cls="bg-green-50/50"><div className="font-black text-green-700 text-[0.75vw]">{r.prod.report?.cae}</div></Td>
-                  <Td cls="font-bold text-teal-800">{r.prod.report?.verifiedByName || "—"}</Td>
-                  <Td>{fmtDate(r.prod.report?.verifiedDate)}</Td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <SummaryBar items={[
-          { label: "Verified Actions", value: filtered.length, color: "text-teal-800" }
-        ]} />
-      </div>
+  const [search, setSearch] = useState("");
+  const rows = useMemo(() => {
+    const flat = [];
+    entries.forEach(e => {
+      e.products?.forEach(p => { if (p.report?.cae) flat.push({ entry: e, prod: p }); });
+    });
+    return flat;
+  }, [entries]);
+
+  const filtered = useMemo(() => {
+    if (!search) return rows;
+    const q = search.toLowerCase();
+    return rows.filter(r =>
+      r.entry.jobOrderNo?.toLowerCase().includes(q) ||
+      r.prod.productDescription?.toLowerCase().includes(q) ||
+      r.prod.report?.cae?.toLowerCase().includes(q)
     );
+  }, [rows, search]);
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-[0.8vw]">
+        <div className="relative">
+          <Search className="absolute left-[0.6vw] top-1/2 -translate-y-1/2 w-[0.85vw] h-[0.85vw] text-black/40" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search CAE..." className="pl-[2vw] pr-[0.8vw] h-[2.2vw] border border-slate-300 rounded-[0.5vw] outline-none text-[0.75vw] w-[18vw]" />
+        </div>
+        <ExportButtons onCsv={() => { }} color="teal" />
+      </div>
+      <div className="overflow-auto rounded-[0.5vw] border border-slate-300 max-h-[60vh]">
+        <table className="w-full text-left border-collapse">
+          <thead className="sticky top-0 z-10">
+            <tr>
+              <Th>S.No</Th><Th>Product</Th><Th>Corrective Action</Th><Th>Effectiveness (CAE)</Th><Th>Verified By</Th><Th>Verified Date</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((r, i) => (
+              <tr key={i} className="hover:bg-teal-50/20">
+                <Td cls="text-center font-bold">{i + 1}</Td>
+                <Td>
+                  <div className="font-bold">{r.prod.productCode}</div>
+                  <div className="text-[0.65vw] text-black/50">{r.prod.productDescription}</div>
+                </Td>
+                <Td><div className="max-w-[20vw] font-medium text-black/70 italic">"{r.prod.report?.correctiveAction}"</div></Td>
+                <Td cls="bg-green-50/50"><div className="font-black text-green-700 text-[0.75vw]">{r.prod.report?.cae}</div></Td>
+                <Td cls="font-bold text-teal-800">{r.prod.report?.verifiedByName || "—"}</Td>
+                <Td>{fmtDate(r.prod.report?.verifiedDate)}</Td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <SummaryBar items={[
+        { label: "Verified Actions", value: filtered.length, color: "text-teal-800" }
+      ]} />
+    </div>
+  );
 };
 
 // ── MAIN COMPONENT ──────────────────────────────────────────
@@ -411,8 +411,8 @@ export default function ProductionMaterialReports() {
             <ClipboardList className="w-[1.5vw] h-[1.5vw] text-white" />
           </div>
           <div className="z-10">
-            <h2 className="text-[1.1vw] font-black text-white uppercase tracking-widest drop-shadow-sm">Production Material Analytics</h2>
-            <p className="text-[0.7vw] text-white opacity-100 font-bold uppercase">{entries.length} Inward Records Found</p>
+            <h2 className="text-[1.2vw] font-bold text-white drop-shadow-sm">Production NC Register</h2>
+            <p className="text-[0.7vw] text-white opacity-100 font-semibold ">{entries.length} Inward Records Found</p>
           </div>
         </div>
 
@@ -422,9 +422,8 @@ export default function ProductionMaterialReports() {
             <button
               key={t.id}
               onClick={() => setActiveTab(t.id)}
-              className={`flex items-center gap-[0.5vw] px-[1vw] py-[0.5vw] rounded-full text-[0.72vw] font-bold border transition-all cursor-pointer ${
-                activeTab === t.id ? TAB_COLORS[t.color].active : TAB_COLORS[t.color].inactive
-              }`}
+              className={`flex items-center gap-[0.5vw] px-[1vw] py-[0.5vw] rounded-full text-[0.72vw] font-bold border transition-all cursor-pointer ${activeTab === t.id ? TAB_COLORS[t.color].active : TAB_COLORS[t.color].inactive
+                }`}
             >
               <t.icon className="w-[1vw] h-[1vw]" /> {t.label}
             </button>

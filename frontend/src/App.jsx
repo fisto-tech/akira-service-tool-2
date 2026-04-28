@@ -25,6 +25,7 @@ import { NotificationProvider } from "./components/NotificationContext";
 import { SocketProvider } from "./contexts/SocketContext";
 import ServiceMaterialReports from "./pages/ServiceMaterialReports.jsx";
 import ProductionMaterialReports from "./pages/ProductionMaterialReports.jsx";
+import ServiceCallReports from "./pages/ServiceCallReports.jsx";
 
 function NavBarWithTitle() {
   const pageTitle = usePageTitle();
@@ -51,6 +52,7 @@ function MainLayout() {
           <Route path="customers" element={<Customers />} />
           <Route path="serviceCall" element={<ServiceCall />} />
           <Route path="serviceCall/assignment" element={<CallAssignment />} />
+          <Route path="serviceCall/reports" element={<ServiceCallReports />} />
           <Route path="serviceMaterial" element={<ServiceMaterial />} />
           <Route path="serviceMaterial/reports" element={<ServiceMaterialReports />} />
           <Route path="productionMaterial" element={<ProductionMaterial />} />

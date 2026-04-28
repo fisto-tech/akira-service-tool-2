@@ -67,6 +67,7 @@ export default function Sidebar() {
       subItems: [
         { path: "/serviceCall", label: "Call Registration" },
         { path: "/serviceCall/assignment", label: "Call Assignment" },
+        { path: "/serviceCall/reports", label: "Call Reports" },
       ],
     },
     {

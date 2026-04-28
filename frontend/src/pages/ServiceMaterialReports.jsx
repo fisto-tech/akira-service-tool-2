@@ -42,7 +42,7 @@ const fmtDate = (s) => {
   if (s.includes("T")) {
     const d = new Date(s);
     if (isNaN(d.getTime())) return s;
-    return `${String(d.getDate()).padStart(2,"0")}-${String(d.getMonth()+1).padStart(2,"0")}-${d.getFullYear()}`;
+    return `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`;
   }
   if (s.includes("-") && s.split("-")[0].length === 4) {
     const [y, m, d] = s.split("-");
@@ -87,22 +87,22 @@ const TABS = [
 ];
 
 const TAB_COLORS = {
-  blue:   { active: "bg-blue-700 text-white border-blue-700 shadow-md", inactive: "bg-white text-black border-slate-300 hover:bg-blue-50 hover:border-blue-400", badge: "bg-blue-100 text-blue-900" },
-  green:  { active: "bg-emerald-700 text-white border-emerald-700 shadow-md", inactive: "bg-white text-black border-slate-300 hover:bg-emerald-50 hover:border-emerald-400", badge: "bg-emerald-100 text-emerald-900" },
-  amber:  { active: "bg-amber-600 text-white border-amber-600 shadow-md", inactive: "bg-white text-black border-slate-300 hover:bg-amber-50 hover:border-amber-400", badge: "bg-amber-100 text-amber-900" },
-  teal:   { active: "bg-teal-700 text-white border-teal-700 shadow-md", inactive: "bg-white text-black border-slate-300 hover:bg-teal-50 hover:border-teal-400", badge: "bg-teal-100 text-teal-900" },
+  blue: { active: "bg-blue-700 text-white border-blue-700 shadow-md", inactive: "bg-white text-black border-slate-300 hover:bg-blue-50 hover:border-blue-400", badge: "bg-blue-100 text-blue-900" },
+  green: { active: "bg-emerald-700 text-white border-emerald-700 shadow-md", inactive: "bg-white text-black border-slate-300 hover:bg-emerald-50 hover:border-emerald-400", badge: "bg-emerald-100 text-emerald-900" },
+  amber: { active: "bg-amber-600 text-white border-amber-600 shadow-md", inactive: "bg-white text-black border-slate-300 hover:bg-amber-50 hover:border-amber-400", badge: "bg-amber-100 text-amber-900" },
+  teal: { active: "bg-teal-700 text-white border-teal-700 shadow-md", inactive: "bg-white text-black border-slate-300 hover:bg-teal-50 hover:border-teal-400", badge: "bg-teal-100 text-teal-900" },
 };
 
 // ── Status badge ─────────────────────────────────────────────
 const STATUS_COLORS = {
-  Pending:          "bg-orange-100 text-black border-orange-300",
-  Delivered:        "bg-green-100 text-black border-green-300",
-  Hold:             "bg-red-100 text-black border-red-300",
+  Pending: "bg-orange-100 text-black border-orange-300",
+  Delivered: "bg-green-100 text-black border-green-300",
+  Hold: "bg-red-100 text-black border-red-300",
   "Not Repairable": "bg-slate-200 text-black border-slate-400",
-  Completed:        "bg-green-100 text-black border-green-300",
+  Completed: "bg-green-100 text-black border-green-300",
   "Repair in Progress": "bg-blue-100 text-black border-blue-300",
-  Open:             "bg-slate-100 text-black border-slate-300",
-  Assigned:         "bg-purple-100 text-black border-purple-300",
+  Open: "bg-slate-100 text-black border-slate-300",
+  Assigned: "bg-purple-100 text-black border-purple-300",
 };
 
 const StatusBadge = ({ status }) => (
@@ -214,9 +214,9 @@ const TestingRepairReport = ({ entries }) => {
   const statuses = ["All", "Repair in Progress", "Completed", "Not Repairable", "Open"];
 
   const exportCsv = () => {
-    const headers = ["S.No","Date","Customer","Ref (Customer)","Product","Board Type","Serial No","Type","Tested By","Completed Date","4M Category","Error Code","Problem Identified","Root Cause","Corrective Action","Parts Replaced","Status"];
+    const headers = ["S.No", "Date", "Customer", "Ref (Customer)", "Product", "Board Type", "Serial No", "Type", "Tested By", "Completed Date", "4M Category", "Error Code", "Problem Identified", "Root Cause", "Corrective Action", "Parts Replaced", "Status"];
     const data = filtered.map(({ row, p }, i) => [
-      i+1, fmtDate(row.date), row.customerName, row.refNoCustomer,
+      i + 1, fmtDate(row.date), row.customerName, row.refNoCustomer,
       p.productDescription, p.boardType, p.serialNumber, p.type === "W" ? "Warranty" : "Paid",
       p.report?.testedBy, fmtDate(p.report?.completedDate),
       p.report?.fourMCategory, p.report?.errorCode,
@@ -233,9 +233,8 @@ const TestingRepairReport = ({ entries }) => {
           {statuses.map((s) => (
             <button key={s} type="button"
               onClick={() => setFilterStatus(s)}
-              className={`px-[0.8vw] py-[0.3vw] rounded-full text-[0.7vw] border cursor-pointer transition-all ${
-                filterStatus === s ? "bg-blue-700 text-white border-blue-700 shadow-sm" : "bg-white text-black border-slate-300 hover:border-blue-400"
-              }`}
+              className={`px-[0.8vw] py-[0.3vw] rounded-full text-[0.7vw] border cursor-pointer transition-all ${filterStatus === s ? "bg-blue-700 text-white border-blue-700 shadow-sm" : "bg-white text-black border-slate-300 hover:border-blue-400"
+                }`}
             >{s}</button>
           ))}
         </div>
@@ -266,7 +265,7 @@ const TestingRepairReport = ({ entries }) => {
             {filtered.length === 0 ? <EmptyState message="No testing/repair reports found." /> :
               filtered.map(({ row, p }, i) => (
                 <tr key={`${row.id}-${p._pid}`} className="hover:bg-gray-50/60">
-                  <Td cls="text-center">{i+1}</Td>
+                  <Td cls="text-center">{i + 1}</Td>
                   <Td cls="min-w-[6vw]">{fmtDate(row.date)}</Td>
                   <Td cls="font-semibold">{row.customerName || "—"}</Td>
                   <Td>{row.refNoCustomer || "—"}</Td>
@@ -295,9 +294,9 @@ const TestingRepairReport = ({ entries }) => {
       </div>
       <SummaryBar items={[
         { label: "Total Products with Reports", value: rows.length, color: "text-blue-800" },
-        { label: "Completed", value: rows.filter(({p}) => p.report?.status === "Completed").length, color: "text-emerald-800" },
-        { label: "In Progress", value: rows.filter(({p}) => p.report?.status === "Repair in Progress").length, color: "text-blue-700" },
-        { label: "Not Repairable", value: rows.filter(({p}) => p.report?.status === "Not Repairable").length, color: "text-red-700" },
+        { label: "Completed", value: rows.filter(({ p }) => p.report?.status === "Completed").length, color: "text-emerald-800" },
+        { label: "In Progress", value: rows.filter(({ p }) => p.report?.status === "Repair in Progress").length, color: "text-blue-700" },
+        { label: "Not Repairable", value: rows.filter(({ p }) => p.report?.status === "Not Repairable").length, color: "text-red-700" },
       ]} />
     </div>
   );
@@ -334,9 +333,9 @@ const DeliveryReport = ({ entries }) => {
   }, [rows, search, filterStatus]);
 
   const exportCsv = () => {
-    const headers = ["S.No","Date Inward","Customer","Ref No.","Category","Final Status","Delivered Date","TAT (Days)","Avg Delay (Days)","Remarks"];
+    const headers = ["S.No", "Date Inward", "Customer", "Ref No.", "Category", "Final Status", "Delivered Date", "TAT (Days)", "Avg Delay (Days)", "Remarks"];
     const data = filtered.map(({ row, tat, avgDelay }, i) => [
-      i+1, fmtDate(row.date), row.customerName, row.refNoCustomer,
+      i + 1, fmtDate(row.date), row.customerName, row.refNoCustomer,
       row.category, row.finalStatus, fmtDate(row.finalStatusDate),
       tat ?? "—", avgDelay ?? "—", row.finalStatusRemarks,
     ]);
@@ -356,9 +355,8 @@ const DeliveryReport = ({ entries }) => {
           {statuses.map((s) => (
             <button key={s} type="button"
               onClick={() => setFilterStatus(s)}
-              className={`px-[0.8vw] py-[0.3vw] rounded-full text-[0.7vw] border cursor-pointer transition-all ${
-                filterStatus === s ? "bg-emerald-800 text-white border-emerald-800" : "bg-white text-black border-slate-300 hover:border-emerald-400"
-              }`}
+              className={`px-[0.8vw] py-[0.3vw] rounded-full text-[0.7vw] border cursor-pointer transition-all ${filterStatus === s ? "bg-emerald-800 text-white border-emerald-800" : "bg-white text-black border-slate-300 hover:border-emerald-400"
+                }`}
             >{s}</button>
           ))}
         </div>
@@ -387,7 +385,7 @@ const DeliveryReport = ({ entries }) => {
             {filtered.length === 0 ? <EmptyState message="No delivery records found." /> :
               filtered.map(({ row, prods, tat, avgDelay }, i) => (
                 <tr key={row.id} className="hover:bg-gray-50/60">
-                  <Td cls="text-center">{i+1}</Td>
+                  <Td cls="text-center">{i + 1}</Td>
                   <Td cls="min-w-[6vw]">{fmtDate(row.date)}</Td>
                   <Td cls="font-semibold"><div className="break-words whitespace-normal min-w-[9vw]" title={row.customerName}>{row.customerName || "—"}</div></Td>
                   <Td>{row.refNoCustomer || "—"}</Td>
@@ -451,9 +449,9 @@ const RootCauseReport = ({ entries }) => {
   }, [rows, search]);
 
   const exportCsv = () => {
-    const headers = ["S.No","Date","Customer","Ref No.","Product","Board Type","Serial No","Type","4M Category","Error Code","Problem Identified","Root Cause","Contributing Factors","Tested By","Report Status"];
+    const headers = ["S.No", "Date", "Customer", "Ref No.", "Product", "Board Type", "Serial No", "Type", "4M Category", "Error Code", "Problem Identified", "Root Cause", "Contributing Factors", "Tested By", "Report Status"];
     const data = filtered.map(({ row, p }, i) => [
-      i+1, fmtDate(row.date), row.customerName, row.refNoCustomer,
+      i + 1, fmtDate(row.date), row.customerName, row.refNoCustomer,
       p.productDescription, p.boardType, p.serialNumber, p.type === "W" ? "Warranty" : "Paid",
       p.report?.fourMCategory, p.report?.errorCode,
       p.report?.problemDescription, p.report?.rootCause,
@@ -493,7 +491,7 @@ const RootCauseReport = ({ entries }) => {
               filtered.map(({ row, p }, i) => (
                 <>
                   <tr key={`${row.id}-${p._pid}`} className="hover:bg-amber-50/30">
-                    <Td cls="text-center">{i+1}</Td>
+                    <Td cls="text-center">{i + 1}</Td>
                     <Td cls="min-w-[6vw]">{fmtDate(row.date)}</Td>
                     <Td cls="font-semibold"><div className="break-words whitespace-normal min-w-[8vw]" title={row.customerName}>{row.customerName || "—"}</div></Td>
                     <Td><div className="break-words whitespace-normal min-w-[10vw]" title={p.productDescription}>{p.productDescription || "—"}</div></Td>
@@ -555,8 +553,8 @@ const RootCauseReport = ({ entries }) => {
       </div>
       <SummaryBar items={[
         { label: "Total RCA Records", value: rows.length, color: "text-amber-800" },
-        { label: "Warranty Cases", value: rows.filter(({p}) => p.type === "W").length, color: "text-emerald-800" },
-        { label: "Paid Cases", value: rows.filter(({p}) => p.type === "PW").length, color: "text-slate-800" },
+        { label: "Warranty Cases", value: rows.filter(({ p }) => p.type === "W").length, color: "text-emerald-800" },
+        { label: "Paid Cases", value: rows.filter(({ p }) => p.type === "PW").length, color: "text-slate-800" },
         { label: "Showing", value: filtered.length, color: "text-black" },
       ]} />
     </div>
@@ -601,9 +599,9 @@ const CorrectiveActionReport = ({ entries }) => {
   }, [rows, search, filterVerify]);
 
   const exportCsv = () => {
-    const headers = ["S.No","Date","Customer","Ref No.","Product","Board Type","Serial No","Type","4M Category","Error Code","Root Cause","Corrective Action Taken","Parts Replaced","Implemented By","Completed Date","Verification Status"];
+    const headers = ["S.No", "Date", "Customer", "Ref No.", "Product", "Board Type", "Serial No", "Type", "4M Category", "Error Code", "Root Cause", "Corrective Action Taken", "Parts Replaced", "Implemented By", "Completed Date", "Verification Status"];
     const data = filtered.map(({ row, p }, i) => [
-      i+1, fmtDate(row.date), row.customerName, row.refNoCustomer,
+      i + 1, fmtDate(row.date), row.customerName, row.refNoCustomer,
       p.productDescription, p.boardType, p.serialNumber, p.type === "W" ? "Warranty" : "Paid",
       p.report?.fourMCategory, p.report?.errorCode,
       p.report?.rootCause, p.report?.correctiveAction, p.report?.partsReplacement,
@@ -616,12 +614,11 @@ const CorrectiveActionReport = ({ entries }) => {
     <div>
       <div className="flex items-center justify-between mb-[0.8vw] gap-[0.6vw] flex-wrap">
         <div className="flex items-center gap-[0.5vw]">
-          {["All","Completed","Pending"].map((v) => (
+          {["All", "Completed", "Pending"].map((v) => (
             <button key={v} type="button"
               onClick={() => setFilterVerify(v)}
-              className={`px-[0.8vw] py-[0.3vw] rounded-full text-[0.7vw] border cursor-pointer transition-all ${
-                filterVerify === v ? "bg-teal-800 text-white border-teal-800" : "bg-white text-black border-slate-300 hover:border-teal-400"
-              }`}
+              className={`px-[0.8vw] py-[0.3vw] rounded-full text-[0.7vw] border cursor-pointer transition-all ${filterVerify === v ? "bg-teal-800 text-white border-teal-800" : "bg-white text-black border-slate-300 hover:border-teal-400"
+                }`}
             >{v}</button>
           ))}
         </div>
@@ -652,7 +649,7 @@ const CorrectiveActionReport = ({ entries }) => {
             {filtered.length === 0 ? <EmptyState message="No corrective action records found." /> :
               filtered.map(({ row, p }, i) => (
                 <tr key={`${row.id}-${p._pid}`} className="hover:bg-teal-50/20">
-                  <Td cls="text-center">{i+1}</Td>
+                  <Td cls="text-center">{i + 1}</Td>
                   <Td cls="min-w-[6vw]">{fmtDate(row.date)}</Td>
                   <Td cls="font-semibold"><div className="break-words whitespace-normal min-w-[8vw]" title={row.customerName}>{row.customerName || "—"}</div></Td>
                   <Td><div className="break-words whitespace-normal min-w-[10vw]" title={p.productDescription}>{p.productDescription || "—"}</div></Td>
@@ -698,9 +695,9 @@ const CorrectiveActionReport = ({ entries }) => {
       </div>
       <SummaryBar items={[
         { label: "Total Actions", value: rows.length, color: "text-teal-700" },
-        { label: "Verified / Completed", value: rows.filter(({p}) => p.report?.status === "Completed").length, color: "text-green-700" },
-        { label: "Pending Verification", value: rows.filter(({p}) => p.report?.status !== "Completed").length, color: "text-orange-600" },
-        { label: "Parts Replaced", value: rows.filter(({p}) => p.report?.partsReplacement).length, color: "text-blue-700" },
+        { label: "Verified / Completed", value: rows.filter(({ p }) => p.report?.status === "Completed").length, color: "text-green-700" },
+        { label: "Pending Verification", value: rows.filter(({ p }) => p.report?.status !== "Completed").length, color: "text-orange-600" },
+        { label: "Parts Replaced", value: rows.filter(({ p }) => p.report?.partsReplacement).length, color: "text-blue-700" },
       ]} />
     </div>
   );
@@ -710,10 +707,10 @@ const CorrectiveActionReport = ({ entries }) => {
 
 const ExportButtons = ({ onCsv, onPdf, color = "blue" }) => {
   const btnCls = {
-    blue:  "border-blue-200 text-blue-800 hover:bg-blue-50",
+    blue: "border-blue-200 text-blue-800 hover:bg-blue-50",
     green: "border-emerald-200 text-emerald-800 hover:bg-emerald-50",
     amber: "border-amber-200 text-amber-800 hover:bg-amber-50",
-    teal:  "border-teal-200 text-teal-800 hover:bg-teal-50",
+    teal: "border-teal-200 text-teal-800 hover:bg-teal-50",
   }[color] || "border-slate-300 text-black hover:bg-slate-50";
 
   return (
@@ -746,7 +743,7 @@ const SummaryBar = ({ items }) => (
 const ExpandDetail = ({ label, value, color }) => {
   const colors = {
     orange: "bg-orange-50 border-orange-200 text-orange-800",
-    amber:  "bg-amber-50 border-amber-200 text-amber-800",
+    amber: "bg-amber-50 border-amber-200 text-amber-800",
     yellow: "bg-yellow-50 border-yellow-200 text-yellow-800",
   };
   return (
@@ -806,9 +803,8 @@ export default function ServiceMaterialReports() {
                 key={t.id}
                 type="button"
                 onClick={() => setActiveTab(t.id)}
-                className={`flex items-center gap-[0.5vw] px-[1.2vw] py-[0.55vw] rounded-[0.5vw] border text-[0.78vw] font-semibold cursor-pointer transition-all duration-150 select-none ${
-                  isActive ? tc.active : tc.inactive
-                }`}
+                className={`flex items-center gap-[0.5vw] px-[1.2vw] py-[0.55vw] rounded-[0.5vw] border text-[0.78vw] font-semibold cursor-pointer transition-all duration-150 select-none ${isActive ? tc.active : tc.inactive
+                  }`}
               >
                 <Icon className="w-[0.95vw] h-[0.95vw]" />
                 {t.label}
@@ -821,17 +817,16 @@ export default function ServiceMaterialReports() {
       {/* Report Panel */}
       <div className="bg-white border border-slate-300 rounded-[0.6vw] shadow-md p-[1.2vw]">
         <div className="flex items-center gap-[0.7vw] mb-[1vw] pb-[0.8vw] border-b border-blue-100">
-          {tab && <tab.icon className={`w-[1.2vw] h-[1.2vw] ${
-            tab.color === "blue" ? "text-blue-700" :
-            tab.color === "green" ? "text-emerald-700" :
-            tab.color === "amber" ? "text-amber-700" : "text-teal-700"
-          }`} />}
+          {tab && <tab.icon className={`w-[1.2vw] h-[1.2vw] ${tab.color === "blue" ? "text-blue-700" :
+              tab.color === "green" ? "text-emerald-700" :
+                tab.color === "amber" ? "text-amber-700" : "text-teal-700"
+            }`} />}
           <h3 className="text-[0.95vw] font-bold text-black">{tab?.label}</h3>
         </div>
 
-        {activeTab === "testing"    && <TestingRepairReport entries={entries} />}
-        {activeTab === "delivery"   && <DeliveryReport entries={entries} />}
-        {activeTab === "rca"        && <RootCauseReport entries={entries} />}
+        {activeTab === "testing" && <TestingRepairReport entries={entries} />}
+        {activeTab === "delivery" && <DeliveryReport entries={entries} />}
+        {activeTab === "rca" && <RootCauseReport entries={entries} />}
         {activeTab === "corrective" && <CorrectiveActionReport entries={entries} />}
       </div>
     </div>
