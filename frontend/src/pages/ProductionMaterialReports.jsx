@@ -143,7 +143,7 @@ const TechnicalReport = ({ entries }) => {
           <thead className="sticky top-0 z-10">
             <tr>
               <Th>S.No</Th><Th>Date</Th><Th>Job Order</Th><Th>Customer</Th>
-              <Th>Product</Th><Th>Serial No</Th><Th>4M Category</Th>
+              <Th>Product</Th><Th>Serial No</Th><Th>Problem Type</Th><Th>4M Category</Th>
               <Th>Root Cause</Th><Th>Parts Replaced</Th><Th>Personnel</Th><Th>Status</Th>
             </tr>
           </thead>
@@ -156,6 +156,7 @@ const TechnicalReport = ({ entries }) => {
                 <Td cls="font-semibold">{r.entry.customerName}</Td>
                 <Td><div className="max-w-[12vw] truncate" title={r.prod.productDescription}>{r.prod.productDescription}</div></Td>
                 <Td cls="font-mono text-[0.65vw]">{r.prod.serialNumber || "—"}</Td>
+                <Td><span className="bg-slate-50 px-[0.4vw] rounded font-bold text-slate-700">{r.prod.problemType || "—"}</span></Td>
                 <Td><span className="bg-blue-50 px-[0.4vw] rounded font-bold text-blue-700">{r.prod.report?.fourMCategory || "—"}</span></Td>
                 <Td><div className="max-w-[15vw] italic text-[0.68vw]">{r.prod.report?.rootCause || "—"}</div></Td>
                 <Td>{r.prod.report?.partsReplacement || "—"}</Td>
@@ -217,7 +218,7 @@ const AnalysisReport = ({ entries }) => {
           <thead className="sticky top-0 z-10">
             <tr>
               <Th>S.No</Th><Th>Inward Date</Th><Th>Customer</Th><Th>Job Order</Th>
-              <Th>Product Details</Th><Th>Stage</Th><Th>Disposition</Th>
+              <Th>Product Details</Th><Th>Stage</Th><Th>Problem Type</Th><Th>Disposition</Th>
               <Th>Closed Date</Th><Th>TAT (Days)</Th><Th>Status</Th>
             </tr>
           </thead>
@@ -233,6 +234,7 @@ const AnalysisReport = ({ entries }) => {
                   <div className="text-[0.65vw] text-black/50">{r.prod.productDescription}</div>
                 </Td>
                 <Td cls="font-bold text-gray-700">{r.prod.stage}</Td>
+                <Td><span className="text-slate-600 font-semibold">{r.prod.problemType || "—"}</span></Td>
                 <Td>{r.prod.disposition}</Td>
                 <Td>{fmtDate(r.prod.report?.closedDate)}</Td>
                 <Td cls={`font-black ${r.tat !== null ? (r.tat <= 2 ? "text-green-600" : r.tat <= 5 ? "text-orange-600" : "text-red-600") : "text-black/20"}`}>
@@ -286,7 +288,7 @@ const RCALogReport = ({ entries }) => {
         <table className="w-full text-left border-collapse">
           <thead className="sticky top-0 z-10">
             <tr>
-              <Th>S.No</Th><Th>Product</Th><Th>JO#</Th><Th>4M Cat</Th><Th>Root Cause Detail</Th><Th>Corrective Action</Th><Th>Analysed By</Th>
+              <Th>S.No</Th><Th>Product</Th><Th>JO#</Th><Th>Problem Type</Th><Th>4M Cat</Th><Th>Root Cause Detail</Th><Th>Corrective Action</Th><Th>Analysed By</Th>
             </tr>
           </thead>
           <tbody>
@@ -298,6 +300,7 @@ const RCALogReport = ({ entries }) => {
                   <div className="text-[0.65vw] text-black/50 truncate max-w-[10vw]">{r.prod.productDescription}</div>
                 </Td>
                 <Td cls="font-bold text-blue-700">{r.entry.jobOrderNo}</Td>
+                <Td><span className="font-semibold text-slate-700 bg-slate-100 px-[0.4vw] rounded">{r.prod.problemType || "—"}</span></Td>
                 <Td><span className="font-bold text-amber-700">{r.prod.report?.fourMCategory}</span></Td>
                 <Td><div className="max-w-[20vw] italic text-black/80 font-medium leading-relaxed">"{r.prod.report?.rootCause}"</div></Td>
                 <Td><div className="max-w-[20vw] text-green-700 font-semibold">{r.prod.report?.correctiveAction || "—"}</div></Td>

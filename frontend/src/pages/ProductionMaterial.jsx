@@ -16,9 +16,13 @@ const CUSTOMER_DB_KEY = "customer_db_grouped_v5";
 const EMPLOYEES_KEY = "employees";
 const STAGE_MASTER_KEY = "production_material_stage_options_v1";
 const DISPOSITION_MASTER_KEY = "production_material_disposition_options_v1";
+const PROBLEM_TYPE_MASTER_KEY = "production_material_problem_type_options_v1";
+const PRODUCT_TYPE_MASTER_KEY = "production_material_product_type_options_v1";
 
 const DEFAULT_STAGE_OPTIONS = ["SMD", "WS", "MS", "SRV-Testing", "SRV-FI", "STA-Testing", "STA-FI", "MPR-CVR", "MPR-Testing", "MPR-FI", "Panel-WA", "Panel-Integration", "Panel-Testing", "Panel-FI"];
 const DEFAULT_DISPOSITION_OPTIONS = ["Spare Replacement", "Rework Required", "Client Approval Pending", "No Change", "Accepted"];
+const DEFAULT_PROBLEM_TYPE_OPTIONS = ["Hardware", "Software", "Assembly", "Component Failure", "Power Issue", "Display Issue"];
+const DEFAULT_PRODUCT_TYPE_OPTIONS = ["Inverter", "Stabilizer", "Battery", "Solar Panel", "UPS", "Transformer"];
 const FINAL_STATUS_OPTIONS = ["Pending", "Rejected", "Completed"];
 const FINAL_STATUS_COLORS = {
   Pending: "bg-orange-100 text-orange-700 border-orange-300",
@@ -49,9 +53,9 @@ const fmtDate = (s) => {
 
 const emptyProduct = () => ({
   _pid: `p-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-  productCode: "", productDescription: "", category: "", boardType: "", problem: "", qty: "1", stage: DEFAULT_STAGE_OPTIONS[0],
-  serialNumber: "", assembledBy: "", assembledByName: "", testedBy: "", testedByName: "", fiBy: "", fiByName: "",
-  disposition: DEFAULT_DISPOSITION_OPTIONS[0],
+  productCode: "", productDescription: "", category: "", boardType: "", productType: "", problemType: "", problem: "", qty: "1", stage: DEFAULT_STAGE_OPTIONS[0],
+  serialNumber: "", assignedTo: "", assignedToName: "", assembledBy: "", assembledByName: "", testedBy: "", testedByName: "", fiBy: "", fiByName: "",
+  disposition: DEFAULT_DISPOSITION_OPTIONS[0], raisedTo: DEFAULT_STAGE_OPTIONS[0],
   report: null, finalStatus: "Pending", finalStatusRemarks: "", finalStatusDate: todayDateStr(), finalStatusHistory: []
 });
 
@@ -59,7 +63,7 @@ const emptyProduct = () => ({
 const ReportsModal = ({ row, onClose }) => {
   const products = row.products || [];
   const [expanded, setExpanded] = useState(new Set([products[0]?._pid]));
-  
+
   const toggleExpand = (pid) => {
     setExpanded(prev => {
       const next = new Set(prev);
@@ -113,7 +117,7 @@ const ReportsModal = ({ row, onClose }) => {
             <div className="text-center py-[4vw] text-[0.9vw] text-blue-500">No product records available for this entry.</div>
           ) : products.map((prod, idx) => (
             <div key={prod._pid} className="border border-blue-200 rounded-[0.6vw] overflow-hidden shadow-sm transition-all duration-300">
-              <div 
+              <div
                 onClick={() => toggleExpand(prod._pid)}
                 className="bg-blue-50 px-[1.2vw] py-[1vw] flex items-center justify-between gap-[1vw] cursor-pointer hover:bg-blue-100/50 transition-colors"
               >
@@ -142,15 +146,16 @@ const ReportsModal = ({ row, onClose }) => {
                         <div className="text-[0.7vw] font-bold text-blue-600 uppercase mb-[1vw] flex items-center gap-[0.5vw] border-b border-blue-50 pb-[0.4vw]">
                           <Target className="w-[0.9vw] h-[0.9vw]" /> Registration Information
                         </div>
-                        <div className="grid grid-cols-4 gap-[1.5vw] mb-[1vw]">
-                          <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Stage</div><div className="font-bold text-black text-[0.8vw]">{prod.stage || "—"}</div></div>
-                          <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Category</div><div className="font-bold text-black text-[0.8vw]">{row.category || prod.category || "—"}</div></div>
-                          <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Assembled By</div><div className="font-bold text-black text-[0.8vw]">{prod.report?.assembledByName || prod.assembledByName || "—"}</div></div>
-                          <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Tested By</div><div className="font-bold text-black text-[0.8vw]">{prod.report?.testedByName || prod.testedByName || "—"}</div></div>
+                        <div className="grid grid-cols-5 gap-[1.5vw] mb-[1vw]">
+                          <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Stage</div><div className="font-regular text-black text-[0.8vw]">{prod.stage || "—"}</div></div>
+                          <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Category</div><div className="font-regular text-black text-[0.8vw]">{row.category || prod.category || "—"}</div></div>
+                          <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Problem Type</div><div className="font-regular text-black text-[0.8vw]">{prod.problemType || "—"}</div></div>
+                          <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Assembled By</div><div className="font-regular text-black text-[0.8vw]">{prod.report?.assembledByName || prod.assembledByName || "—"}</div></div>
+                          <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Tested By</div><div className="font-regular text-black text-[0.8vw]">{prod.report?.testedByName || prod.testedByName || "—"}</div></div>
                         </div>
                         <div className="bg-gray-50/50 p-[1vw] rounded-[0.5vw] border border-gray-100 mb-[1vw]">
-                            <div className="text-[0.65vw] text-blue-600 font-bold uppercase mb-[0.4vw]">Initial Problem Description</div>
-                            <div className="text-[0.8vw] text-black font-bold leading-relaxed">{prod.problem || "No description provided."}</div>
+                          <div className="text-[0.65vw] text-blue-600 font-bold uppercase mb-[0.4vw]">Initial Problem Description</div>
+                          <div className="text-[0.8vw] text-black font-regular leading-relaxed">{prod.problem || "No description provided."}</div>
                         </div>
                       </div>
 
@@ -162,47 +167,47 @@ const ReportsModal = ({ row, onClose }) => {
                         {prod.report ? (
                           <div className="space-y-[1.2vw]">
                             <div className="grid grid-cols-4 gap-[1.5vw]">
-                              <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Start Date</div><div className="font-bold text-black text-[0.8vw]">{fmtDate(prod.report.startDate)}</div></div>
-                              <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">4M Category</div><div className="font-bold text-black text-[0.8vw]">{prod.report.fourMCategory || "—"}</div></div>
-                              <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">CAE</div><div className="font-bold text-black text-[0.8vw]">{prod.report.cae || "—"}</div></div>
-                              <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Status</div><div className="font-black text-blue-700 text-[0.8vw]">{prod.report.status || "—"}</div></div>
+                              <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Start Date</div><div className="font-regular text-black text-[0.8vw]">{fmtDate(prod.report.startDate)}</div></div>
+                              <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">4M Category</div><div className="font-regular text-black text-[0.8vw]">{prod.report.fourMCategory || "—"}</div></div>
+                              <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">CAE</div><div className="font-regular text-black text-[0.8vw]">{prod.report.cae || "—"}</div></div>
+                              <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Status</div><div className="font-regular text-blue-700 text-[0.8vw]">{prod.report.status || "—"}</div></div>
                             </div>
-                            
+
                             <div className="grid grid-cols-2 gap-[1vw]">
                               <div className="bg-white p-[0.8vw] rounded-[0.5vw] border border-blue-100">
                                 <div className="text-[0.65vw] text-blue-600 font-bold uppercase mb-[0.4vw]">Root Cause Analysis</div>
-                                <div className="text-[0.8vw] text-black font-bold leading-relaxed">{prod.report.rootCause || "—"}</div>
+                                <div className="text-[0.8vw] text-black font-regular leading-relaxed">{prod.report.rootCause || "—"}</div>
                               </div>
                               <div className="bg-white p-[0.8vw] rounded-[0.5vw] border border-blue-100">
                                 <div className="text-[0.65vw] text-blue-600 font-bold uppercase mb-[0.4vw]">Corrective Action Taken</div>
-                                <div className="text-[0.8vw] text-black font-bold leading-relaxed">{prod.report.correctiveAction || "—"}</div>
+                                <div className="text-[0.8vw] text-black font-regular leading-relaxed">{prod.report.correctiveAction || "—"}</div>
                               </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-[1vw]">
-                                <div className="bg-white p-[0.8vw] rounded-[0.5vw] border border-blue-100">
-                                    <div className="text-[0.65vw] text-blue-600 font-bold uppercase mb-[0.6vw]">Parts Replaced</div>
-                                    {prod.report && prod.report.partsReplacement && prod.report.partsReplacement.trim() ? (
-                                        <ul className="list-disc list-inside space-y-[0.3vw]">
-                                            {parseParts(prod.report.partsReplacement).map((part, pidx) => (
-                                                <li key={pidx} className="text-[0.78vw] text-black font-bold leading-tight">{part}</li>
-                                            ))}
-                                        </ul>
-                                    ) : <div className="text-[0.78vw] text-black/40 italic font-medium">No parts replaced.</div>}
-                                </div>
-                                <div className="grid grid-cols-2 gap-[1vw]">
-                                    <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Closed Date</div><div className="font-bold text-black text-[0.8vw]">{fmtDate(prod.report.closedDate)}</div></div>
-                                    <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Verified Date</div><div className="font-bold text-black text-[0.8vw]">{fmtDate(prod.report.verifiedDate)}</div></div>
-                                    <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Verified By</div><div className="font-bold text-black text-[0.8vw]">{prod.report.verifiedByName || "—"}</div></div>
-                                    <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Disposition</div><div className="font-bold text-black text-[0.8vw]">{prod.disposition || "—"}</div></div>
-                                </div>
+                              <div className="bg-white p-[0.8vw] rounded-[0.5vw] border border-blue-100">
+                                <div className="text-[0.65vw] text-blue-600 font-bold uppercase mb-[0.6vw]">Parts Replaced</div>
+                                {prod.report && prod.report.partsReplacement && prod.report.partsReplacement.trim() ? (
+                                  <ul className="list-disc list-inside space-y-[0.3vw]">
+                                    {parseParts(prod.report.partsReplacement).map((part, pidx) => (
+                                      <li key={pidx} className="text-[0.78vw] text-black font-regular leading-tight">{part}</li>
+                                    ))}
+                                  </ul>
+                                ) : <div className="text-[0.78vw] text-black/40 italic font-medium">No parts replaced.</div>}
+                              </div>
+                              <div className="grid grid-cols-2 gap-[1vw]">
+                                <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Closed Date</div><div className="font-regular text-black text-[0.8vw]">{fmtDate(prod.report.closedDate)}</div></div>
+                                <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Verified Date</div><div className="font-regular text-black text-[0.8vw]">{fmtDate(prod.report.verifiedDate)}</div></div>
+                                <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Verified By</div><div className="font-regular text-black text-[0.8vw]">{prod.report.verifiedByName || "—"}</div></div>
+                                <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Disposition</div><div className="font-regular text-black text-[0.8vw]">{prod.disposition || "—"}</div></div>
+                              </div>
                             </div>
-                            
+
                             <div className="grid grid-cols-4 gap-[1vw]">
-                                <div className="bg-white p-[0.6vw] rounded-[0.4vw] border border-blue-100 text-center"><div className="text-[0.55vw] font-bold text-blue-500 uppercase">Assembler</div><div className="text-[0.75vw] font-bold text-black">{prod.report.assembledByName || "—"}</div></div>
-                                <div className="bg-white p-[0.6vw] rounded-[0.4vw] border border-blue-100 text-center"><div className="text-[0.55vw] font-bold text-blue-500 uppercase">Tester</div><div className="text-[0.75vw] font-bold text-black">{prod.report.testedByName || "—"}</div></div>
-                                <div className="bg-white p-[0.6vw] rounded-[0.4vw] border border-blue-100 text-center"><div className="text-[0.55vw] font-bold text-blue-500 uppercase">FI By</div><div className="text-[0.75vw] font-bold text-black">{prod.report.fiByName || "—"}</div></div>
-                                <div className="bg-white p-[0.6vw] rounded-[0.4vw] border border-blue-100 text-center"><div className="text-[0.55vw] font-bold text-blue-500 uppercase">Final Status</div><div className="text-[0.75vw] font-black text-black uppercase">{prod.finalStatus || "Pending"}</div></div>
+                              <div className="bg-white p-[0.6vw] rounded-[0.4vw] border border-blue-100 text-center"><div className="text-[0.55vw] font-bold text-blue-500 uppercase">Assembler</div><div className="text-[0.75vw] font-regular text-black">{prod.report.assembledByName || "—"}</div></div>
+                              <div className="bg-white p-[0.6vw] rounded-[0.4vw] border border-blue-100 text-center"><div className="text-[0.55vw] font-bold text-blue-500 uppercase">Tester</div><div className="text-[0.75vw] font-regular text-black">{prod.report.testedByName || "—"}</div></div>
+                              <div className="bg-white p-[0.6vw] rounded-[0.4vw] border border-blue-100 text-center"><div className="text-[0.55vw] font-bold text-blue-500 uppercase">FI By</div><div className="text-[0.75vw] font-regular text-black">{prod.report.fiByName || "—"}</div></div>
+                              <div className="bg-white p-[0.6vw] rounded-[0.4vw] border border-blue-100 text-center"><div className="text-[0.55vw] font-bold text-blue-500 uppercase">Final Status</div><div className="text-[0.75vw] font-regular text-black uppercase">{prod.finalStatus || "Pending"}</div></div>
                             </div>
                           </div>
                         ) : (
@@ -227,184 +232,219 @@ const ReportsModal = ({ row, onClose }) => {
   );
 };
 
-const MasterDataModal = ({ open, onClose, stageOptions, dispositionOptions, onSave }) => {
+// --- Verification Modal ---
+const VerificationModal = ({ row, prod, employees, caeHistory, onSave, onClose }) => {
+  const [formData, setFormData] = useState({
+    verifiedBy: "",
+    verifiedByName: "",
+    verifiedDate: todayDateStr(),
+    cae: prod.report?.cae || ""
+  });
+  const [showCaeSuggestions, setShowCaeSuggestions] = useState(false);
+
+  const filteredCaeSuggestions = useMemo(() => {
+    const q = formData.cae.toLowerCase();
+    return caeHistory.filter(c => c.toLowerCase().includes(q));
+  }, [formData.cae, caeHistory]);
+
+  const handleSave = () => {
+    if (!formData.verifiedBy) return alert("Verified By is mandatory.");
+    if (!formData.verifiedDate) return alert("Verified Date is mandatory.");
+    onSave(formData);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-[2vw]">
+      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white w-[35vw] rounded-[1vw] overflow-hidden flex flex-col border border-gray-300 shadow-xl">
+        <div className="bg-blue-600 px-[1.5vw] py-[1vw] flex justify-between items-center">
+          <div className="flex items-center gap-[0.8vw]">
+            <CheckCircle className="w-[1.2vw] h-[1.2vw] text-white" />
+            <h3 className="text-[1.1vw] font-bold text-white uppercase tracking-tight">Verify Resolution</h3>
+          </div>
+          <button onClick={onClose} className="text-white hover:bg-white/10 p-[0.4vw] rounded-full transition-all cursor-pointer"><X className="w-[1.1vw] h-[1.1vw]" /></button>
+        </div>
+
+        <div className="p-[1.5vw] space-y-[1.2vw] bg-white">
+          <div className="bg-white p-[1vw] rounded-[0.6vw] border border-gray-300">
+            <div className="text-[0.7vw] font-bold text-blue-700 uppercase mb-[0.6vw]">Product Context</div>
+            <div className="text-[0.85vw] font-bold text-black">{prod.productDescription}</div>
+            <div className="text-[0.72vw] text-black font-regular mt-[.15vw]"><span className='font-semibold'>S/N:</span> {prod.serialNumber || "—"} · <span className='font-semibold'>JO:</span> {row.jobOrderNo}</div>
+          </div>
+
+          <div className="space-y-[1vw]">
+            <div className="flex flex-col gap-[0.3vw]">
+              <label className="text-[0.8vw] font-bold text-black uppercase">VERIFIED BY <span className="text-red-600">*</span></label>
+              <select
+                value={formData.verifiedBy}
+                onChange={e => {
+                  const emp = employees.find(emp => emp.userId === e.target.value);
+                  setFormData(p => ({ ...p, verifiedBy: e.target.value, verifiedByName: emp?.name || "" }));
+                }}
+                className="w-full border border-gray-300 rounded-[0.5vw] py-[0.6vw] px-[0.8vw] text-[0.8vw] font-medium text-black outline-none focus:border-blue-500 bg-white"
+              >
+                <option value="">Select Employee</option>
+                {employees.map(e => <option key={e.userId} value={e.userId}>{e.name}</option>)}
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-[0.3vw]">
+              <label className="text-[0.8vw] font-bold text-black uppercase">VERIFIED DATE <span className="text-red-600">*</span></label>
+              <input
+                type="date"
+                value={formData.verifiedDate}
+                onChange={e => setFormData(p => ({ ...p, verifiedDate: e.target.value }))}
+                className="w-full border border-gray-300 rounded-[0.5vw] py-[0.6vw] px-[0.8vw] text-[0.8vw] font-medium text-black outline-none focus:border-blue-500 bg-white"
+              />
+            </div>
+
+            <div className="flex flex-col gap-[0.3vw] relative">
+              <label className="text-[0.8vw] font-bold text-black uppercase">CAE (CORRECTIVE ACTION EXECUTION)</label>
+              <div className="relative">
+                <input
+                  value={formData.cae}
+                  onChange={e => { setFormData(p => ({ ...p, cae: e.target.value })); setShowCaeSuggestions(true); }}
+                  onFocus={() => setShowCaeSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowCaeSuggestions(false), 200)}
+                  placeholder="Enter or select CAE..."
+                  className="w-full border border-gray-300 rounded-[0.5vw] py-[0.6vw] px-[0.8vw] text-[0.8vw] font-medium text-black outline-none focus:border-blue-500 bg-white"
+                />
+                <AnimatePresence>
+                  {showCaeSuggestions && filteredCaeSuggestions.length > 0 && (
+                    <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="absolute z-50 w-full mt-[0.2vw] bg-white border border-gray-300 rounded-[0.5vw] shadow-lg max-h-[10vw] overflow-y-auto overflow-x-hidden">
+                      {filteredCaeSuggestions.map((opt, i) => (
+                        <div key={i} onClick={() => { setFormData(p => ({ ...p, cae: opt })); setShowCaeSuggestions(false); }} className="px-[1vw] py-[0.6vw] text-[0.8vw] font-bold text-black hover:bg-blue-50 cursor-pointer transition-colors border-b border-gray-100 last:border-0">{opt}</div>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-[1vw] border-t border-gray-200 bg-gray-50/50 flex justify-end gap-[0.8vw]">
+          <button onClick={onClose} className="px-[1.2vw] py-[0.6vw] border border-gray-300 bg-white text-black font-bold rounded-[0.4vw] text-[0.8vw] hover:bg-gray-100 cursor-pointer transition-all">Cancel</button>
+          <button onClick={handleSave} className="px-[1.5vw] py-[0.6vw] bg-blue-600 text-white font-bold rounded-[0.4vw] text-[0.8vw] hover:bg-blue-700 active:scale-95 transition-all shadow-md">Save Verification</button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+const MasterDataModal = ({ open, onClose, stageOptions, dispositionOptions, problemTypeOptions, productTypeOptions, onSave }) => {
   const [activeTab, setActiveTab] = useState("stages");
   const [stages, setStages] = useState(stageOptions);
   const [dispositions, setDispositions] = useState(dispositionOptions);
+  const [problemTypes, setProblemTypes] = useState(problemTypeOptions);
+  const [productTypes, setProductTypes] = useState(productTypeOptions);
+
   const [newStage, setNewStage] = useState("");
   const [newDisposition, setNewDisposition] = useState("");
+  const [newProblemType, setNewProblemType] = useState("");
+  const [newProductType, setNewProductType] = useState("");
 
   useEffect(() => {
     setStages(stageOptions);
     setDispositions(dispositionOptions);
-  }, [stageOptions, dispositionOptions]);
+    setProblemTypes(problemTypeOptions);
+    setProductTypes(productTypeOptions);
+  }, [stageOptions, dispositionOptions, problemTypeOptions, productTypeOptions]);
 
-  const addStage = () => {
-    const trimmed = newStage.trim();
-    if (!trimmed) return;
-    setStages(prev => prev.includes(trimmed) ? prev : [...prev, trimmed]);
-    setNewStage("");
-  };
+  const addStage = () => { const t = newStage.trim(); if (!t) return; setStages(prev => prev.includes(t) ? prev : [...prev, t]); setNewStage(""); };
+  const addDisposition = () => { const t = newDisposition.trim(); if (!t) return; setDispositions(prev => prev.includes(t) ? prev : [...prev, t]); setNewDisposition(""); };
+  const addProblemType = () => { const t = newProblemType.trim(); if (!t) return; setProblemTypes(prev => prev.includes(t) ? prev : [...prev, t]); setNewProblemType(""); };
+  const addProductType = () => { const t = newProductType.trim(); if (!t) return; setProductTypes(prev => prev.includes(t) ? prev : [...prev, t]); setNewProductType(""); };
 
-  const addDisposition = () => {
-    const trimmed = newDisposition.trim();
-    if (!trimmed) return;
-    setDispositions(prev => prev.includes(trimmed) ? prev : [...prev, trimmed]);
-    setNewDisposition("");
-  };
-
-  const removeStage = (value) => setStages(prev => prev.filter(item => item !== value));
-  const removeDisposition = (value) => setDispositions(prev => prev.filter(item => item !== value));
+  const removeStage = (s) => setStages(prev => prev.filter(x => x !== s));
+  const removeDisposition = (d) => setDispositions(prev => prev.filter(x => x !== d));
+  const removeProblemType = (p) => setProblemTypes(prev => prev.filter(x => x !== p));
+  const removeProductType = (p) => setProductTypes(prev => prev.filter(x => x !== p));
 
   if (!open) return null;
 
+  const TABS = [
+    { id: "stages", label: "Work Stages", icon: Target },
+    { id: "dispositions", label: "Dispositions", icon: ClipboardList },
+    { id: "problems", label: "Problem Types", icon: AlertCircle },
+    { id: "products", label: "Product Types", icon: Package }
+  ];
+
   return (
     <div className="fixed inset-0 z-[120] bg-black/50 backdrop-blur-sm flex items-center justify-center p-[1.5vw]">
-      <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-white rounded-[1.2vw] w-[50vw] max-h-[85vh] overflow-hidden shadow-2xl border border-gray-300 flex flex-col">
+      <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-white rounded-[1.2vw] w-[55vw] max-h-[85vh] overflow-hidden shadow-2xl border border-gray-300 flex flex-col">
         <div className="bg-blue-600 px-[1.5vw] py-[1.2vw] flex justify-between items-center shrink-0">
           <div>
             <h3 className="text-[1.1vw] font-bold text-white uppercase ">Master Data Configuration</h3>
-            <p className="text-[0.75vw] text-white/90 mt-[0.2vw]">Manage system-wide stage and disposition values.</p>
+            <p className="text-[0.75vw] text-white/90 mt-[0.2vw]">Manage system-wide production material categories.</p>
           </div>
-          <button onClick={onClose} className="text-white/80 hover:text-white p-[0.4vw] rounded-full hover:bg-white/10 transition-all"><X className="w-[1.4vw] h-[1.4vw]" /></button>
+          <button onClick={onClose} className="text-white/80 hover:text-white p-[0.4vw] rounded-full hover:bg-white/10 transition-all cursor-pointer"><X className="w-[1.4vw] h-[1.4vw]" /></button>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex bg-gray-50 border-b border-gray-200 p-[0.4vw] gap-[0.4vw] shrink-0">
-          {[
-            { id: "stages", label: "Stage Options", icon: Target },
-            { id: "dispositions", label: "Disposition Options", icon: ClipboardList }
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
+        <div className="flex-1 overflow-hidden flex bg-white min-h-[40vh]">
+          {/* Sidebar */}
+          <div className="w-[15vw] border-r border-gray-200 flex flex-col bg-gray-50/50">
+            {TABS.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 flex items-center justify-center gap-[0.6vw] py-[0.8vw] rounded-[0.8vw] text-[0.85vw] font-bold transition-all ${
-                  isActive 
-                    ? "bg-white text-blue-600 shadow-md border border-blue-100" 
-                    : "text-gray-500 hover:bg-gray-100 hover:text-gray-800"
-                }`}
+                className={`flex items-center gap-[0.8vw] px-[1.2vw] py-[1.2vw] text-[0.85vw] font-bold border-b border-gray-100 transition-all text-left ${activeTab === tab.id ? "bg-white text-blue-600 border-r-4 border-r-blue-600 shadow-sm" : "text-gray-500 hover:bg-gray-100"}`}
               >
-                <Icon className={`w-[1.1vw] h-[1.1vw] ${isActive ? "text-blue-600" : "text-gray-400"}`} />
+                <tab.icon className={`w-[1.1vw] h-[1.1vw] ${activeTab === tab.id ? "text-blue-600" : "text-gray-400"}`} />
                 {tab.label}
               </button>
-            );
-          })}
+            ))}
+          </div>
+
+          {/* Content Area */}
+          <div className="flex-1 p-[2vw] overflow-y-auto bg-white">
+            <AnimatePresence mode="wait">
+              {activeTab === "stages" && (
+                <motion.div key="stages" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} className="space-y-[1.5vw]">
+                  <h4 className="text-[1vw] font-bold text-gray-900">Work Stages</h4>
+                  <div className="flex gap-[0.8vw] bg-blue-50/50 p-[1vw] rounded-[1vw] border border-blue-100">
+                    <input value={newStage} onChange={e => setNewStage(e.target.value)} onKeyPress={e => e.key === 'Enter' && addStage()} placeholder="Add new stage..." className="flex-1 border border-gray-300 rounded-[0.6vw] py-[0.7vw] px-[1vw] text-[0.85vw] outline-none focus:border-blue-500 bg-white shadow-sm" />
+                    <button onClick={addStage} className="bg-blue-600 text-white px-[1.5vw] rounded-[0.6vw] text-[0.85vw] font-bold hover:bg-blue-700 shadow-md active:scale-95 transition-all"><Plus className="w-[1.1vw] h-[1.1vw]" /></button>
+                  </div>
+                  <div className="flex flex-wrap gap-[0.8vw]">{stages.map(s => <span key={s} className="flex items-center gap-[0.4vw] px-[1vw] py-[0.6vw] bg-white border border-gray-200 rounded-[0.8vw] text-[0.85vw] text-gray-800 font-bold shadow-sm group hover:border-blue-300 transition-all">{s}<button onClick={() => removeStage(s)} className="w-[1.1vw] h-[1.1vw] rounded-full bg-gray-100 group-hover:bg-red-500 text-gray-400 group-hover:text-white flex items-center justify-center transition-all cursor-pointer"><X className="w-[0.7vw] h-[0.7vw]" /></button></span>)}</div>
+                </motion.div>
+              )}
+              {activeTab === "dispositions" && (
+                <motion.div key="dispositions" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} className="space-y-[1.5vw]">
+                  <h4 className="text-[1vw] font-bold text-gray-900">Disposition Outcomes</h4>
+                  <div className="flex gap-[0.8vw] bg-emerald-50/50 p-[1vw] rounded-[1vw] border border-emerald-100">
+                    <input value={newDisposition} onChange={e => setNewDisposition(e.target.value)} onKeyPress={e => e.key === 'Enter' && addDisposition()} placeholder="Add new disposition..." className="flex-1 border border-gray-300 rounded-[0.6vw] py-[0.7vw] px-[1vw] text-[0.85vw] outline-none focus:border-emerald-500 bg-white shadow-sm" />
+                    <button onClick={addDisposition} className="bg-emerald-600 text-white px-[1.5vw] rounded-[0.6vw] text-[0.85vw] font-bold hover:bg-emerald-700 shadow-md active:scale-95 transition-all"><Plus className="w-[1.1vw] h-[1.1vw]" /></button>
+                  </div>
+                  <div className="flex flex-wrap gap-[0.8vw]">{dispositions.map(d => <span key={d} className="flex items-center gap-[0.6vw] px-[1vw] py-[0.6vw] bg-white border border-gray-200 rounded-[0.8vw] text-[0.85vw] text-gray-800 font-bold shadow-sm group hover:border-emerald-300 transition-all">{d}<button onClick={() => removeDisposition(d)} className="w-[1.1vw] h-[1.1vw] rounded-full bg-gray-100 group-hover:bg-red-500 text-gray-400 group-hover:text-white flex items-center justify-center transition-all cursor-pointer"><X className="w-[0.7vw] h-[0.7vw]" /></button></span>)}</div>
+                </motion.div>
+              )}
+              {activeTab === "problems" && (
+                <motion.div key="problems" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} className="space-y-[1.5vw]">
+                  <h4 className="text-[1vw] font-bold text-gray-900">Problem Types</h4>
+                  <div className="flex gap-[0.8vw] bg-orange-50/50 p-[1vw] rounded-[1vw] border border-orange-100">
+                    <input value={newProblemType} onChange={e => setNewProblemType(e.target.value)} onKeyPress={e => e.key === 'Enter' && addProblemType()} placeholder="Add new problem type..." className="flex-1 border border-gray-300 rounded-[0.6vw] py-[0.7vw] px-[1vw] text-[0.85vw] outline-none focus:border-orange-500 bg-white shadow-sm" />
+                    <button onClick={addProblemType} className="bg-orange-600 text-white px-[1.5vw] rounded-[0.6vw] text-[0.85vw] font-bold hover:bg-orange-700 shadow-md active:scale-95 transition-all"><Plus className="w-[1.1vw] h-[1.1vw]" /></button>
+                  </div>
+                  <div className="flex flex-wrap gap-[0.8vw]">{problemTypes.map(p => <span key={p} className="flex items-center gap-[0.6vw] px-[1vw] py-[0.6vw] bg-white border border-gray-200 rounded-[0.8vw] text-[0.85vw] text-gray-800 font-bold shadow-sm group hover:border-orange-300 transition-all">{p}<button onClick={() => removeProblemType(p)} className="w-[1.1vw] h-[1.1vw] rounded-full bg-gray-100 group-hover:bg-red-500 text-gray-400 group-hover:text-white flex items-center justify-center transition-all cursor-pointer"><X className="w-[0.7vw] h-[0.7vw]" /></button></span>)}</div>
+                </motion.div>
+              )}
+              {activeTab === "products" && (
+                <motion.div key="products" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} className="space-y-[1.5vw]">
+                  <h4 className="text-[1vw] font-bold text-gray-900">Product Types</h4>
+                  <div className="flex gap-[0.8vw] bg-purple-50/50 p-[1vw] rounded-[1vw] border border-purple-100">
+                    <input value={newProductType} onChange={e => setNewProductType(e.target.value)} onKeyPress={e => e.key === 'Enter' && addProductType()} placeholder="Add new product type..." className="flex-1 border border-gray-300 rounded-[0.6vw] py-[0.7vw] px-[1vw] text-[0.85vw] outline-none focus:border-purple-500 bg-white shadow-sm" />
+                    <button onClick={addProductType} className="bg-purple-600 text-white px-[1.5vw] rounded-[0.6vw] text-[0.85vw] font-bold hover:bg-purple-700 shadow-md active:scale-95 transition-all"><Plus className="w-[1.1vw] h-[1.1vw]" /></button>
+                  </div>
+                  <div className="flex flex-wrap gap-[0.8vw]">{productTypes.map(p => <span key={p} className="flex items-center gap-[0.6vw] px-[1vw] py-[0.6vw] bg-white border border-gray-200 rounded-[0.8vw] text-[0.85vw] text-gray-800 font-bold shadow-sm group hover:border-purple-300 transition-all">{p}<button onClick={() => removeProductType(p)} className="w-[1.1vw] h-[1.1vw] rounded-full bg-gray-100 group-hover:bg-red-500 text-gray-400 group-hover:text-white flex items-center justify-center transition-all cursor-pointer"><X className="w-[0.7vw] h-[0.7vw]" /></button></span>)}</div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
-        <div className="p-[2vw] overflow-y-auto flex-1 min-h-0">
-          <AnimatePresence mode="wait">
-            {activeTab === "stages" ? (
-              <motion.div 
-                key="stages"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 10 }}
-                className="space-y-[1.5vw]"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-[1vw] font-bold text-gray-900">Work Stages</h4>
-                    <p className="text-[0.75vw] text-gray-500">Define the sequence of operations for production NC registration.</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-[0.8vw] bg-blue-50/50 p-[1vw] rounded-[1vw] border border-blue-100">
-                  <div className="relative flex-1">
-                    <Target className="absolute left-[0.8vw] top-1/2 -translate-y-1/2 w-[1vw] h-[1vw] text-blue-400" />
-                    <input 
-                      value={newStage} 
-                      onChange={e => setNewStage(e.target.value)} 
-                      onKeyPress={e => e.key === 'Enter' && addStage()}
-                      placeholder="Add new stage (e.g., Quality Control)" 
-                      className="w-full border border-gray-300 rounded-[0.6vw] py-[0.7vw] pl-[2.4vw] pr-[0.8vw] text-[0.85vw] outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 bg-white" 
-                    />
-                  </div>
-                  <button onClick={addStage} className="bg-blue-600 text-white px-[1.5vw] rounded-[0.6vw] text-[0.85vw] font-bold hover:bg-blue-700 transition-all shadow-md active:scale-95 flex items-center gap-[0.5vw]">
-                    <Plus className="w-[1vw] h-[1vw]" /> Add
-                  </button>
-                </div>
-
-                <div className="flex flex-wrap gap-[0.8vw] pt-[0.5vw]">
-                  {stages.map(stage => (
-                    <motion.span 
-                      key={stage} 
-                      layout
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="flex items-center gap-[0.6vw] px-[1vw] py-[0.6vw] bg-white border border-gray-200 rounded-[0.8vw] text-[0.85vw] text-gray-800 font-medium shadow-sm hover:border-blue-300 transition-colors group"
-                    >
-                      {stage}
-                      <button 
-                        onClick={() => removeStage(stage)} 
-                        className="w-[1.1vw] h-[1.1vw] rounded-full bg-gray-100 group-hover:bg-red-500 text-gray-400 group-hover:text-white flex items-center justify-center transition-all text-[0.7vw]"
-                      >
-                        <X className="w-[0.7vw] h-[0.7vw]" />
-                      </button>
-                    </motion.span>
-                  ))}
-                </div>
-              </motion.div>
-            ) : (
-              <motion.div 
-                key="dispositions"
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                className="space-y-[1.5vw]"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-[1vw] font-bold text-gray-900">Disposition Outcomes</h4>
-                    <p className="text-[0.75vw] text-gray-500">List possible final actions for identified material issues.</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-[0.8vw] bg-slate-50 p-[1vw] rounded-[1vw] border border-slate-200">
-                  <div className="relative flex-1">
-                    <ClipboardList className="absolute left-[0.8vw] top-1/2 -translate-y-1/2 w-[1vw] h-[1vw] text-gray-400" />
-                    <input 
-                      value={newDisposition} 
-                      onChange={e => setNewDisposition(e.target.value)} 
-                      onKeyPress={e => e.key === 'Enter' && addDisposition()}
-                      placeholder="Add new disposition (e.g., Scrapped)" 
-                      className="w-full border border-gray-300 rounded-[0.6vw] py-[0.7vw] pl-[2.4vw] pr-[0.8vw] text-[0.85vw] outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 bg-white" 
-                    />
-                  </div>
-                  <button onClick={addDisposition} className="bg-blue-600 text-white px-[1.5vw] rounded-[0.6vw] text-[0.85vw] font-bold hover:bg-blue-700 transition-all shadow-md active:scale-95 flex items-center gap-[0.5vw]">
-                    <Plus className="w-[1vw] h-[1vw]" /> Add
-                  </button>
-                </div>
-
-                <div className="flex flex-wrap gap-[0.8vw] pt-[0.5vw]">
-                  {dispositions.map(value => (
-                    <motion.span 
-                      key={value} 
-                      layout
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="flex items-center gap-[0.6vw] px-[1vw] py-[0.6vw] bg-white border border-gray-200 rounded-[0.8vw] text-[0.85vw] text-gray-800 font-medium shadow-sm hover:border-blue-300 transition-colors group"
-                    >
-                      {value}
-                      <button 
-                        onClick={() => removeDisposition(value)} 
-                        className="w-[1.1vw] h-[1.1vw] rounded-full bg-gray-100 group-hover:bg-red-500 text-gray-400 group-hover:text-white flex items-center justify-center transition-all text-[0.7vw]"
-                      >
-                        <X className="w-[0.7vw] h-[0.7vw]" />
-                      </button>
-                    </motion.span>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        <div className="flex justify-end gap-[0.8vw] p-[1.1vw] border-t border-gray-200 bg-gray-50">
-          <button onClick={onClose} className="px-[1.2vw] py-[0.6vw] rounded-[0.4vw] border border-gray-300 text-[0.82vw] text-black font-bold hover:bg-gray-100">Cancel</button>
-          <button onClick={() => onSave(stages, dispositions)} className="px-[1.4vw] py-[0.6vw] rounded-[0.4vw] bg-blue-600 text-white text-[0.82vw] font-bold hover:bg-blue-700">Save Master Data</button>
+        <div className="flex justify-end gap-[0.8vw] p-[1.1vw] border-t border-gray-200 bg-gray-50 shrink-0">
+          <button onClick={onClose} className="px-[1.2vw] py-[0.6vw] rounded-[0.4vw] border border-gray-300 text-[0.82vw] text-black font-bold hover:bg-gray-100 cursor-pointer">Cancel</button>
+          <button onClick={() => onSave(stages, dispositions, problemTypes, productTypes)} className="px-[1.4vw] py-[0.6vw] rounded-[0.4vw] bg-blue-600 text-white text-[0.82vw] font-bold hover:bg-blue-700 shadow-md transition-all active:scale-95">Save Master Data</button>
         </div>
       </motion.div>
     </div>
@@ -513,7 +553,7 @@ const FinalStatusCell = ({ row, prod, onUpdateProduct }) => {
 };
 
 // --- Inward Form Page ---
-const InwardForm = ({ initialData, employees, onSave, onBack, stageOptions, dispositionOptions }) => {
+const InwardForm = ({ initialData, employees, onSave, onBack, stageOptions, dispositionOptions, problemTypeOptions, productTypeOptions }) => {
   const { toast } = useNotification();
   const [base, setBase] = useState(() => ({
     date: initialData.date?.split("T")[0] || todayDateStr(),
@@ -523,7 +563,16 @@ const InwardForm = ({ initialData, employees, onSave, onBack, stageOptions, disp
     customerCode: initialData.customerCode || "",
     category: initialData.category || ""
   }));
-  const [products, setProducts] = useState(() => initialData.products || [emptyProduct()]);
+  const [products, setProducts] = useState(() => {
+    if (initialData.products && initialData.products.length > 0) {
+      return initialData.products.map(p => ({
+        ...p,
+        _pid: p._pid || p._id || `p-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        serialNumber: p.serialNumber || p.identification || ""
+      }));
+    }
+    return [emptyProduct()];
+  });
   const isReadOnly = !!initialData._readonly;
 
   const [customerDb, setCustomerDb] = useState([]);
@@ -608,6 +657,7 @@ const InwardForm = ({ initialData, employees, onSave, onBack, stageOptions, disp
     if (!base.jobOrderNo) { toast("Job Order Number is mandatory", "error"); return; }
     if (products.length === 0) { toast("At least one product is required", "warning"); return; }
     if (products.some(p => !p.productDescription)) { toast("All products must have a description", "error"); return; }
+    if (products.some(p => !p.problemType)) { toast("All products must have a Problem Type", "error"); return; }
     onSave({ ...base, products });
   };
 
@@ -619,8 +669,8 @@ const InwardForm = ({ initialData, employees, onSave, onBack, stageOptions, disp
             <ArrowLeft className="w-[1vw] h-[1vw]" /> Back
           </button>
           <div>
-            <h2 className="text-[1vw] font-bold text-gray-900">{initialData._id ? "Edit Production NC" : "New Production NC Registration"}</h2>
-            <div className="text-[0.6vw] text-gray-500 mt-[.1vw] uppercase font-bold tracking-widest">Reference: {base.refNoInternal}</div>
+            <h2 className="text-[1vw] font-bold text-black">{initialData._id ? "Edit Production NC" : "New Production NC Registration"}</h2>
+            <div className="text-[0.6vw] text-gray-700 mt-[.1vw] uppercase font-semibold ">Reference: {base.refNoInternal}</div>
           </div>
         </div>
       </div>
@@ -634,22 +684,22 @@ const InwardForm = ({ initialData, employees, onSave, onBack, stageOptions, disp
           <div className="grid grid-cols-5 gap-[1vw]">
             <div className="flex flex-col gap-[0.4vw]">
               <label className="font-bold text-gray-700 text-[0.72vw] uppercase tracking-wider">Registration Date</label>
-              <input type="date" value={base.date} onChange={e => setBase({ ...base, date: e.target.value })} disabled={isReadOnly} className="border border-gray-300 rounded-[0.4vw] py-[0.6vw] px-[0.8vw] text-[0.8vw] font-bold outline-none focus:border-blue-500 shadow-sm transition-all text-gray-800" />
+              <input type="date" value={base.date} onChange={e => setBase({ ...base, date: e.target.value })} disabled={isReadOnly} className="border border-gray-300 rounded-[0.4vw] py-[0.6vw] px-[0.8vw] text-[0.8vw] font-regular outline-none focus:border-blue-500 shadow-sm transition-all text-gray-800" />
             </div>
             <div className="flex flex-col gap-[0.4vw]">
               <label className="font-bold text-gray-700 text-[0.72vw] uppercase tracking-wider">Job Order Number <span className="text-red-500">*</span></label>
-              <input value={base.jobOrderNo} onChange={e => setBase({ ...base, jobOrderNo: e.target.value })} placeholder="Enter Job Order..." disabled={isReadOnly} className="border border-gray-300 rounded-[0.4vw] py-[0.6vw] px-[0.8vw] text-[0.8vw] font-bold outline-none focus:border-blue-500 shadow-sm transition-all text-gray-800" />
+              <input value={base.jobOrderNo} onChange={e => setBase({ ...base, jobOrderNo: e.target.value })} placeholder="Enter Job Order..." disabled={isReadOnly} className="border border-gray-300 rounded-[0.4vw] py-[0.6vw] px-[0.8vw] text-[0.8vw] font-regular outline-none focus:border-blue-500 shadow-sm transition-all text-gray-800" />
             </div>
             <div className="flex flex-col gap-[0.4vw] relative" ref={custRef}>
               <label className="font-bold text-gray-700 text-[0.72vw] uppercase tracking-wider">Customer Name</label>
               <div className="relative group">
-                <input 
-                  value={custSearch} 
-                  onChange={e => { setCustSearch(e.target.value); setShowCustDrop(true); }} 
+                <input
+                  value={custSearch}
+                  onChange={e => { setCustSearch(e.target.value); setShowCustDrop(true); }}
                   onFocus={() => setShowCustDrop(true)}
-                  placeholder="Type to search..." 
-                  disabled={isReadOnly} 
-                  className="w-full border border-gray-300 rounded-[0.4vw] py-[0.6vw] px-[0.8vw] pr-[2vw] text-[0.8vw] font-bold outline-none focus:border-blue-500 shadow-sm transition-all text-gray-800" 
+                  placeholder="Type to search..."
+                  disabled={isReadOnly}
+                  className="w-full border border-gray-300 rounded-[0.4vw] py-[0.6vw] px-[0.8vw] pr-[2vw] text-[0.8vw] font-regular outline-none focus:border-blue-500 shadow-sm transition-all text-gray-800"
                 />
                 <Search className="absolute right-[0.6vw] top-1/2 -translate-y-1/2 w-[1vw] h-[1vw] text-gray-400 group-focus-within:text-blue-500" />
               </div>
@@ -659,8 +709,8 @@ const InwardForm = ({ initialData, employees, onSave, onBack, stageOptions, disp
                     {filteredCustomers.map(c => (
                       <div key={c.code} onClick={() => selectCustomer(c)} className="px-[1vw] py-[0.6vw] hover:bg-blue-50 cursor-pointer flex justify-between items-center border-b border-gray-50 last:border-0 group">
                         <div className="flex-1">
-                          <div className="text-[0.82vw] font-bold text-gray-900 group-hover:text-blue-700">{c.name}</div>
-                          <div className="text-[0.68vw] text-gray-500 font-bold">{c.code}</div>
+                          <div className="text-[0.82vw] font-semibold text-gray-900 group-hover:text-blue-700">{c.name}</div>
+                          <div className="text-[0.68vw] text-gray-500 font-regular">{c.code}</div>
                         </div>
                         {c.type && <span className="text-[0.6vw] bg-blue-100 text-blue-700 px-[0.4vw] py-[0.1vw] rounded font-black uppercase">{c.type}</span>}
                       </div>
@@ -671,11 +721,11 @@ const InwardForm = ({ initialData, employees, onSave, onBack, stageOptions, disp
             </div>
             <div className="flex flex-col gap-[0.4vw]">
               <label className="font-bold text-gray-700 text-[0.72vw] uppercase tracking-wider">Customer Code</label>
-              <input value={base.customerCode} readOnly className="border border-gray-300 rounded-[0.4vw] py-[0.6vw] px-[0.8vw] text-[0.8vw] font-bold outline-none bg-gray-50 text-gray-600 cursor-not-allowed shadow-none" />
+              <input value={base.customerCode} readOnly className="border border-gray-300 rounded-[0.4vw] py-[0.6vw] px-[0.8vw] text-[0.8vw] font-regular outline-none bg-gray-50 text-gray-900 cursor-not-allowed shadow-none" />
             </div>
             <div className="flex flex-col gap-[0.4vw]">
               <label className="font-bold text-gray-700 text-[0.72vw] uppercase tracking-wider">Category</label>
-              <input value={base.category} readOnly className="border border-gray-300 rounded-[0.4vw] py-[0.6vw] px-[0.8vw] text-[0.8vw] font-bold outline-none bg-gray-50 text-gray-600 cursor-not-allowed shadow-none" />
+              <input value={base.category} readOnly className="border border-gray-300 rounded-[0.4vw] py-[0.6vw] px-[0.8vw] text-[0.8vw] font-regular outline-none bg-gray-50 text-gray-900 cursor-not-allowed shadow-none" />
             </div>
           </div>
         </div>
@@ -685,7 +735,7 @@ const InwardForm = ({ initialData, employees, onSave, onBack, stageOptions, disp
           <div className="flex items-center justify-between mb-[1.2vw] pb-[0.6vw] border-b border-blue-200">
             <h3 className="text-[0.85vw] font-bold text-blue-800 uppercase  flex items-center gap-[0.5vw]">
               <Package className="w-[1.1vw] h-[1.1vw] text-blue-600" /> Manifest & Assembly Specs
-              <span className="ml-[0.8vw] text-[0.65vw] bg-blue-600 text-white px-[0.6vw] py-[0.15vw] rounded-full font-bold shadow-sm">{products.length} {products.length === 1 ? 'Item' : 'Items'}</span>
+              <span className="ml-[0.8vw] text-[0.65vw] bg-blue-600 text-white px-[0.6vw] py-[0.15vw] rounded-full font-bold shadow-sm">{products.length} {products.length === 1 ? 'Count' : 'Counts'}</span>
             </h3>
             {!isReadOnly && (
               <button type="button" onClick={addProduct} className="flex items-center gap-[0.4vw] text-[0.75vw] font-bold text-white bg-blue-600 hover:bg-blue-700 px-[1vw] py-[0.5vw] rounded-[0.4vw] cursor-pointer shadow-md transition-all active:scale-95">
@@ -699,6 +749,8 @@ const InwardForm = ({ initialData, employees, onSave, onBack, stageOptions, disp
             customerCode={base.customerCode}
             customerDb={customerDb}
             boardTypes={boardTypes}
+            productTypeOptions={productTypeOptions}
+            problemTypeOptions={problemTypeOptions}
             employees={employees}
             stageOptions={stageOptions}
             dispositionOptions={dispositionOptions}
@@ -733,8 +785,11 @@ export default function ProductionMaterial() {
   const [reportsRow, setReportsRow] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [showMasterData, setShowMasterData] = useState(false);
+  const [showVerify, setShowVerify] = useState(null);
   const [stageOptions, setStageOptions] = useState(() => lsLoad(STAGE_MASTER_KEY, DEFAULT_STAGE_OPTIONS));
   const [dispositionOptions, setDispositionOptions] = useState(() => lsLoad(DISPOSITION_MASTER_KEY, DEFAULT_DISPOSITION_OPTIONS));
+  const [problemTypeOptions, setProblemTypeOptions] = useState(() => lsLoad(PROBLEM_TYPE_MASTER_KEY, DEFAULT_PROBLEM_TYPE_OPTIONS));
+  const [productTypeOptions, setProductTypeOptions] = useState(() => lsLoad(PRODUCT_TYPE_MASTER_KEY, DEFAULT_PRODUCT_TYPE_OPTIONS));
   const [activeFilter, setActiveFilter] = useState("All");
   const [employeeFilter, setEmployeeFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
@@ -764,19 +819,23 @@ export default function ProductionMaterial() {
     return () => clearInterval(interval);
   }, []);
 
-  const saveMasterData = (newStages, newDispositions) => {
-    const normalizedStages = newStages.length ? newStages : DEFAULT_STAGE_OPTIONS;
-    const normalizedDispositions = newDispositions.length ? newDispositions : DEFAULT_DISPOSITION_OPTIONS;
-    setStageOptions(normalizedStages);
-    setDispositionOptions(normalizedDispositions);
-    lsSave(STAGE_MASTER_KEY, normalizedStages);
-    lsSave(DISPOSITION_MASTER_KEY, normalizedDispositions);
+  const saveMasterData = (newStages, newDispositions, newProblemTypes, newProductTypes) => {
+    setStageOptions(newStages);
+    setDispositionOptions(newDispositions);
+    setProblemTypeOptions(newProblemTypes);
+    setProductTypeOptions(newProductTypes);
+    lsSave(STAGE_MASTER_KEY, newStages);
+    lsSave(DISPOSITION_MASTER_KEY, newDispositions);
+    lsSave(PROBLEM_TYPE_MASTER_KEY, newProblemTypes);
+    lsSave(PRODUCT_TYPE_MASTER_KEY, newProductTypes);
+    setShowMasterData(false);
+    toast("Master Data Updated", "success");
   };
 
   const handleSave = async (formData) => {
     const loggedUser = JSON.parse(sessionStorage.getItem("loggedInUser") || "{}");
-    const entryData = { 
-      ...formData, 
+    const entryData = {
+      ...formData,
       creatorUserId: loggedUser.userId || "Admin",
       creatorName: loggedUser.name || "Admin"
     };
@@ -796,30 +855,38 @@ export default function ProductionMaterial() {
   };
 
   const onUpdateProduct = async (rowId, productId, updates) => {
-      try {
-          const res = await axios.patch(`${API_URL}/production-material/${rowId}/product/${productId}/final-status`, updates);
-          setData(prev => prev.map(d => d.id === rowId ? { ...res.data, id: res.data._id } : d));
-      } catch (err) {
-          toast("Update failed", "error");
-      }
+    try {
+      const res = await axios.patch(`${API_URL}/production-material/${rowId}/product/${productId}/final-status`, updates);
+      setData(prev => prev.map(d => d.id === rowId ? { ...res.data, id: res.data._id } : d));
+      setShowVerify(null);
+      toast("Status Updated Successfully", "success");
+    } catch (err) {
+      toast("Update failed", "error");
+    }
   };
+
+  const caeHistory = useMemo(() => {
+    const set = new Set();
+    data.forEach(e => e.products?.forEach(p => p.report?.cae && set.add(p.report.cae)));
+    return Array.from(set);
+  }, [data]);
 
   const filteredData = useMemo(() => {
     let filtered = data;
     if (activeFilter !== "All") {
-        filtered = filtered.filter(row => (row.products || []).some(p => (p.finalStatus || "Pending") === activeFilter));
+      filtered = filtered.filter(row => (row.products || []).some(p => (p.finalStatus || "Pending") === activeFilter));
     }
     if (employeeFilter !== "All") {
       filtered = filtered.filter(row => row.creatorUserId === employeeFilter);
     }
-    if (searchTerm) { 
-        const s = searchTerm.toLowerCase(); 
-        filtered = filtered.filter(row => 
-            (row.refNoInternal || "").toLowerCase().includes(s) || 
-            (row.jobOrderNo || "").toLowerCase().includes(s) ||
-            (row.customerName || "").toLowerCase().includes(s) ||
-            (row.products || []).some(p => (p.productDescription || "").toLowerCase().includes(s) || (p.serialNumber || "").toLowerCase().includes(s))
-        ); 
+    if (searchTerm) {
+      const s = searchTerm.toLowerCase();
+      filtered = filtered.filter(row =>
+        (row.refNoInternal || "").toLowerCase().includes(s) ||
+        (row.jobOrderNo || "").toLowerCase().includes(s) ||
+        (row.customerName || "").toLowerCase().includes(s) ||
+        (row.products || []).some(p => (p.productDescription || "").toLowerCase().includes(s) || (p.serialNumber || "").toLowerCase().includes(s))
+      );
     }
     return filtered;
   }, [data, searchTerm, activeFilter, employeeFilter]);
@@ -834,14 +901,14 @@ export default function ProductionMaterial() {
   const handleBulkDelete = async () => {
     if (selectedItems.size === 0) return;
     if (window.confirm(`Delete ${selectedItems.size} entries?`)) {
-        try {
-            await Promise.all(Array.from(selectedItems).map(id => axios.delete(`${API_URL}/production-material/${id}`)));
-            setData(prev => prev.filter(e => !selectedItems.has(e.id)));
-            setSelectedItems(new Set());
-            toast("Deleted successfully", "success");
-        } catch (err) {
-            toast("Delete failed", "error");
-        }
+      try {
+        await Promise.all(Array.from(selectedItems).map(id => axios.delete(`${API_URL}/production-material/${id}`)));
+        setData(prev => prev.filter(e => !selectedItems.has(e.id)));
+        setSelectedItems(new Set());
+        toast("Deleted successfully", "success");
+      } catch (err) {
+        toast("Delete failed", "error");
+      }
     }
   };
 
@@ -860,7 +927,18 @@ export default function ProductionMaterial() {
     </div>
   );
 
-  if (view === "form") return <InwardForm initialData={selectedRow || {}} employees={employees} onSave={handleSave} onBack={() => setView("list")} stageOptions={stageOptions} dispositionOptions={dispositionOptions} />;
+  if (view === "form") return (
+    <InwardForm
+      initialData={selectedRow || {}}
+      employees={employees}
+      onSave={handleSave}
+      onBack={() => setView("list")}
+      stageOptions={stageOptions}
+      dispositionOptions={dispositionOptions}
+      problemTypeOptions={problemTypeOptions}
+      productTypeOptions={productTypeOptions}
+    />
+  );
 
   return (
     <>
@@ -871,10 +949,32 @@ export default function ProductionMaterial() {
             onClose={() => setShowMasterData(false)}
             stageOptions={stageOptions}
             dispositionOptions={dispositionOptions}
-            onSave={(newStages, newDispositions) => {
-              saveMasterData(newStages, newDispositions);
-              setShowMasterData(false);
+            problemTypeOptions={problemTypeOptions}
+            productTypeOptions={productTypeOptions}
+            onSave={saveMasterData}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showVerify && (
+          <VerificationModal
+            row={showVerify.row}
+            prod={showVerify.prod}
+            employees={employees}
+            caeHistory={caeHistory}
+            onSave={(verifyData) => {
+              const currentReport = showVerify.prod.report || {};
+              onUpdateProduct(showVerify.row.id, showVerify.prod._pid, {
+                report: {
+                  ...currentReport,
+                  verifiedBy: verifyData.verifiedBy,
+                  verifiedByName: verifyData.verifiedByName,
+                  verifiedDate: verifyData.verifiedDate,
+                  cae: verifyData.cae
+                }
+              });
             }}
+            onClose={() => setShowVerify(null)}
           />
         )}
       </AnimatePresence>
@@ -884,23 +984,23 @@ export default function ProductionMaterial() {
           <div className="flex items-center justify-between bg-white p-[0.7vw] rounded-[0.6vw] shadow-sm border border-gray-300 mb-[0.9vw]">
             <div className="relative w-[30vw]"><Search className="absolute left-[0.8vw] top-1/2 -translate-y-1/2 text-black/50 w-[1vw] h-[1vw]" /><input type="text" placeholder="Search by ref, JO, customer, product…" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-[2.5vw] pr-[1vw] h-[2.5vw] border border-gray-300 rounded-[0.8vw] focus:outline-none focus:border-blue-500 font-bold" /></div>
             <div className="flex gap-[0.8vw] items-center">
-                <button onClick={() => setShowMasterData(true)} className="flex items-center gap-[0.4vw] text-[0.85vw] font-bold border border-blue-200 bg-blue-50 text-blue-700 px-[1vw] h-[2.4vw] rounded-[0.4vw] hover:bg-blue-100 transition-all cursor-pointer">Master Data</button>
-                {selectedItems.size > 0 && (<button onClick={handleBulkDelete} className="flex items-center gap-[0.5vw] bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 px-[1vw] h-[2.4vw] rounded-[0.4vw] font-bold cursor-pointer transition-all"><Trash2 className="w-[1vw] h-[1vw]" />Delete ({selectedItems.size})</button>)}
-                <button onClick={() => setView("form")} className="cursor-pointer flex items-center gap-[0.5vw] bg-blue-600 hover:bg-blue-700 text-white px-[1.2vw] h-[2.4vw] rounded-[0.4vw] font-bold shadow-md transition-all active:scale-95"><Plus className="w-[1.1vw] h-[1.1vw]" />New Registration</button>
+              <button onClick={() => setShowMasterData(true)} className="flex items-center gap-[0.4vw] text-[0.85vw] font-bold border border-blue-200 bg-blue-50 text-blue-700 px-[1vw] h-[2.4vw] rounded-[0.4vw] hover:bg-blue-100 transition-all cursor-pointer">Master Data</button>
+              {selectedItems.size > 0 && (<button onClick={handleBulkDelete} className="flex items-center gap-[0.5vw] bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 px-[1vw] h-[2.4vw] rounded-[0.4vw] font-bold cursor-pointer transition-all"><Trash2 className="w-[1vw] h-[1vw]" />Delete ({selectedItems.size})</button>)}
+              <button onClick={() => setView("form")} className="cursor-pointer flex items-center gap-[0.5vw] bg-blue-600 hover:bg-blue-700 text-white px-[1.2vw] h-[2.4vw] rounded-[0.4vw] font-bold shadow-md transition-all active:scale-95"><Plus className="w-[1.1vw] h-[1.1vw]" />New Registration</button>
             </div>
           </div>
           <div className="flex gap-[1vw] mb-[0.9vw] items-center flex-wrap">
-            {[{ label: "All", color: "bg-gray-400" }, { label: "Pending", color: "bg-orange-500" }, { label: "Rejected", color: "bg-gray-600" }, { label: "Completed", color: "bg-green-600" }].map(({ label, color }) => { 
-                const isActive = activeFilter === label; 
-                return (
-                    <button key={label} onClick={() => setActiveFilter(label)} className={`flex items-center gap-[0.5vw] px-[1vw] py-[0.55vw] rounded-[0.5vw] border font-bold text-[0.8vw] cursor-pointer transition-all duration-150 select-none ${isActive ? "bg-blue-600 text-white border-blue-600 shadow-md ring-2 ring-offset-1 ring-blue-300" : "bg-white text-gray-600 border-gray-300 hover:bg-gray-100"}`}>
-                        <span className={`w-[0.6vw] h-[0.6vw] rounded-full ${isActive ? "bg-white" : color}`} />
-                        {label} <span className={`px-[0.4vw] py-[0.05vw] rounded-full text-[0.7vw] ${isActive ? "bg-white/20" : "bg-gray-100"}`}>{counts[label] ?? 0}</span>
-                    </button>
-                ); 
+            {[{ label: "All", color: "bg-gray-400" }, { label: "Pending", color: "bg-orange-500" }, { label: "Rejected", color: "bg-gray-600" }, { label: "Completed", color: "bg-green-600" }].map(({ label, color }) => {
+              const isActive = activeFilter === label;
+              return (
+                <button key={label} onClick={() => setActiveFilter(label)} className={`flex items-center gap-[0.5vw] px-[1vw] py-[0.55vw] rounded-[0.5vw] border font-bold text-[0.8vw] cursor-pointer transition-all duration-150 select-none ${isActive ? "bg-blue-600 text-white border-blue-600 shadow-md ring-2 ring-offset-1 ring-blue-300" : "bg-white text-gray-600 border-gray-300 hover:bg-gray-100"}`}>
+                  <span className={`w-[0.6vw] h-[0.6vw] rounded-full ${isActive ? "bg-white" : color}`} />
+                  {label} <span className={`px-[0.4vw] py-[0.05vw] rounded-full text-[0.7vw] ${isActive ? "bg-white/20" : "bg-gray-100"}`}>{counts[label] ?? 0}</span>
+                </button>
+              );
             })}
           </div>
-          
+
           <div className="bg-white rounded-[0.6vw] shadow-sm border border-gray-300 flex flex-col overflow-hidden">
             <div className="overflow-auto max-h-[65vh] min-h-[65vh]">
               <table className="w-full text-left border-collapse">
@@ -917,12 +1017,12 @@ export default function ProductionMaterial() {
                         <th key={h} rowSpan={2} style={{ minWidth: minW }} className="px-[0.6vw] py-[0.5vw] font-bold text-black text-center border-b-2 border-r border-gray-300 whitespace-nowrap text-[0.78vw] align-middle bg-blue-50">{h}</th>
                       );
                     })}
-                    <th colSpan={7} className="px-[0.6vw] py-[0.4vw] font-semibold text-black border-b border-r border-gray-300 text-center text-[0.78vw] bg-blue-100/50">Product Manifest Details</th>
+                    <th colSpan={11} className="px-[0.6vw] py-[0.4vw] font-semibold text-black border-b border-r border-gray-300 text-center text-[0.78vw] bg-blue-100/50">Product Manifest Details</th>
                     <th rowSpan={2} className="px-[0.8vw] py-[0.5vw] font-semibold text-black text-center border-b-2 border-l border-gray-300 whitespace-nowrap text-[0.78vw] align-middle bg-blue-50 sticky right-0 z-30 shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.05)]">Actions</th>
                   </tr>
                   <tr>
-                    {["Item Code", "Description", "Stage", "Qty", "Serial/Batch", "Final Status", "Final Remarks"].map((h, i) => {
-                      const minW = h === "Description" ? "220px" : (h === "Final Remarks" ? "180px" : (h === "Qty" ? "120px" : "110px"));
+                    {["Item Code", "Description", "Stage", "Qty", "Serial/Batch", "Assigned To", "Verified By", "Verified Date", "CAE", "Final Status", "Final Remarks"].map((h, i) => {
+                      const minW = h === "Description" ? "220px" : (h === "Final Remarks" ? "180px" : (h === "Qty" ? "120px" : (h === "Verified By" ? "130px" : (h === "Verified Date" ? "100px" : (h === "CAE" ? "150px" : "110px")))));
                       return (
                         <th key={h} style={{ minWidth: minW }} className={`px-[0.6vw] py-[0.4vw] font-bold text-black border-b-2 border-r border-gray-300 whitespace-nowrap text-[0.72vw] bg-blue-50 ${h === "Qty" ? "text-center" : "text-center"}`}>{h}</th>
                       );
@@ -935,8 +1035,16 @@ export default function ProductionMaterial() {
                       const isSelected = selectedItems.has(row.id);
                       const products = row.products || [];
                       const span = products.length;
-                      return products.map((prod, pi) => (
-                        <tr key={`${row.id}-${pi}`} className={`transition-colors hover:bg-blue-50/20 ${isSelected ? "bg-blue-50/50" : "bg-white"}`}>
+                      return products.map((prod, pi) => {
+                        const isTechCompleted = prod.report?.status === "Completed";
+                        const isVerified = !!prod.report?.verifiedBy;
+                        const showReadyHighlight = isTechCompleted && !isVerified;
+                        
+                        return (
+                          <tr 
+                            key={`${row.id}-${pi}`} 
+                            className={`transition-all duration-200 hover:bg-blue-50/30 ${isSelected ? "bg-blue-100/40" : showReadyHighlight ? "bg-emerald-50/60" : "bg-white"}`}
+                          >
                           {pi === 0 && (
                             <>
                               <td rowSpan={span} className="p-[0.7vw] border-r border-gray-200 text-center align-middle">
@@ -947,28 +1055,50 @@ export default function ProductionMaterial() {
                               <td rowSpan={span} className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-bold text-gray-900 text-[0.78vw]">{(currentPage - 1) * ITEMS_PER_PAGE + i + 1}</td>
                               <td rowSpan={span} className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-gray-700 text-[0.78vw]">{fmtDate(row.date)}</td>
                               <td rowSpan={span} className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center text-[0.78vw] font-semibold text-blue-700">{row.jobOrderNo || "—"}</td>
-                              <td rowSpan={span} className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-gray-900 text-[0.75vw] max-w-[10vw] truncate">{row.customerName || "—"}</td>
+                              <td rowSpan={span} className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-gray-900 text-[0.75vw]">{row.customerName || "—"}</td>
                               <td rowSpan={span} className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle font-semibold text-gray-600 text-[0.72vw]">{row.customerCode || "—"}</td>
                               <td rowSpan={span} className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle"><span className="text-[0.68vw] font-semibold bg-blue-100 text-blue-700 px-[0.4vw] py-[0.1vw] rounded">{row.category || "—"}</span></td>
                             </>
                           )}
-                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle font-semibold text-gray-600 text-[0.72vw]">{prod.productCode || "—"}</td>
-                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-gray-900 text-[0.72vw] truncate max-w-[10vw]">{prod.productDescription || "—"}</td>
+                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle">
+                            {showReadyHighlight && (
+                              <div className="flex items-center justify-center gap-[0.3vw] mb-[0.3vw]">
+                                <div className="h-[0.5vw] w-[0.5vw] rounded-full bg-emerald-500 shadow-sm" />
+                                <span className="text-[0.6vw] font-normal text-emerald-700 whitespace-nowrap">Employee completed</span>
+                              </div>
+                            )}
+                            <div className="font-semibold text-gray-600 text-[0.72vw]">{prod.productCode || "—"}</div>
+                          </td>
+                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-gray-900 text-[0.72vw] truncate max-w-[10vw]" title={prod.productDescription}>{prod.productDescription || "—"}</td>
                           <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle"><span className="text-[0.72vw] font-semibold text-gray-900">{prod.stage || "Assembly"}</span></td>
                           <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle font-semibold text-black text-[0.75vw]">{prod.qty || "1"}</td>
                           <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-gray-700 text-[0.72vw]">{prod.serialNumber || "—"}</td>
-                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center"><FinalStatusCell row={row} prod={prod} onUpdateProduct={onUpdateProduct} /></td>
-                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-gray-900 text-[0.72vw] truncate max-w-[10vw]">{prod.finalStatusRemarks || "—"}</td>
-                          {pi === 0 && (
-                            <td rowSpan={span} className={`px-[0.8vw] py-[0.7vw] text-center align-middle border-l border-gray-200 sticky right-0 z-10 shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.05)] ${isSelected ? "bg-blue-50/50" : "bg-white"}`}>
-                              <div className="flex items-center justify-center gap-[0.6vw]">
-                                <button onClick={() => setReportsRow(row)} className="px-[0.7vw] py-[0.4vw] bg-white border border-gray-300 text-gray-700 rounded-[0.4vw] hover:bg-blue-600 hover:text-white shadow-sm cursor-pointer transition-all active:scale-95 flex items-center gap-[0.4vw] text-[0.68vw] font-bold"><Eye className="w-[0.9vw] h-[0.9vw]" />View Report</button>
-                                <button onClick={() => { setSelectedRow(row); setView("form"); }} className="p-[0.5vw] text-gray-400 hover:text-blue-600 transition-colors cursor-pointer group"><Edit3 className="w-[1.1vw] h-[1.1vw] group-hover:scale-110" /></button>
-                              </div>
-                            </td>
-                          )}
+                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-black text-[0.75vw]">{prod.assignedToName || "Unassigned"}</td>
+                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-emerald-700 text-[0.75vw]">{prod.report?.verifiedByName || "—"}</td>
+                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-medium text-gray-600 text-[0.72vw]">{fmtDate(prod.report?.verifiedDate)}</td>
+                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-blue-700 text-[0.75vw] truncate max-w-[10vw]" title={prod.report?.cae}>{prod.report?.cae || "—"}</td>
+                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center">
+                            <FinalStatusCell row={row} prod={prod} onUpdateProduct={onUpdateProduct} />
+                          </td>
+                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-gray-900 text-[0.72vw] truncate max-w-[10vw]" title={prod.finalStatusRemarks}>{prod.finalStatusRemarks || "—"}</td>
+                          <td className={`px-[0.8vw] py-[0.7vw] text-center align-middle border-l border-gray-200 sticky right-0 z-30 shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.05)] ${isSelected ? "bg-blue-50/50" : "bg-white"}`}>
+                            <div className="flex items-center justify-start gap-[0.5vw]">
+                              <button onClick={() => setReportsRow(row)} className="w-[2vw] h-[2vw] flex items-center justify-center bg-blue-50 text-blue-600 rounded-full hover:bg-blue-600 hover:text-white transition-all cursor-pointer border border-blue-100 shadow-sm" title="View Report"><Eye className="w-[1vw] h-[1vw]" /></button>
+                              <button
+                                onClick={() => setShowVerify({ row, prod })}
+                                className={`w-[2vw] h-[2vw] flex items-center justify-center rounded-full transition-all cursor-pointer border shadow-sm ${prod.report?.verifiedBy ? "bg-emerald-600 text-white border-emerald-700 hover:bg-emerald-700" : "bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-600 hover:text-white"}`}
+                                title={prod.report?.verifiedBy ? "Update Verification" : "Verify Resolution"}
+                              >
+                                <CheckCircle className="w-[1vw] h-[1vw]" />
+                              </button>
+                              {pi === 0 && (
+                                <button onClick={() => { setSelectedRow(row); setView("form"); }} className="w-[2vw] h-[2vw] flex items-center justify-center bg-white border border-gray-300 text-gray-400 hover:text-blue-600 hover:border-blue-300 rounded-full transition-all cursor-pointer shadow-sm" title="Edit Registration"><Edit3 className="w-[1vw] h-[1vw]" /></button>
+                              )}
+                            </div>
+                          </td>
                         </tr>
-                      ));
+                        );
+                      });
                     })
                   ) : (
                     <tr><td colSpan={19} className="py-[6vw] text-center text-gray-400 text-[0.9vw] font-bold italic">No records found.</td></tr>

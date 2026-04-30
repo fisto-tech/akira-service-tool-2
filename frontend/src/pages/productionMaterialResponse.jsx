@@ -99,7 +99,7 @@ const SearchableSelect = ({ label, value, options, onSelect, placeholder = "Sele
           onClick={() => setIsOpen(!isOpen)}
           className={`w-full border border-gray-300 bg-white rounded-[0.4vw] py-[0.5vw] px-[0.6vw] text-[0.78vw] text-left flex items-center justify-between transition-all cursor-pointer shadow-sm ${isOpen ? "border-blue-500 ring-1 ring-blue-500" : ""}`}
         >
-          <span className={selectedOption ? "text-black font-medium" : "text-gray-400"}>
+          <span className={selectedOption ? "text-black font-regular" : "text-gray-400"}>
             {selectedOption ? selectedOption.label : placeholder}
           </span>
           <ChevronDown className={`w-[1vw] h-[1vw] text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
@@ -126,7 +126,7 @@ const SearchableSelect = ({ label, value, options, onSelect, placeholder = "Sele
                   />
                 </div>
               </div>
-              <div className="max-h-[12vw] overflow-y-auto">
+              <div className="max-h-[10vw] overflow-y-auto">
                 {filteredOptions.length > 0 ? (
                   filteredOptions.map((opt) => (
                     <div
@@ -168,10 +168,6 @@ const ProductionResponseModal = ({ entry, product, employees, fourMCategories, o
     testedByName: product.report?.testedByName || "",
     fiBy: product.report?.fiBy || "",
     fiByName: product.report?.fiByName || "",
-    verifiedBy: product.report?.verifiedBy || "",
-    verifiedByName: product.report?.verifiedByName || "",
-    verifiedDate: product.report?.verifiedDate?.split("T")[0] || "",
-    cae: product.report?.cae || "",
     partsReplacement: product.report?.partsReplacement || "",
     status: product.report?.status || "Under Testing",
     currentRemark: ""
@@ -184,32 +180,6 @@ const ProductionResponseModal = ({ entry, product, employees, fourMCategories, o
   [employees]);
 
   const sp = (k, v) => setFormData(p => ({ ...p, [k]: v }));
-
-  const [showCaeSuggestions, setShowCaeSuggestions] = useState(false);
-  const [activeCaeSuggestion, setActiveCaeSuggestion] = useState(-1);
-
-  const filteredCaeSuggestions = useMemo(() => {
-    const query = formData.cae?.toLowerCase() || "";
-    if (!query) return caeHistory || [];
-    return (caeHistory || []).filter(opt => opt.toLowerCase().includes(query));
-  }, [formData.cae, caeHistory]);
-
-  const handleCaeKeyDown = (e) => {
-    if (!showCaeSuggestions) return;
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setActiveCaeSuggestion(prev => (prev < filteredCaeSuggestions.length - 1 ? prev + 1 : prev));
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setActiveCaeSuggestion(prev => (prev > 0 ? prev - 1 : prev));
-    } else if (e.key === "Enter" && activeCaeSuggestion >= 0) {
-      e.preventDefault();
-      sp("cae", filteredCaeSuggestions[activeCaeSuggestion]);
-      setShowCaeSuggestions(false);
-    } else if (e.key === "Escape") {
-      setShowCaeSuggestions(false);
-    }
-  };
 
   const handleSave = () => {
     if (!formData.startDate) return alert("Start Date is mandatory.");
@@ -260,10 +230,10 @@ const ProductionResponseModal = ({ entry, product, employees, fourMCategories, o
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-[1.5vw] space-y-[1.5vw] bg-gray-50/30">
+        <div className="flex-1 overflow-y-auto p-[1.5vw] pb-[6vw] space-y-[1.5vw] bg-gray-50/30">
           
           {/* Reference Info */}
-          <div className="bg-white rounded-[0.6vw] border border-gray-300 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-[0.6vw] border border-gray-300 shadow-sm">
             <div className="bg-blue-50/50 px-[1vw] py-[0.6vw] border-b border-gray-200 flex items-center gap-[0.5vw]">
               <Info className="w-[0.9vw] h-[0.9vw] text-blue-600" />
               <span className="text-[0.75vw] font-bold text-blue-700 uppercase tracking-wider">Inward Details</span>
@@ -276,16 +246,17 @@ const ProductionResponseModal = ({ entry, product, employees, fourMCategories, o
               
               <RefInput label="Product Description" value={product.productDescription} span={2} />
               <RefInput label="Product Code" value={product.productCode} />
-              <RefInput label="Category" value={entry.category} />
+              <RefInput label="Product Type" value={product.productType} />
 
               <RefInput label="Stage" value={product.stage} />
-              <RefInput label="Reported Problem" value={product.problem} span={2} />
+              <RefInput label="Problem Type" value={product.problemType} />
+              <RefInput label="Problem Reported" value={product.problem} span={2} />
               <RefInput label="Qty" value={product.qty} />
             </div>
           </div>
 
           {/* Technical Resolution Form */}
-          <div className="bg-white rounded-[0.6vw] border border-gray-300 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-[0.6vw] border border-gray-300 shadow-sm">
             <div className="bg-emerald-50/50 px-[1vw] py-[0.6vw] border-b border-gray-200 flex items-center gap-[0.5vw]">
               <Wrench className="w-[0.9vw] h-[0.9vw] text-emerald-600" />
               <span className="text-[0.75vw] font-bold text-emerald-700 uppercase tracking-wider">Resolution Report</span>
@@ -302,29 +273,6 @@ const ProductionResponseModal = ({ entry, product, employees, fourMCategories, o
                     <option value="">Select Category</option>
                     {fourMCategories?.map(c => <option key={c._id || c.id} value={c.name || c}>{c.name || c}</option>)}
                   </select>
-                </div>
-                <div className="flex flex-col gap-[0.3vw] col-span-2 relative">
-                  <label className="text-[0.8vw] font-semibold text-black">CAE (Corrective Action Execution)</label>
-                  <div className="relative">
-                    <input 
-                      value={formData.cae} 
-                      onChange={e => { sp("cae", e.target.value); setShowCaeSuggestions(true); setActiveCaeSuggestion(-1); }}
-                      onFocus={() => setShowCaeSuggestions(true)}
-                      onBlur={() => setTimeout(() => setShowCaeSuggestions(false), 200)}
-                      onKeyDown={handleCaeKeyDown}
-                      placeholder="Enter or select CAE..."
-                      className="w-full border border-gray-300 rounded-[0.4vw] py-[0.5vw] px-[0.6vw] text-[0.78vw] outline-none focus:border-blue-500 shadow-sm"
-                    />
-                    <AnimatePresence>
-                      {showCaeSuggestions && filteredCaeSuggestions.length > 0 && (
-                        <motion.ul initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="absolute z-50 w-full mt-[0.2vw] bg-white border border-gray-300 rounded-[0.4vw] shadow-xl max-h-[10vw] overflow-y-auto">
-                          {filteredCaeSuggestions.map((opt, i) => (
-                            <li key={i} onClick={() => { sp("cae", opt); setShowCaeSuggestions(false); }} className={`px-[0.8vw] py-[0.5vw] text-[0.78vw] cursor-pointer transition-colors ${i === activeCaeSuggestion ? "bg-blue-100 text-blue-800" : "hover:bg-gray-50 text-gray-700"}`}>{opt}</li>
-                          ))}
-                        </motion.ul>
-                      )}
-                    </AnimatePresence>
-                  </div>
                 </div>
               </div>
 
@@ -348,17 +296,12 @@ const ProductionResponseModal = ({ entry, product, employees, fourMCategories, o
                 <SearchableSelect label="Assembled By" value={formData.assembledBy} options={employeeOptions} onSelect={(val, lbl) => { sp("assembledBy", val); sp("assembledByName", lbl); }} placeholder="Search employee..." />
                 <SearchableSelect label="Tested By" value={formData.testedBy} options={employeeOptions} onSelect={(val, lbl) => { sp("testedBy", val); sp("testedByName", lbl); }} placeholder="Search employee..." />
                 <SearchableSelect label="FI By" value={formData.fiBy} options={employeeOptions} onSelect={(val, lbl) => { sp("fiBy", val); sp("fiByName", lbl); }} placeholder="Search employee..." />
-                <SearchableSelect label="Verified By" value={formData.verifiedBy} options={employeeOptions} onSelect={(val, lbl) => { sp("verifiedBy", val); sp("verifiedByName", lbl); }} placeholder="Search employee..." />
               </div>
 
               <div className="grid grid-cols-4 gap-[1vw]">
                 <div className="flex flex-col gap-[0.3vw]">
                   <label className="text-[0.8vw] font-semibold text-black">Closed Date {formData.status === "Completed" && <span className="text-red-500">*</span>}</label>
                   <input type="date" value={formData.closedDate} onChange={e => sp("closedDate", e.target.value)} className="border border-gray-300 rounded-[0.4vw] py-[0.5vw] px-[0.6vw] text-[0.78vw] outline-none focus:border-blue-500 shadow-sm" />
-                </div>
-                <div className="flex flex-col gap-[0.3vw]">
-                  <label className="text-[0.8vw] font-semibold text-black">Verified Date</label>
-                  <input type="date" value={formData.verifiedDate} onChange={e => sp("verifiedDate", e.target.value)} className="border border-gray-300 rounded-[0.4vw] py-[0.5vw] px-[0.6vw] text-[0.78vw] outline-none focus:border-blue-500 shadow-sm" />
                 </div>
                 <div className="flex flex-col gap-[0.3vw]">
                   <label className="text-[0.8vw] font-semibold text-black">Current Status <span className="text-red-500">*</span></label>
@@ -437,7 +380,7 @@ const ProductionInfoModal = ({ entry, product, onClose }) => {
           </div>
 
           {product.report && (
-            <div className="space-y-[1vw] mt-[1vw] p-[1vw] bg-white rounded-[0.6vw] border border-gray-200">
+            <div className="space-y-[1vw] mt-[1vw] p-[1vw] bg-white rounded-[0.6vw] border border-gray-200 shadow-sm">
                <h4 className="text-[0.85vw] font-bold text-gray-800 border-b border-gray-100 pb-[0.3vw]">Technical Report</h4>
                <div className="grid grid-cols-2 gap-[1vw]">
                  <RefInput label="Root Cause" value={product.report.rootCause} span={2} />
@@ -445,6 +388,34 @@ const ProductionInfoModal = ({ entry, product, onClose }) => {
                  <RefInput label="Parts Replaced" value={product.report.partsReplacement} span={2} />
                  <RefInput label="Verified By" value={product.report.verifiedByName} />
                  <RefInput label="Closed Date" value={fmtDate(product.report.closedDate)} />
+               </div>
+            </div>
+          )}
+
+          {/* Update History */}
+          {product.report?.history && product.report.history.length > 0 && (
+            <div className="space-y-[0.8vw] mt-[1vw] p-[1vw] bg-white rounded-[0.6vw] border border-gray-200 shadow-sm">
+               <h4 className="text-[0.85vw] font-bold text-blue-700 border-b border-blue-500/10 pb-[0.3vw] flex items-center gap-[0.5vw]">
+                 <Clock className="w-[0.9vw] h-[0.9vw]" /> Update History Log
+               </h4>
+               <div className="space-y-[0.6vw] max-h-[15vw] overflow-y-auto pr-[0.5vw] custom-scrollbar">
+                 {product.report.history.slice().reverse().map((h, i) => (
+                   <div key={i} className="flex flex-col gap-[0.2vw] p-[0.6vw] rounded-[0.4vw] bg-gray-50/50 border border-gray-100 hover:bg-blue-50/30 transition-colors">
+                     <div className="flex justify-between items-center">
+                       <Badge label={h.status} color={STATUS_CONFIG[h.status]?.color || "gray"} size="xs" />
+                       <span className="text-[0.65vw] text-gray-500 font-bold uppercase tracking-tighter">
+                         {fmtDate(h.timestamp)} · {new Date(h.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                       </span>
+                     </div>
+                     {h.remark && (
+                       <div className="text-[0.72vw] text-gray-600 italic flex items-start gap-[0.3vw] mt-[0.1vw]">
+                         <span className="text-blue-400 font-black">"</span>
+                         <span>{h.remark}</span>
+                         <span className="text-blue-400 font-black">"</span>
+                       </div>
+                     )}
+                   </div>
+                 ))}
                </div>
             </div>
           )}
@@ -533,18 +504,33 @@ export default function ProductionMaterialResponse() {
     }
   };
 
-  const allProducts = useMemo(() => {
+  const myProducts = useMemo(() => {
     const list = [];
+    const myId = currentUser?.userId || currentUser?.id;
+    if (!myId) return [];
     entries.forEach(entry => {
       entry.products?.forEach(product => {
-        const status = product.report?.status || "Open";
-        if (filterStatus === "All" || status === filterStatus) {
-          list.push({ entry, product });
-        }
+        if (product.assignedTo === myId) list.push({ entry, product });
       });
     });
-    return list.sort((a, b) => (a.entry.customerName || "").localeCompare(b.entry.customerName || ""));
-  }, [entries, filterStatus]);
+    return list;
+  }, [entries, currentUser]);
+
+  const counts = useMemo(() => {
+    const c = { All: myProducts.length };
+    ["Open", "Under Testing", "Repair in Progress", "Pending", "Completed", "Not Repairable"].forEach(s => {
+      c[s] = myProducts.filter(p => (p.product.report?.status || "Open") === s).length;
+    });
+    return c;
+  }, [myProducts]);
+
+  const allProducts = useMemo(() => {
+    let filtered = myProducts;
+    if (filterStatus !== "All") {
+      filtered = filtered.filter(p => (p.product.report?.status || "Open") === filterStatus);
+    }
+    return filtered.sort((a, b) => (a.entry.customerName || "").localeCompare(b.entry.customerName || ""));
+  }, [myProducts, filterStatus]);
 
   const paginatedProducts = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -611,9 +597,7 @@ export default function ProductionMaterialResponse() {
           {/* Stats Bar */}
           <div className="flex items-center gap-[0.6vw]">
             {["All", "Open", "Under Testing", "Repair in Progress", "Pending", "Completed", "Not Repairable"].map(label => {
-              const count = label === "All" 
-                ? entries.reduce((acc, e) => acc + (e.products?.length || 0), 0)
-                : entries.reduce((acc, e) => acc + (e.products?.filter(p => (p.report?.status || "Open") === label).length || 0), 0);
+              const count = counts[label] || 0;
               const active = filterStatus === label;
               
               return (
@@ -720,7 +704,7 @@ export default function ProductionMaterialResponse() {
 
                           {/* Qty */}
                           <td className="px-[0.8vw] py-[1vw] text-center border-r border-b border-gray-200">
-                            <span className="text-[0.8vw] font-black text-gray-800">{product.qty || "1"}</span>
+                            <span className="text-[0.8vw] font-medium text-gray-800">{product.qty || "1"}</span>
                           </td>
 
                           {/* Status */}
@@ -744,20 +728,9 @@ export default function ProductionMaterialResponse() {
 
                           {/* Action */}
                           <td className="px-[0.8vw] py-[1vw] text-center border-b border-gray-200">
-                            {!product.assignedTo ? (
-                              <button onClick={() => claimProduct(entry.id, product._pid)} className="bg-emerald-600 hover:bg-emerald-700 text-white px-[1vw] py-[0.5vw] rounded-[0.4vw] text-[0.75vw] font-bold shadow-md shadow-emerald-100 transition-all active:scale-95 flex items-center gap-[0.4vw] mx-auto cursor-pointer">
-                                <Plus className="w-[0.9vw] h-[0.9vw]" /> Claim Item
-                              </button>
-                            ) : isMyClaim ? (
-                              <button onClick={() => setSelected({ entry, product })} className="bg-blue-600 hover:bg-blue-700 text-white px-[1vw] py-[0.5vw] rounded-[0.4vw] text-[0.75vw] font-bold shadow-md shadow-blue-100 transition-all active:scale-95 flex items-center gap-[0.4vw] mx-auto cursor-pointer">
-                                <Edit3 className="w-[0.9vw] h-[0.9vw]" /> Update Report
-                              </button>
-                            ) : (
-                              <div className="flex flex-col items-center gap-[0.2vw]">
-                                <Badge label="Assigned" color="slate" size="xs" />
-                                <span className="text-[0.65vw] font-bold text-gray-500 truncate max-w-[6vw]">{product.assignedToName}</span>
-                              </div>
-                            )}
+                            <button onClick={() => setSelected({ entry, product })} className="bg-blue-600 hover:bg-blue-700 text-white px-[1vw] py-[0.5vw] rounded-[0.4vw] text-[0.75vw] font-bold shadow-md shadow-blue-100 transition-all active:scale-95 flex items-center gap-[0.4vw] mx-auto cursor-pointer">
+                              <Edit3 className="w-[0.9vw] h-[0.9vw]" /> Update Report
+                            </button>
                           </td>
                         </tr>
                       </React.Fragment>

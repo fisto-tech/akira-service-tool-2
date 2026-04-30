@@ -108,7 +108,7 @@ exports.updateProductReport = async (req, res) => {
 exports.updateFinalStatus = async (req, res) => {
   try {
     const { id, productId } = req.params;
-    const { finalStatus, finalStatusRemarks, finalStatusDate, finalStatusHistory } = req.body;
+    const { finalStatus, finalStatusRemarks, finalStatusDate, finalStatusHistory, report } = req.body;
 
     const inward = await ProductionMaterial.findById(id);
     if (!inward) return res.status(404).json({ message: 'Inward not found' });
@@ -116,10 +116,11 @@ exports.updateFinalStatus = async (req, res) => {
     const product = inward.products.find(p => p._pid === productId);
     if (!product) return res.status(404).json({ message: 'Product not found' });
 
-    product.finalStatus = finalStatus;
-    product.finalStatusRemarks = finalStatusRemarks;
-    product.finalStatusDate = finalStatusDate;
-    product.finalStatusHistory = finalStatusHistory;
+    if (finalStatus !== undefined) product.finalStatus = finalStatus;
+    if (finalStatusRemarks !== undefined) product.finalStatusRemarks = finalStatusRemarks;
+    if (finalStatusDate !== undefined) product.finalStatusDate = finalStatusDate;
+    if (finalStatusHistory !== undefined) product.finalStatusHistory = finalStatusHistory;
+    if (report !== undefined) product.report = report;
 
     inward.markModified('products');
     await inward.save();

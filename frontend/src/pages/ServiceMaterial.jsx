@@ -1130,7 +1130,7 @@ const InwardForm = ({ initialData, customerDb, employees, boardTypes, onSave, on
               <Package className="w-[1vw] h-[1vw] text-blue-500" />Product &amp;
               Service Details
               <span className="ml-[0.5vw] text-[0.7vw] bg-blue-100 text-blue-700 px-[0.5vw] py-[0.15vw] rounded-full font-semibold normal-case tracking-normal">
-                {products.length} row{products.length > 1 ? "s" : ""}
+                {products.length} count{products.length > 1 ? "s" : ""}
               </span>
             </h3>
             {!isReadOnly && (

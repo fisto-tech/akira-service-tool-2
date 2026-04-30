@@ -61,7 +61,7 @@ const StatusBadge = ({ status }) => (
 // ── Shared UI Components ─────────────────────────────────────
 const Th = ({ children, cls = "" }) => (
   <th
-    className={`px-[0.8vw] py-[0.7vw] text-[0.7vw] text-black font-semibold uppercase tracking-wider border-b-2 border-r border-slate-200 last:border-r-0 bg-blue-50/40 ${cls}`}
+    className={`px-[1vw] py-[0.9vw] text-[0.7vw] text-black font-bold uppercase tracking-widest border-b border-r border-black/10 last:border-r-0 bg-slate-50/50 text-left ${cls}`}
   >
     {children}
   </th>
@@ -69,7 +69,7 @@ const Th = ({ children, cls = "" }) => (
 
 const Td = ({ children, cls = "" }) => (
   <td
-    className={`px-[0.8vw] py-[0.8vw] text-[0.75vw] text-black border-b border-r border-slate-100 last:border-r-0 align-middle ${cls}`}
+    className={`px-[1vw] py-[1vw] text-[0.78vw] text-black border-b border-r border-black/5 last:border-r-0 align-middle ${cls}`}
   >
     {children}
   </td>
@@ -79,13 +79,13 @@ const ExportButtons = ({ onCsv, onPdf }) => (
   <div className="flex items-center gap-[0.5vw]">
     <button
       onClick={onCsv}
-      className="flex items-center gap-[0.4vw] px-[1vw] py-[0.5vw] bg-emerald-600 text-white rounded-[0.5vw] text-[0.75vw] font-semibold hover:bg-emerald-700 transition-all shadow-sm hover:shadow-md cursor-pointer active:scale-95"
+      className="flex items-center gap-[0.4vw] px-[1vw] py-[0.5vw] bg-emerald-600 text-white rounded-[0.5vw] text-[0.75vw] font-semibold hover:bg-emerald-700 transition-all border border-emerald-700 cursor-pointer active:scale-95"
     >
       <FileSpreadsheet className="w-[1vw] h-[1vw]" /> Excel
     </button>
     <button
       onClick={onPdf}
-      className="flex items-center gap-[0.4vw] px-[1vw] py-[0.5vw] bg-blue-600 text-white rounded-[0.5vw] text-[0.75vw] font-semibold hover:bg-blue-700 transition-all shadow-sm hover:shadow-md cursor-pointer active:scale-95"
+      className="flex items-center gap-[0.4vw] px-[1vw] py-[0.5vw] bg-blue-600 text-white rounded-[0.5vw] text-[0.75vw] font-semibold hover:bg-blue-700 transition-all border border-blue-700 cursor-pointer active:scale-95"
     >
       <Download className="w-[1vw] h-[1vw]" /> PDF
     </button>
@@ -97,31 +97,31 @@ const CallDetailsModal = ({ isOpen, onClose, employee, calls }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-blue-900/40 backdrop-blur-sm p-[2vw]">
-      <div className="bg-white rounded-[1.2vw] shadow-2xl w-[85vw] max-h-[85vh] flex flex-col overflow-hidden border border-blue-100">
-        <div className="bg-blue-950 px-[1.5vw] py-[1.2vw] flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-[2vw]">
+      <div className="bg-white rounded-[1.2vw] w-[85vw] max-h-[85vh] flex flex-col overflow-hidden border-2 border-black">
+        <div className="bg-slate-900 px-[1.5vw] py-[1.2vw] flex items-center justify-between">
           <div className="flex items-center gap-[0.8vw]">
-            <div className="w-[2.5vw] h-[2.5vw] rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-400/30">
-              <User className="w-[1.2vw] h-[1.2vw] text-blue-300" />
+            <div className="w-[2.5vw] h-[2.5vw] rounded-full bg-slate-500/20 flex items-center justify-center border border-slate-400/30">
+              <User className="w-[1.2vw] h-[1.2vw] text-slate-300" />
             </div>
             <div>
               <h3 className="text-white text-[1.1vw] font-semibold tracking-tight">
                 {employee?.name || "Unassigned"}
               </h3>
-              <p className="text-blue-200/70 text-[0.7vw]">
-                {employee?.department || "N/A"} • <span className="text-blue-100 font-medium">{calls.length}</span> Allocated Calls
+              <p className="text-white/60 text-[0.7vw]">
+                {employee?.department || "N/A"} • <span className="text-white font-medium">{calls.length}</span> Allocated Calls
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-blue-200 hover:text-white transition-colors cursor-pointer p-[0.5vw] hover:bg-white/10 rounded-full"
+            className="text-white/60 hover:text-white transition-colors cursor-pointer p-[0.5vw] hover:bg-white/10 rounded-full"
           >
             <X className="w-[1.4vw] h-[1.4vw]" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-auto p-[1.5vw] bg-blue-50/10">
+        <div className="flex-1 overflow-auto p-[1.5vw] bg-white">
           <table className="w-full border-separate border-spacing-0">
             <thead>
               <tr>
@@ -142,15 +142,15 @@ const CallDetailsModal = ({ isOpen, onClose, employee, calls }) => {
                 </tr>
               ) : (
                 calls.map((call) => (
-                  <tr key={call._id} className="hover:bg-gray-50 transition-colors group">
-                    <Td className="font-bold text-black">{call.callNumber}</Td>
-                    <Td className="text-black/80">{fmtDate(call.dateTime)}</Td>
-                    <Td className="font-semibold text-black">{call.customerName}</Td>
+                  <tr key={call._id} className="hover:bg-blue-50/30 transition-colors group">
+                    <Td className="font-medium text-black">{call.callNumber}</Td>
+                    <Td className="text-black/70">{fmtDate(call.dateTime)}</Td>
+                    <Td className="font-medium text-black">{call.customerName}</Td>
                     <Td>
                       <div className="flex flex-col gap-[0.2vw]">
                         {call.products?.map((p, i) => (
-                          <span key={i} className="text-[0.68vw] text-black bg-blue-50 px-[0.4vw] py-[0.1vw] rounded border border-blue-100 truncate max-w-[15vw] font-medium">
-                            {p.itemDescription} <span className="text-black/50 text-[0.6vw]">({p.serialNumber})</span>
+                          <span key={i} className="text-[0.68vw] text-black bg-slate-50 px-[0.4vw] py-[0.1vw] rounded border border-black/10 truncate max-w-[15vw]">
+                            {p.itemDescription} <span className="text-black/40 text-[0.6vw]">({p.serialNumber})</span>
                           </span>
                         ))}
                       </div>
@@ -159,9 +159,9 @@ const CallDetailsModal = ({ isOpen, onClose, employee, calls }) => {
                       <StatusBadge status={call.status} />
                     </Td>
                     <Td>
-                      <span className={`px-[0.5vw] py-[0.1vw] rounded text-[0.65vw] font-semibold border ${
+                      <span className={`px-[0.5vw] py-[0.1vw] rounded text-[0.65vw] font-medium border ${
                         call.priority === 'Critical' ? 'text-red-700 bg-red-50 border-red-100' : 
-                        call.priority === 'High' ? 'text-orange-700 bg-orange-50 border-orange-100' : 'text-blue-600 bg-blue-50 border-blue-100'
+                        call.priority === 'High' ? 'text-orange-700 bg-orange-50 border-orange-100' : 'text-black bg-slate-50 border-black/10'
                       }`}>
                         {call.priority}
                       </span>
@@ -185,6 +185,10 @@ export default function ServiceCallReports() {
   const [calls, setCalls] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 10;
 
   // Modal State
   const [selectedEmp, setSelectedEmp] = useState(null);
@@ -276,8 +280,21 @@ export default function ServiceCallReports() {
     );
     
     filteredEmps.sort((a, b) => b.allocatedCount - a.allocatedCount);
-    return [reportData.unassigned, ...filteredEmps];
+    return filteredEmps;
   }, [reportData, search]);
+
+  // Paginated Rows
+  const paginatedRows = useMemo(() => {
+    const startIdx = (currentPage - 1) * rowsPerPage;
+    return displayRows.slice(startIdx, startIdx + rowsPerPage);
+  }, [displayRows, currentPage]);
+
+  const totalPages = Math.ceil(displayRows.length / rowsPerPage);
+
+  // Reset to page 1 on search
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
 
   const handleViewDetails = (row) => {
     setSelectedEmp(row);
@@ -311,36 +328,36 @@ export default function ServiceCallReports() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-[1vw] bg-blue-50/10">
-        <div className="w-[3vw] h-[3vw] border-[0.3vw] border-blue-200 border-t-blue-600 rounded-full animate-spin" />
-        <span className="text-[0.9vw] font-medium text-blue-600">Generating Analysis...</span>
+      <div className="flex flex-col items-center justify-center h-full gap-[1vw] bg-white">
+        <div className="w-[3vw] h-[3vw] border-[0.3vw] border-black/10 border-t-blue-600 rounded-full animate-spin" />
+        <span className="text-[0.9vw] font-medium text-black">Generating Analysis...</span>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full flex flex-col gap-[1vw] p-[0.6vw] overflow-hidden bg-blue-50/20">
+    <div className="w-full h-full flex flex-col gap-[1vw] p-[0.6vw] overflow-hidden bg-white">
       {/* Header Section */}
-      <div className="bg-white border border-blue-100 rounded-[1.2vw] p-[1.2vw] shadow-sm">
-        <div className="flex items-center justify-between mb-[1vw]">
-          <div className="flex items-center gap-[0.8vw]">
-            <div className="bg-blue-600 p-[0.6vw] rounded-[0.8vw] shadow-lg shadow-blue-200">
-              <BarChart2 className="w-[1.4vw] h-[1.4vw] text-white" />
+      <div className="bg-white border border-black/20 rounded-[1.2vw] p-[1.2vw]">
+        <div className="flex items-center justify-between mb-[1.2vw]">
+          <div className="flex items-center gap-[1vw]">
+            <div className="bg-indigo-600 p-[0.7vw] rounded-xl border border-indigo-700">
+              <BarChart2 className="w-[1.5vw] h-[1.5vw] text-white" />
             </div>
             <div>
-              <h2 className="text-[1.25vw] font-bold text-blue-950 uppercase tracking-tight">Service Call Allocation Report</h2>
-              <p className="text-[0.72vw] text-blue-400 font-medium">Engineer workload analytics & distribution</p>
+              <h2 className="text-[1.4vw] font-bold text-blue-800 uppercase tracking-tight leading-none">Service Call Allocation Report</h2>
+              <p className="text-[0.75vw] text-black/50 font-medium mt-[0.2vw]">Engineer workload analytics & distribution</p>
             </div>
           </div>
           <ExportButtons onCsv={exportCsv} onPdf={exportPdf} />
         </div>
 
-        <div className="flex items-center gap-[1.5vw] bg-blue-50/40 p-[0.8vw] rounded-[1vw] border border-blue-50">
+        <div className="flex items-center gap-[1.5vw] bg-slate-50/50 p-[0.8vw] rounded-[1vw] border border-black/5">
           <div className="flex items-center gap-[1vw]">
             <div className="flex flex-col gap-[0.2vw]">
-              <label className="text-[0.6vw] font-bold text-blue-400 uppercase ml-[0.2vw] tracking-wider">From Date</label>
+              <label className="text-[0.6vw] font-bold text-black/40 uppercase ml-[0.2vw] tracking-wider">From Date</label>
               <div className="relative">
-                <Calendar className="absolute left-[0.7vw] top-1/2 -translate-y-1/2 w-[0.8vw] h-[0.8vw] text-blue-300" />
+                <Calendar className="absolute left-[0.7vw] top-1/2 -translate-y-1/2 w-[0.8vw] h-[0.8vw] text-black/30" />
                 <input 
                   type="date" 
                   value={fromDate}
@@ -350,9 +367,9 @@ export default function ServiceCallReports() {
               </div>
             </div>
             <div className="flex flex-col gap-[0.2vw]">
-              <label className="text-[0.6vw] font-bold text-blue-400 uppercase ml-[0.2vw] tracking-wider">To Date</label>
+              <label className="text-[0.6vw] font-bold text-black/40 uppercase ml-[0.2vw] tracking-wider">To Date</label>
               <div className="relative">
-                <Calendar className="absolute left-[0.7vw] top-1/2 -translate-y-1/2 w-[0.8vw] h-[0.8vw] text-blue-300" />
+                <Calendar className="absolute left-[0.7vw] top-1/2 -translate-y-1/2 w-[0.8vw] h-[0.8vw] text-black/30" />
                 <input 
                   type="date" 
                   value={toDate}
@@ -363,27 +380,28 @@ export default function ServiceCallReports() {
             </div>
           </div>
 
-          <div className="h-[2.5vw] w-[1.5px] bg-blue-100 mx-[0.5vw]" />
+          <div className="h-[2.5vw] w-[1.5px] bg-black/5 mx-[0.5vw]" />
 
           <div className="flex-1 relative">
-            <Search className="absolute left-[0.8vw] top-1/2 -translate-y-1/2 w-[1vw] h-[1vw] text-blue-300" />
+            <Search className="absolute left-[0.8vw] top-1/2 -translate-y-1/2 w-[1vw] h-[1vw] text-black/30" />
             <input 
               type="text"
               placeholder="Search by Employee Name or Department..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-[2.4vw] pr-[1vw] py-[0.5vw] bg-white border border-blue-100 rounded-[0.8vw] text-[0.8vw] focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 outline-none transition-all placeholder:text-blue-300 font-medium text-black"
+              className="w-full pl-[2.4vw] pr-[1vw] py-[0.5vw] bg-white border border-black/10 rounded-[0.8vw] text-[0.8vw] focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 outline-none transition-all placeholder:text-black/30 font-normal text-black"
             />
           </div>
         </div>
       </div>
 
       {/* Main Content - Table */}
-      <div className="flex-1 bg-white border border-blue-100 rounded-[1.2vw] shadow-sm overflow-hidden flex flex-col">
+      <div className="flex-1 bg-white border border-black/20 rounded-[1.2vw] overflow-hidden flex flex-col max-h-[60vh]">
         <div className="overflow-auto flex-1">
           <table className="w-full border-separate border-spacing-0">
-            <thead className="sticky top-0 z-10">
+            <thead className="sticky top-0 z-10 bg-white">
               <tr>
+                <Th cls="w-[3vw] text-center">S.No</Th>
                 <Th>Employee Details</Th>
                 <Th>Department</Th>
                 <Th cls="text-center">Total Allocated</Th>
@@ -392,35 +410,38 @@ export default function ServiceCallReports() {
               </tr>
             </thead>
             <tbody>
-              {displayRows.map((row, idx) => (
+              {paginatedRows.map((row, idx) => {
+                const sNo = (currentPage - 1) * rowsPerPage + idx + 1;
+                return (
                 <tr 
                   key={row.userId || `row-${idx}`} 
                   className={`
                     group transition-all duration-200
-                    ${row.isUnassignedRow ? 'bg-orange-50/40 hover:bg-orange-50' : 'hover:bg-blue-50/30'}
+                    ${row.isUnassignedRow ? 'bg-orange-50/30 hover:bg-orange-50' : 'hover:bg-blue-50/20'}
                   `}
                 >
+                  <Td cls="text-center font-bold text-black/40">{sNo}</Td>
                   <Td>
-                    <div className="flex items-center gap-[0.8vw]">
+                    <div className="flex items-center gap-[1vw]">
                       <div className={`
-                        w-[2.2vw] h-[2.2vw] rounded-full flex items-center justify-center font-bold text-[0.8vw] shadow-sm border
-                        ${row.isUnassignedRow ? 'bg-orange-100 text-orange-600 border-orange-200' : 'bg-blue-100 text-blue-600 border-blue-200'}
+                        w-[2.8vw] h-[2.8vw] rounded-xl flex items-center justify-center font-bold text-[1vw] border
+                        ${row.isUnassignedRow ? 'bg-orange-100 text-orange-600 border-orange-200' : 'bg-indigo-50 text-indigo-600 border-indigo-200'}
                       `}>
-                        {row.isUnassignedRow ? <AlertCircle className="w-[1.2vw] h-[1.2vw]" /> : row.name.charAt(0).toUpperCase()}
+                        {row.isUnassignedRow ? <AlertCircle className="w-[1.4vw] h-[1.4vw]" /> : row.name.charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <div className={`text-[0.82vw] font-bold tracking-tight ${row.isUnassignedRow ? 'text-orange-700' : 'text-black'}`}>{row.name}</div>
-                        {!row.isUnassignedRow && <div className="text-[0.65vw] text-black/50 font-semibold uppercase tracking-tight">{row.role}</div>}
+                        <div className={`text-[0.85vw] font-semibold tracking-tight ${row.isUnassignedRow ? 'text-orange-700' : 'text-black'}`}>{row.name}</div>
+                        {!row.isUnassignedRow && <div className="text-[0.65vw] text-gray-700 font-bold uppercase tracking-tight mt-[0.1vw]">( {row.role} )</div>}
                       </div>
                     </div>
                   </Td>
                   <Td>
-                    <span className="text-black/80 font-semibold">{row.department || "—"}</span>
+                    <span className="text-black/80 font-regular px-[0.6vw] py-[0.2vw] bg-white rounded-[0.4vw] border border-black/10">{row.department || "—"}</span>
                   </Td>
                   <Td cls="text-center">
                     <div className={`
-                      inline-flex items-center justify-center min-w-[2.8vw] h-[1.6vw] rounded-full text-[0.8vw] font-bold shadow-sm
-                      ${row.allocatedCount > 0 ? (row.isUnassignedRow ? 'bg-orange-600 text-white' : 'bg-blue-600 text-white') : 'bg-blue-50 text-blue-300 border border-blue-100'}
+                      inline-flex items-center justify-center min-w-[3vw] h-[1.8vw] rounded-full text-[0.85vw] font-regular border
+                      ${row.allocatedCount > 0 ? (row.isUnassignedRow ? 'bg-orange-600 text-white border-orange-700' : 'bg-blue-600 text-white border-blue-700') : 'bg-white text-black border-black/10'}
                     `}>
                       {row.allocatedCount}
                     </div>
@@ -429,13 +450,13 @@ export default function ServiceCallReports() {
                     <div className="flex items-center gap-[0.4vw] flex-wrap">
                       {Object.entries(row.statusCounts).length > 0 ? (
                         Object.entries(row.statusCounts).map(([status, count]) => (
-                          <div key={status} className="flex items-center gap-[0.3vw] bg-white border border-slate-200 rounded-[0.5vw] px-[0.5vw] py-[0.15vw] shadow-sm">
-                            <span className="text-[0.65vw] font-bold text-black/40 uppercase">{status}:</span>
-                            <span className="text-[0.72vw] font-bold text-black">{count}</span>
+                          <div key={status} className="flex items-center gap-[0.3vw] bg-white border border-black/20 rounded-[0.6vw] px-[0.6vw] py-[0.25vw] hover:border-black/40 transition-colors">
+                            <span className="text-[0.65vw] font-bold text-black/30 uppercase tracking-tight">{status}:</span>
+                            <span className="text-[0.75vw] font-bold text-black">{count}</span>
                           </div>
                         ))
                       ) : (
-                        <span className="text-blue-200 font-medium text-[0.7vw]">No calls in this period</span>
+                        <span className="text-black font-regular text-[0.7vw]">No calls in this period</span>
                       )}
                     </div>
                   </Td>
@@ -444,48 +465,99 @@ export default function ServiceCallReports() {
                       onClick={() => handleViewDetails(row)}
                       disabled={row.allocatedCount === 0}
                       className={`
-                        inline-flex items-center gap-[0.4vw] px-[1vw] py-[0.4vw] rounded-[0.7vw] text-[0.72vw] font-semibold transition-all shadow-sm border
+                        inline-flex items-center gap-[0.5vw] px-[1.2vw] py-[0.5vw] rounded-[0.8vw] text-[0.75vw] font-bold transition-all border
                         ${row.allocatedCount > 0 
-                          ? (row.isUnassignedRow ? 'bg-orange-50 text-orange-700 border-orange-100 hover:bg-orange-100 active:scale-95' : 'bg-blue-50 text-blue-700 border-blue-100 hover:bg-blue-100 active:scale-95') 
-                          : 'bg-white text-blue-100 border-blue-50 cursor-not-allowed'}
+                          ? (row.isUnassignedRow ? 'bg-white text-orange-700 border-orange-300 hover:bg-orange-50 active:scale-95' : 'bg-white text-black border-black/30 hover:bg-slate-50 hover:border-black/50 active:scale-95') 
+                          : 'bg-white text-black/10 border-black/5 cursor-not-allowed'}
                       `}
                     >
-                      <Layers className="w-[0.9vw] h-[0.9vw]" />
+                      <Layers className="w-[1vw] h-[1vw]" />
                       View Details
                     </button>
                   </Td>
                 </tr>
-              ))}
+              ); })}
             </tbody>
           </table>
+          {displayRows.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-[8vw] gap-[1vw]">
+              <div className="bg-slate-50 p-[1.5vw] rounded-full border border-black/5">
+                <Users className="w-[3vw] h-[3vw] text-black/10" />
+              </div>
+              <p className="text-[1vw] font-bold text-black/20">No matching employees found</p>
+            </div>
+          )}
         </div>
         
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-[1.5vw] py-[0.8vw] bg-white border-t border-black/10">
+            <div className="text-[0.7vw] text-black/40 font-bold uppercase tracking-wider">
+              Showing <span className="text-black">{((currentPage - 1) * rowsPerPage) + 1}</span> to <span className="text-black">{Math.min(currentPage * rowsPerPage, displayRows.length)}</span> of <span className="text-black">{displayRows.length}</span> Results
+            </div>
+            <div className="flex items-center gap-[0.4vw]">
+              <button 
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="p-[0.5vw] border border-black/10 rounded-[0.5vw] hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-90"
+              >
+                <ChevronDown className="w-[1.2vw] h-[1.2vw] rotate-90 text-black" />
+              </button>
+              
+              <div className="flex items-center gap-[0.2vw]">
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`
+                      min-w-[2.2vw] h-[2.2vw] rounded-[0.5vw] text-[0.75vw] font-bold transition-all
+                      ${currentPage === i + 1 
+                        ? 'bg-blue-600 text-white border border-blue-700' 
+                        : 'bg-white text-black border border-black/10 hover:border-black/30'}
+                    `}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+
+              <button 
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="p-[0.5vw] border border-black/10 rounded-[0.5vw] hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-90"
+              >
+                <ChevronDown className="w-[1.2vw] h-[1.2vw] -rotate-90 text-black" />
+              </button>
+            </div>
+          </div>
+        )}
+        
         {/* Footer Summary */}
-        <div className="bg-blue-950 px-[1.5vw] py-[1.2vw] flex items-center gap-[3vw]">
+        <div className="bg-black px-[1.5vw] py-[1.2vw] flex items-center gap-[3vw]">
           <div className="flex items-center gap-[0.8vw]">
-            <div className="w-[2.2vw] h-[2.2vw] rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/20">
-              <Layers className="w-[1.1vw] h-[1.1vw] text-blue-400" />
+            <div className="w-[2.2vw] h-[2.2vw] rounded-full bg-white/10 flex items-center justify-center border border-white/20">
+              <Layers className="w-[1.1vw] h-[1.1vw] text-white/50" />
             </div>
             <div>
-              <span className="block text-[0.6vw] text-blue-300/60 uppercase font-bold tracking-widest">Total Period Calls</span>
-              <span className="text-[1.1vw] font-bold text-white leading-tight">{filteredCalls.length}</span>
+              <span className="block text-[0.6vw] text-white/40 uppercase font-medium tracking-widest">Total Period Calls</span>
+              <span className="text-[1.1vw] font-semibold text-white leading-tight">{filteredCalls.length}</span>
             </div>
           </div>
 
-          <div className="w-[1px] h-[2.2vw] bg-blue-800/50" />
+          <div className="w-[1px] h-[2.2vw] bg-white/10 mx-[0.5vw]" />
 
           <div className="flex items-center gap-[2vw]">
              <div className="flex items-center gap-[0.5vw] group">
                 <div className="w-[0.5vw] h-[0.5vw] rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)] group-hover:scale-125 transition-transform" />
-                <span className="text-[0.75vw] text-blue-200 font-medium tracking-tight">Resolved: <span className="text-white ml-[0.3vw] font-bold">{filteredCalls.filter(c => c.status === 'Resolved').length}</span></span>
+                <span className="text-[0.75vw] text-white/70 font-medium tracking-tight">Resolved: <span className="text-white ml-[0.3vw] font-semibold">{filteredCalls.filter(c => c.status === 'Resolved').length}</span></span>
              </div>
              <div className="flex items-center gap-[0.5vw] group">
                 <div className="w-[0.5vw] h-[0.5vw] rounded-full bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.4)] group-hover:scale-125 transition-transform" />
-                <span className="text-[0.75vw] text-blue-200 font-medium tracking-tight">Pending/Open: <span className="text-white ml-[0.3vw] font-bold">{filteredCalls.filter(c => ['Pending', 'Open'].includes(c.status)).length}</span></span>
+                <span className="text-[0.75vw] text-white/70 font-medium tracking-tight">Pending/Open: <span className="text-white ml-[0.3vw] font-semibold">{filteredCalls.filter(c => ['Pending', 'Open'].includes(c.status)).length}</span></span>
              </div>
              <div className="flex items-center gap-[0.5vw] group">
                 <div className="w-[0.5vw] h-[0.5vw] rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.4)] group-hover:scale-125 transition-transform" />
-                <span className="text-[0.75vw] text-blue-200 font-medium tracking-tight">Critical: <span className="text-white ml-[0.3vw] font-bold">{filteredCalls.filter(c => c.priority === 'Critical').length}</span></span>
+                <span className="text-[0.75vw] text-white/70 font-medium tracking-tight">Critical: <span className="text-white ml-[0.3vw] font-semibold">{filteredCalls.filter(c => c.priority === 'Critical').length}</span></span>
              </div>
           </div>
         </div>
