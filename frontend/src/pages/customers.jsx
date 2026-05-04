@@ -185,6 +185,7 @@ const CustomerDatabase = () => {
   const [partyTypes, setPartyTypes] = useState([]);
   const [colVis, setColVis] = useState({});
   const [segments, setSegments] = useState([]);
+  const [isSupervisor, setIsSupervisor] = useState(false);
 
   const [selectedItems, setSelectedItems] = useState(new Set());
   const [currentPage, setCurrentPage] = useState(1);
@@ -270,6 +271,8 @@ const CustomerDatabase = () => {
 
   useEffect(() => {
     fetchData();
+    const user = JSON.parse(sessionStorage.getItem("loggedInUser"));
+    if (user?.role === "Supervisor") setIsSupervisor(true);
   }, []);
 
   useEffect(() => {
@@ -998,7 +1001,7 @@ const CustomerDatabase = () => {
           </div>
           <div className="flex gap-[1vw] items-center">
             <AnimatePresence>
-              {selectedItems.size > 0 && (
+              {selectedItems.size > 0 && !isSupervisor && (
                 <motion.button
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -1020,18 +1023,22 @@ const CustomerDatabase = () => {
                 <option key={t.id} value={t.name}>{t.name}</option>
               ))}
             </select>
-            <button
-              onClick={openAddModal}
-              className="cursor-pointer flex items-center gap-[0.5vw] bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-[1vw] h-[2.4vw] rounded-[0.4vw]"
-            >
-              <UserPlus className="w-[1.2vw] h-[1.2vw]" /> Add
-            </button>
-            <button
-              onClick={() => setShowUploadModal(true)}
-              className="cursor-pointer flex items-center gap-[0.5vw] bg-blue-600 hover:bg-blue-700 text-white px-[1vw] h-[2.4vw] rounded-[0.4vw]"
-            >
-              <UploadCloud className="w-[1.2vw] h-[1.2vw]" /> Upload
-            </button>
+            {!isSupervisor && (
+              <>
+                <button
+                  onClick={openAddModal}
+                  className="cursor-pointer flex items-center gap-[0.5vw] bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-[1vw] h-[2.4vw] rounded-[0.4vw]"
+                >
+                  <UserPlus className="w-[1.2vw] h-[1.2vw]" /> Add
+                </button>
+                <button
+                  onClick={() => setShowUploadModal(true)}
+                  className="cursor-pointer flex items-center gap-[0.5vw] bg-blue-600 hover:bg-blue-700 text-white px-[1vw] h-[2.4vw] rounded-[0.4vw]"
+                >
+                  <UploadCloud className="w-[1.2vw] h-[1.2vw]" /> Upload
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -1042,25 +1049,29 @@ const CustomerDatabase = () => {
           <table className="w-full text-left border-collapse">
             <thead className="bg-blue-50 sticky top-0 z-10 shadow-sm">
               <tr>
-                <th className="p-[0.6vw] border-b-[1.5px] border-r-[1.5px] border-gray-300 w-[3%] text-center">
-                  <button
-                    onClick={() => handleSelectAllPage(paginatedData)}
-                    className="flex items-center justify-center w-full cursor-pointer"
-                  >
-                    {isPageSelected ? (
-                      <CheckSquare className="w-[1.1vw] h-[1.1vw] text-blue-600" />
-                    ) : (
-                      <Square className="w-[1.1vw] h-[1.1vw] text-gray-400" />
-                    )}
-                  </button>
-                </th>
+                {!isSupervisor && (
+                  <th className="p-[0.6vw] border-b-[1.5px] border-r-[1.5px] border-gray-300 w-[3%] text-center">
+                    <button
+                      onClick={() => handleSelectAllPage(paginatedData)}
+                      className="flex items-center justify-center w-full cursor-pointer"
+                    >
+                      {isPageSelected ? (
+                        <CheckSquare className="w-[1.1vw] h-[1.1vw] text-blue-600" />
+                      ) : (
+                        <Square className="w-[1.1vw] h-[1.1vw] text-gray-400" />
+                      )}
+                    </button>
+                  </th>
+                )}
                 <th className="p-[0.6vw] font-semibold text-gray-800 border-b-[1.5px] border-r-[1.5px] border-gray-300 w-[4%] text-center">
                   S.No
                 </th>
                 {visibleCols.map(renderHeaderCell)}
-                <th className="p-[0.6vw] font-semibold text-gray-800 border-b-[1.5px] border-r-[1.5px] border-gray-300 w-[4%] text-center">
-                  Edit
-                </th>
+                {!isSupervisor && (
+                  <th className="p-[0.6vw] font-semibold text-gray-800 border-b-[1.5px] border-r-[1.5px] border-gray-300 w-[4%] text-center">
+                    Actions
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody className="divide-y-[1.5px] divide-gray-200">
@@ -1091,18 +1102,20 @@ const CustomerDatabase = () => {
                       key={i}
                       className={`transition-colors ${isSelected ? "bg-blue-50" : "hover:bg-gray-50"}`}
                     >
-                      <td className="p-[1vw] border-r-[1.5px] border-gray-300 text-center">
-                        <button
-                          onClick={() => handleSelectItem(row.itemCode)}
-                          className="flex items-center justify-center w-full cursor-pointer"
-                        >
-                          {isSelected ? (
-                            <CheckSquare className="w-[1.1vw] h-[1.1vw] text-blue-600" />
-                          ) : (
-                            <Square className="w-[1.1vw] h-[1.1vw] text-gray-300 hover:text-gray-500" />
-                          )}
-                        </button>
-                      </td>
+                      {!isSupervisor && (
+                        <td className="p-[1vw] border-r-[1.5px] border-gray-300 text-center">
+                          <button
+                            onClick={() => handleSelectItem(row.itemCode)}
+                            className="flex items-center justify-center w-full cursor-pointer"
+                          >
+                            {isSelected ? (
+                              <CheckSquare className="w-[1.1vw] h-[1.1vw] text-blue-600" />
+                            ) : (
+                              <Square className="w-[1.1vw] h-[1.1vw] text-gray-300 hover:text-gray-500" />
+                            )}
+                          </button>
+                        </td>
+                      )}
                       <td className="p-[0.9vw] text-gray-600 font-medium border-r-[1.5px] border-gray-300 text-center">
                         {serialNumber}
                       </td>
@@ -1110,7 +1123,7 @@ const CustomerDatabase = () => {
                         renderRowCell(col, row, isSameParty, rowSpan, row.partyCode),
                       )}
                       {/* Edit button — only shown on first row of each party group */}
-                      {!isSameParty ? (
+                      {!isSameParty && !isSupervisor ? (
                         <td
                           rowSpan={rowSpan}
                           className="border-r-[1.5px] border-gray-300 text-center align-middle bg-white"

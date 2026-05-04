@@ -34,6 +34,7 @@ const productSchema = new mongoose.Schema({
   serialNumber: String,
   stage: String,
   problemType: String,
+  ncType: String,
   problem: String,
   initialRootCause: String, // Renamed from rootCause to avoid conflict with report rootCause
   partsDetails: String,

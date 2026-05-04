@@ -53,7 +53,7 @@ const fmtDate = (s) => {
 
 const emptyProduct = () => ({
   _pid: `p-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-  productCode: "", productDescription: "", category: "", boardType: "", productType: "", problemType: "", problem: "", qty: "1", stage: DEFAULT_STAGE_OPTIONS[0],
+  productCode: "", productDescription: "", category: "", boardType: "", productType: "", problemType: "", ncType: "Internal", problem: "", qty: "1", stage: DEFAULT_STAGE_OPTIONS[0],
   serialNumber: "", assignedTo: "", assignedToName: "", assembledBy: "", assembledByName: "", testedBy: "", testedByName: "", fiBy: "", fiByName: "",
   disposition: DEFAULT_DISPOSITION_OPTIONS[0], raisedTo: DEFAULT_STAGE_OPTIONS[0],
   report: null, finalStatus: "Pending", finalStatusRemarks: "", finalStatusDate: todayDateStr(), finalStatusHistory: []
@@ -146,9 +146,10 @@ const ReportsModal = ({ row, onClose }) => {
                         <div className="text-[0.7vw] font-bold text-blue-600 uppercase mb-[1vw] flex items-center gap-[0.5vw] border-b border-blue-50 pb-[0.4vw]">
                           <Target className="w-[0.9vw] h-[0.9vw]" /> Registration Information
                         </div>
-                        <div className="grid grid-cols-5 gap-[1.5vw] mb-[1vw]">
+                        <div className="grid grid-cols-6 gap-[1.5vw] mb-[1vw]">
                           <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Stage</div><div className="font-regular text-black text-[0.8vw]">{prod.stage || "—"}</div></div>
                           <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Category</div><div className="font-regular text-black text-[0.8vw]">{row.category || prod.category || "—"}</div></div>
+                          <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">NC Type</div><div className="font-regular text-black text-[0.8vw]">{prod.ncType || "Internal"}</div></div>
                           <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Problem Type</div><div className="font-regular text-black text-[0.8vw]">{prod.problemType || "—"}</div></div>
                           <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Assembled By</div><div className="font-regular text-black text-[0.8vw]">{prod.report?.assembledByName || prod.assembledByName || "—"}</div></div>
                           <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Tested By</div><div className="font-regular text-black text-[0.8vw]">{prod.report?.testedByName || prod.testedByName || "—"}</div></div>
@@ -234,18 +235,26 @@ const ReportsModal = ({ row, onClose }) => {
 
 // --- Verification Modal ---
 const VerificationModal = ({ row, prod, employees, caeHistory, onSave, onClose }) => {
-  const [formData, setFormData] = useState({
-    verifiedBy: "",
-    verifiedByName: "",
-    verifiedDate: todayDateStr(),
-    cae: prod.report?.cae || ""
+  const [formData, setFormData] = useState(() => {
+    const user = JSON.parse(sessionStorage.getItem("loggedInUser") || "{}");
+    return {
+      verifiedBy: prod.report?.verifiedBy || user.userId || "",
+      verifiedByName: prod.report?.verifiedByName || user.name || "",
+      verifiedDate: prod.report?.verifiedDate || todayDateStr(),
+      cae: prod.report?.cae || ""
+    };
   });
   const [showCaeSuggestions, setShowCaeSuggestions] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
 
   const filteredCaeSuggestions = useMemo(() => {
     const q = formData.cae.toLowerCase();
     return caeHistory.filter(c => c.toLowerCase().includes(q));
   }, [formData.cae, caeHistory]);
+
+  useEffect(() => {
+    setSelectedIndex(-1);
+  }, [filteredCaeSuggestions]);
 
   const handleSave = () => {
     if (!formData.verifiedBy) return alert("Verified By is mandatory.");
@@ -253,10 +262,30 @@ const VerificationModal = ({ row, prod, employees, caeHistory, onSave, onClose }
     onSave(formData);
   };
 
+  const onKeyDown = (e) => {
+    if (!showCaeSuggestions || filteredCaeSuggestions.length === 0) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedIndex(prev => (prev < filteredCaeSuggestions.length - 1 ? prev + 1 : prev));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedIndex(prev => (prev > 0 ? prev - 1 : 0));
+    } else if (e.key === "Enter") {
+      if (selectedIndex >= 0) {
+        e.preventDefault();
+        setFormData(p => ({ ...p, cae: filteredCaeSuggestions[selectedIndex] }));
+        setShowCaeSuggestions(false);
+      }
+    } else if (e.key === "Escape") {
+      setShowCaeSuggestions(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-[2vw]">
-      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white w-[35vw] rounded-[1vw] overflow-hidden flex flex-col border border-gray-300 shadow-xl">
-        <div className="bg-blue-600 px-[1.5vw] py-[1vw] flex justify-between items-center">
+      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white w-[35vw] rounded-[1vw] flex flex-col border border-gray-300 shadow-xl overflow-visible">
+        <div className="bg-blue-600 px-[1.5vw] py-[1vw] flex justify-between items-center rounded-t-[1vw]">
           <div className="flex items-center gap-[0.8vw]">
             <CheckCircle className="w-[1.2vw] h-[1.2vw] text-white" />
             <h3 className="text-[1.1vw] font-bold text-white uppercase tracking-tight">Verify Resolution</h3>
@@ -298,21 +327,33 @@ const VerificationModal = ({ row, prod, employees, caeHistory, onSave, onClose }
             </div>
 
             <div className="flex flex-col gap-[0.3vw] relative">
-              <label className="text-[0.8vw] font-bold text-black uppercase">CAE (CORRECTIVE ACTION EXECUTION)</label>
+              <label className="text-[0.8vw] font-bold text-black uppercase">CAE (CORRECTIVE ACTION EFFECTIVENESS)</label>
               <div className="relative">
                 <input
                   value={formData.cae}
                   onChange={e => { setFormData(p => ({ ...p, cae: e.target.value })); setShowCaeSuggestions(true); }}
                   onFocus={() => setShowCaeSuggestions(true)}
                   onBlur={() => setTimeout(() => setShowCaeSuggestions(false), 200)}
+                  onKeyDown={onKeyDown}
                   placeholder="Enter or select CAE..."
                   className="w-full border border-gray-300 rounded-[0.5vw] py-[0.6vw] px-[0.8vw] text-[0.8vw] font-medium text-black outline-none focus:border-blue-500 bg-white"
                 />
                 <AnimatePresence>
                   {showCaeSuggestions && filteredCaeSuggestions.length > 0 && (
-                    <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="absolute z-50 w-full mt-[0.2vw] bg-white border border-gray-300 rounded-[0.5vw] shadow-lg max-h-[10vw] overflow-y-auto overflow-x-hidden">
+                    <motion.div 
+                      initial={{ opacity: 0, y: -5 }} 
+                      animate={{ opacity: 1, y: 0 }} 
+                      exit={{ opacity: 0, y: -5 }} 
+                      className="absolute z-50 w-full mt-[0.2vw] bg-white border border-gray-300 rounded-[0.5vw] shadow-xl max-h-[12vw] overflow-y-auto overflow-x-hidden custom-scrollbar"
+                    >
                       {filteredCaeSuggestions.map((opt, i) => (
-                        <div key={i} onClick={() => { setFormData(p => ({ ...p, cae: opt })); setShowCaeSuggestions(false); }} className="px-[1vw] py-[0.6vw] text-[0.8vw] font-bold text-black hover:bg-blue-50 cursor-pointer transition-colors border-b border-gray-100 last:border-0">{opt}</div>
+                        <div 
+                          key={i} 
+                          onClick={() => { setFormData(p => ({ ...p, cae: opt })); setShowCaeSuggestions(false); }} 
+                          className={`px-[1vw] py-[0.6vw] text-[0.8vw] font-bold transition-colors border-b border-gray-100 last:border-0 cursor-pointer ${selectedIndex === i ? "bg-blue-600 text-white" : "text-black hover:bg-blue-50"}`}
+                        >
+                          {opt}
+                        </div>
                       ))}
                     </motion.div>
                   )}
@@ -477,7 +518,7 @@ const EmpSelectCell = ({ val, employees, onSelect }) => {
 };
 
 // --- Final Status Cell ---
-const FinalStatusCell = ({ row, prod, onUpdateProduct }) => {
+const FinalStatusCell = ({ row, prod, onUpdateProduct, isSupervisor }) => {
   const [open, setOpen] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [remarks, setRemarks] = useState(prod.finalStatusRemarks || "");
@@ -512,8 +553,11 @@ const FinalStatusCell = ({ row, prod, onUpdateProduct }) => {
   return (
     <div className="flex items-center justify-center gap-[0.4vw]">
       <div className="relative" ref={ref}>
-        <button onClick={() => setOpen(!open)} className={`text-[0.68vw] px-[0.5vw] py-[0.2vw] rounded-full border font-bold flex items-center gap-[0.3vw] cursor-pointer transition-all ${cls}`}>
-          {status} <ChevronDown className="w-[0.7vw] h-[0.7vw]" />
+        <button 
+          onClick={() => !isSupervisor && setOpen(!open)} 
+          className={`text-[0.68vw] px-[0.5vw] py-[0.2vw] rounded-full border font-bold flex items-center gap-[0.3vw] transition-all ${cls} ${isSupervisor ? "cursor-default" : "cursor-pointer"}`}
+        >
+          {status} {!isSupervisor && <ChevronDown className="w-[0.7vw] h-[0.7vw]" />}
         </button>
         <AnimatePresence>
           {open && (
@@ -579,6 +623,7 @@ const InwardForm = ({ initialData, employees, onSave, onBack, stageOptions, disp
   const [boardTypes, setBoardTypes] = useState([]);
   const [showCustDrop, setShowCustDrop] = useState(false);
   const [custSearch, setCustSearch] = useState(initialData.customerName || "");
+  const [custSelectedIndex, setCustSelectedIndex] = useState(-1);
   const custRef = useRef(null);
 
   useEffect(() => {
@@ -606,6 +651,7 @@ const InwardForm = ({ initialData, employees, onSave, onBack, stageOptions, disp
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+
   const customerDbFlat = useMemo(
     () => Array.isArray(customerDb) ? customerDb : Object.values(customerDb).flat(),
     [customerDb]
@@ -629,6 +675,10 @@ const InwardForm = ({ initialData, employees, onSave, onBack, stageOptions, disp
     return uniqueCustomers.filter(c => c.name.toLowerCase().includes(s) || c.code.toLowerCase().includes(s)).slice(0, 100);
   }, [uniqueCustomers, custSearch]);
 
+  useEffect(() => {
+    setCustSelectedIndex(-1);
+  }, [filteredCustomers]);
+
   const selectCustomer = (c) => {
     if (isReadOnly) return;
     setBase(p => ({
@@ -639,6 +689,25 @@ const InwardForm = ({ initialData, employees, onSave, onBack, stageOptions, disp
     }));
     setCustSearch(c.name);
     setShowCustDrop(false);
+  };
+
+  const onCustKeyDown = (e) => {
+    if (!showCustDrop || filteredCustomers.length === 0) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setCustSelectedIndex(prev => (prev < filteredCustomers.length - 1 ? prev + 1 : prev));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setCustSelectedIndex(prev => (prev > 0 ? prev - 1 : 0));
+    } else if (e.key === "Enter") {
+      if (custSelectedIndex >= 0) {
+        e.preventDefault();
+        selectCustomer(filteredCustomers[custSelectedIndex]);
+      }
+    } else if (e.key === "Escape") {
+      setShowCustDrop(false);
+    }
   };
 
   const handleDuplicate = (prod) => {
@@ -697,6 +766,7 @@ const InwardForm = ({ initialData, employees, onSave, onBack, stageOptions, disp
                   value={custSearch}
                   onChange={e => { setCustSearch(e.target.value); setShowCustDrop(true); }}
                   onFocus={() => setShowCustDrop(true)}
+                  onKeyDown={onCustKeyDown}
                   placeholder="Type to search..."
                   disabled={isReadOnly}
                   className="w-full border border-gray-300 rounded-[0.4vw] py-[0.6vw] px-[0.8vw] pr-[2vw] text-[0.8vw] font-regular outline-none focus:border-blue-500 shadow-sm transition-all text-gray-800"
@@ -706,13 +776,17 @@ const InwardForm = ({ initialData, employees, onSave, onBack, stageOptions, disp
               <AnimatePresence>
                 {showCustDrop && filteredCustomers.length > 0 && (
                   <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute z-[100] w-[25vw] left-0 top-full mt-[0.4vw] bg-white border border-gray-300 rounded-[0.6vw] shadow-2xl max-h-[15vw] overflow-y-auto py-[0.4vw]">
-                    {filteredCustomers.map(c => (
-                      <div key={c.code} onClick={() => selectCustomer(c)} className="px-[1vw] py-[0.6vw] hover:bg-blue-50 cursor-pointer flex justify-between items-center border-b border-gray-50 last:border-0 group">
+                    {filteredCustomers.map((c, i) => (
+                      <div 
+                        key={c.code} 
+                        onClick={() => selectCustomer(c)} 
+                        className={`px-[1vw] py-[0.6vw] cursor-pointer flex justify-between items-center border-b border-gray-50 last:border-0 group transition-colors ${custSelectedIndex === i ? "bg-blue-600 text-white" : "hover:bg-blue-50"}`}
+                      >
                         <div className="flex-1">
-                          <div className="text-[0.82vw] font-semibold text-gray-900 group-hover:text-blue-700">{c.name}</div>
-                          <div className="text-[0.68vw] text-gray-500 font-regular">{c.code}</div>
+                          <div className={`text-[0.82vw] font-semibold ${custSelectedIndex === i ? "text-white" : "text-gray-900 group-hover:text-blue-700"}`}>{c.name}</div>
+                          <div className={`text-[0.68vw] font-regular ${custSelectedIndex === i ? "text-white/80" : "text-gray-500"}`}>{c.code}</div>
                         </div>
-                        {c.type && <span className="text-[0.6vw] bg-blue-100 text-blue-700 px-[0.4vw] py-[0.1vw] rounded font-black uppercase">{c.type}</span>}
+                        {c.type && <span className={`text-[0.6vw] px-[0.4vw] py-[0.1vw] rounded font-black uppercase ${custSelectedIndex === i ? "bg-white/20 text-white border border-white/30" : "bg-blue-100 text-blue-700"}`}>{c.type}</span>}
                       </div>
                     ))}
                   </motion.div>
@@ -796,6 +870,7 @@ export default function ProductionMaterial() {
   const [selectedItems, setSelectedItems] = useState(new Set());
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isSupervisor, setIsSupervisor] = useState(false);
   const ITEMS_PER_PAGE = 10;
 
   const fetchData = async () => {
@@ -815,6 +890,8 @@ export default function ProductionMaterial() {
 
   useEffect(() => {
     fetchData();
+    const user = JSON.parse(sessionStorage.getItem("loggedInUser"));
+    if (user?.role === "Supervisor") setIsSupervisor(true);
     const interval = setInterval(fetchData, 10000);
     return () => clearInterval(interval);
   }, []);
@@ -984,9 +1061,13 @@ export default function ProductionMaterial() {
           <div className="flex items-center justify-between bg-white p-[0.7vw] rounded-[0.6vw] shadow-sm border border-gray-300 mb-[0.9vw]">
             <div className="relative w-[30vw]"><Search className="absolute left-[0.8vw] top-1/2 -translate-y-1/2 text-black/50 w-[1vw] h-[1vw]" /><input type="text" placeholder="Search by ref, JO, customer, product…" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-[2.5vw] pr-[1vw] h-[2.5vw] border border-gray-300 rounded-[0.8vw] focus:outline-none focus:border-blue-500 font-bold" /></div>
             <div className="flex gap-[0.8vw] items-center">
-              <button onClick={() => setShowMasterData(true)} className="flex items-center gap-[0.4vw] text-[0.85vw] font-bold border border-blue-200 bg-blue-50 text-blue-700 px-[1vw] h-[2.4vw] rounded-[0.4vw] hover:bg-blue-100 transition-all cursor-pointer">Master Data</button>
-              {selectedItems.size > 0 && (<button onClick={handleBulkDelete} className="flex items-center gap-[0.5vw] bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 px-[1vw] h-[2.4vw] rounded-[0.4vw] font-bold cursor-pointer transition-all"><Trash2 className="w-[1vw] h-[1vw]" />Delete ({selectedItems.size})</button>)}
-              <button onClick={() => setView("form")} className="cursor-pointer flex items-center gap-[0.5vw] bg-blue-600 hover:bg-blue-700 text-white px-[1.2vw] h-[2.4vw] rounded-[0.4vw] font-bold shadow-md transition-all active:scale-95"><Plus className="w-[1.1vw] h-[1.1vw]" />New Registration</button>
+              {!isSupervisor && (
+                <button onClick={() => setShowMasterData(true)} className="flex items-center gap-[0.4vw] text-[0.85vw] font-bold border border-blue-200 bg-blue-50 text-blue-700 px-[1vw] h-[2.4vw] rounded-[0.4vw] hover:bg-blue-100 transition-all cursor-pointer">Master Data</button>
+              )}
+              {selectedItems.size > 0 && !isSupervisor && (<button onClick={handleBulkDelete} className="flex items-center gap-[0.5vw] bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 px-[1vw] h-[2.4vw] rounded-[0.4vw] font-bold cursor-pointer transition-all"><Trash2 className="w-[1vw] h-[1vw]" />Delete ({selectedItems.size})</button>)}
+              {!isSupervisor && (
+                <button onClick={() => setView("form")} className="cursor-pointer flex items-center gap-[0.5vw] bg-blue-600 hover:bg-blue-700 text-white px-[1.2vw] h-[2.4vw] rounded-[0.4vw] font-bold shadow-md transition-all active:scale-95"><Plus className="w-[1.1vw] h-[1.1vw]" />New Registration</button>
+              )}
             </div>
           </div>
           <div className="flex gap-[1vw] mb-[0.9vw] items-center flex-wrap">
@@ -1006,23 +1087,26 @@ export default function ProductionMaterial() {
               <table className="w-full text-left border-collapse">
                 <thead className="bg-blue-50 sticky top-0 z-20">
                   <tr>
-                    <th rowSpan={2} className="p-[0.6vw] border-b-2 border-r border-gray-300 text-center align-middle w-[3%]">
-                      <button onClick={toggleSelectPage} className="flex items-center justify-center w-full cursor-pointer">
-                        {isPageSelected ? <CheckCircle className="w-[1.2vw] h-[1.2vw] text-blue-600" /> : <div className="w-[1.1vw] h-[1.1vw] border-2 border-gray-300 rounded"></div>}
-                      </button>
-                    </th>
+                    {!isSupervisor && (
+                      <th rowSpan={2} className="p-[0.6vw] border-b-2 border-r border-gray-300 text-center align-middle w-[3%]">
+                        <button onClick={toggleSelectPage} className="flex items-center justify-center w-full cursor-pointer">
+                          {isPageSelected ? <CheckCircle className="w-[1.2vw] h-[1.2vw] text-blue-600" /> : <div className="w-[1.1vw] h-[1.1vw] border-2 border-gray-300 rounded"></div>}
+                        </button>
+                      </th>
+                    )}
                     {["S.No", "Date", "Job Order No", "Customer", "Cus Code", "Category"].map(h => {
                       const minW = h === "Customer" ? "180px" : (h === "Job Order No" ? "140px" : "80px");
                       return (
                         <th key={h} rowSpan={2} style={{ minWidth: minW }} className="px-[0.6vw] py-[0.5vw] font-bold text-black text-center border-b-2 border-r border-gray-300 whitespace-nowrap text-[0.78vw] align-middle bg-blue-50">{h}</th>
                       );
                     })}
-                    <th colSpan={11} className="px-[0.6vw] py-[0.4vw] font-semibold text-black border-b border-r border-gray-300 text-center text-[0.78vw] bg-blue-100/50">Product Manifest Details</th>
+                    <th colSpan={12} className="px-[0.6vw] py-[0.4vw] font-semibold text-black border-b border-r border-gray-300 text-center text-[0.78vw] bg-blue-100/50">Product Manifest Details</th>
                     <th rowSpan={2} className="px-[0.8vw] py-[0.5vw] font-semibold text-black text-center border-b-2 border-l border-gray-300 whitespace-nowrap text-[0.78vw] align-middle bg-blue-50 sticky right-0 z-30 shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.05)]">Actions</th>
                   </tr>
                   <tr>
-                    {["Item Code", "Description", "Stage", "Qty", "Serial/Batch", "Assigned To", "Verified By", "Verified Date", "CAE", "Final Status", "Final Remarks"].map((h, i) => {
+                    {["Item Code", "Description", "NC Type", "Stage", "Qty", "Serial/Batch", "Assigned To", "Verified By", "Verified Date", "CAE", "Final Status", "Final Remarks"].map((h, i) => {
                       const minW = h === "Description" ? "220px" : (h === "Final Remarks" ? "180px" : (h === "Qty" ? "120px" : (h === "Verified By" ? "130px" : (h === "Verified Date" ? "100px" : (h === "CAE" ? "150px" : "110px")))));
+                      if (h === "NC Type") return <th key={h} style={{ minWidth: "90px" }} className="px-[0.6vw] py-[0.4vw] font-bold text-black border-b-2 border-r border-gray-300 whitespace-nowrap text-[0.72vw] bg-blue-50 text-center">{h}</th>;
                       return (
                         <th key={h} style={{ minWidth: minW }} className={`px-[0.6vw] py-[0.4vw] font-bold text-black border-b-2 border-r border-gray-300 whitespace-nowrap text-[0.72vw] bg-blue-50 ${h === "Qty" ? "text-center" : "text-center"}`}>{h}</th>
                       );
@@ -1047,17 +1131,19 @@ export default function ProductionMaterial() {
                           >
                           {pi === 0 && (
                             <>
-                              <td rowSpan={span} className="p-[0.7vw] border-r border-gray-200 text-center align-middle">
-                                <button onClick={() => toggleSelect(row.id)} className="flex items-center justify-center w-full cursor-pointer">
-                                  {isSelected ? <CheckCircle className="w-[1.1vw] h-[1.1vw] text-blue-600" /> : <div className="w-[1.1vw] h-[1.1vw] border border-gray-300 rounded hover:border-blue-400"></div>}
-                                </button>
-                              </td>
+                              {!isSupervisor && (
+                                <td rowSpan={span} className="p-[0.7vw] border-r border-gray-200 text-center align-middle">
+                                  <button onClick={() => toggleSelect(row.id)} className="flex items-center justify-center w-full cursor-pointer">
+                                    {isSelected ? <CheckCircle className="w-[1.1vw] h-[1.1vw] text-blue-600" /> : <div className="w-[1.1vw] h-[1.1vw] border border-gray-300 rounded hover:border-blue-400"></div>}
+                                  </button>
+                                </td>
+                              )}
                               <td rowSpan={span} className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-bold text-gray-900 text-[0.78vw]">{(currentPage - 1) * ITEMS_PER_PAGE + i + 1}</td>
-                              <td rowSpan={span} className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-gray-700 text-[0.78vw]">{fmtDate(row.date)}</td>
+                              <td rowSpan={span} className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-gray-700 text-[0.78vw] whitespace-pre">{fmtDate(row.date)}</td>
                               <td rowSpan={span} className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center text-[0.78vw] font-semibold text-blue-700">{row.jobOrderNo || "—"}</td>
                               <td rowSpan={span} className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-gray-900 text-[0.75vw]">{row.customerName || "—"}</td>
                               <td rowSpan={span} className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle font-semibold text-gray-600 text-[0.72vw]">{row.customerCode || "—"}</td>
-                              <td rowSpan={span} className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle"><span className="text-[0.68vw] font-semibold bg-blue-100 text-blue-700 px-[0.4vw] py-[0.1vw] rounded">{row.category || "—"}</span></td>
+                              <td rowSpan={span} className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle"><span className="text-[0.68vw] font-semibold bg-blue-100 text-blue-700 px-[0.4vw] py-[0.1vw] rounded whitespace-pre">{row.category || "—"}</span></td>
                             </>
                           )}
                           <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle">
@@ -1070,20 +1156,22 @@ export default function ProductionMaterial() {
                             <div className="font-semibold text-gray-600 text-[0.72vw]">{prod.productCode || "—"}</div>
                           </td>
                           <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-gray-900 text-[0.72vw] truncate max-w-[10vw]" title={prod.productDescription}>{prod.productDescription || "—"}</td>
-                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle"><span className="text-[0.72vw] font-semibold text-gray-900">{prod.stage || "Assembly"}</span></td>
-                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle font-semibold text-black text-[0.75vw]">{prod.qty || "1"}</td>
-                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-gray-700 text-[0.72vw]">{prod.serialNumber || "—"}</td>
+                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle"><span className={`text-[0.68vw] font-medium px-[0.4vw] py-[0.1vw] rounded border ${prod.ncType === "External" ? "bg-orange-50 text-orange-700 border-orange-200" : "bg-blue-50 text-blue-700 border-blue-200"}`}>{prod.ncType || "Internal"}</span></td>
+                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle"><span className="text-[0.72vw] font-normal text-gray-900">{prod.stage || "Assembly"}</span></td>
+                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle font-normal text-black text-[0.75vw]">{prod.qty || "1"}</td>
+                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-normal text-black text-[0.72vw]">{prod.serialNumber || "—"}</td>
                           <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-black text-[0.75vw]">{prod.assignedToName || "Unassigned"}</td>
                           <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-emerald-700 text-[0.75vw]">{prod.report?.verifiedByName || "—"}</td>
-                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-medium text-gray-600 text-[0.72vw]">{fmtDate(prod.report?.verifiedDate)}</td>
+                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-normal text-black text-[0.72vw]">{fmtDate(prod.report?.verifiedDate)}</td>
                           <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-blue-700 text-[0.75vw] truncate max-w-[10vw]" title={prod.report?.cae}>{prod.report?.cae || "—"}</td>
                           <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center">
-                            <FinalStatusCell row={row} prod={prod} onUpdateProduct={onUpdateProduct} />
+                            <FinalStatusCell row={row} prod={prod} onUpdateProduct={onUpdateProduct} isSupervisor={isSupervisor} />
                           </td>
                           <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-gray-900 text-[0.72vw] truncate max-w-[10vw]" title={prod.finalStatusRemarks}>{prod.finalStatusRemarks || "—"}</td>
                           <td className={`px-[0.8vw] py-[0.7vw] text-center align-middle border-l border-gray-200 sticky right-0 z-30 shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.05)] ${isSelected ? "bg-blue-50/50" : "bg-white"}`}>
                             <div className="flex items-center justify-start gap-[0.5vw]">
                               <button onClick={() => setReportsRow(row)} className="w-[2vw] h-[2vw] flex items-center justify-center bg-blue-50 text-blue-600 rounded-full hover:bg-blue-600 hover:text-white transition-all cursor-pointer border border-blue-100 shadow-sm" title="View Report"><Eye className="w-[1vw] h-[1vw]" /></button>
+                              
                               <button
                                 onClick={() => setShowVerify({ row, prod })}
                                 className={`w-[2vw] h-[2vw] flex items-center justify-center rounded-full transition-all cursor-pointer border shadow-sm ${prod.report?.verifiedBy ? "bg-emerald-600 text-white border-emerald-700 hover:bg-emerald-700" : "bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-600 hover:text-white"}`}
@@ -1091,8 +1179,13 @@ export default function ProductionMaterial() {
                               >
                                 <CheckCircle className="w-[1vw] h-[1vw]" />
                               </button>
-                              {pi === 0 && (
-                                <button onClick={() => { setSelectedRow(row); setView("form"); }} className="w-[2vw] h-[2vw] flex items-center justify-center bg-white border border-gray-300 text-gray-400 hover:text-blue-600 hover:border-blue-300 rounded-full transition-all cursor-pointer shadow-sm" title="Edit Registration"><Edit3 className="w-[1vw] h-[1vw]" /></button>
+
+                              {!isSupervisor && (
+                                <>
+                                  {pi === 0 && (
+                                    <button onClick={() => { setSelectedRow(row); setView("form"); }} className="w-[2vw] h-[2vw] flex items-center justify-center bg-white border border-gray-300 text-gray-400 hover:text-blue-600 hover:border-blue-300 rounded-full transition-all cursor-pointer shadow-sm" title="Edit Registration"><Edit3 className="w-[1vw] h-[1vw]" /></button>
+                                  )}
+                                </>
                               )}
                             </div>
                           </td>

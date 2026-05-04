@@ -235,7 +235,7 @@ const TechnicalReport = ({ entries }) => {
           <thead className="sticky top-0 z-20 bg-blue-50">
             <tr>
               <Th>S.No</Th><Th>Date</Th><Th>Job Order</Th><Th>Customer</Th>
-              <Th>Product</Th><Th>Serial No</Th><Th>Problem Type</Th><Th>4M Category</Th>
+              <Th>Product</Th><Th>Serial No</Th><Th>Problem Type</Th><Th>NC Type</Th><Th>4M Category</Th>
               <Th>Root Cause</Th><Th>Parts Replaced</Th><Th>Personnel</Th><Th>Status</Th>
             </tr>
           </thead>
@@ -249,6 +249,7 @@ const TechnicalReport = ({ entries }) => {
                 <Td><div className="max-w-[12vw] truncate" title={r.prod.productDescription}>{r.prod.productDescription}</div></Td>
                 <Td cls="font-mono text-[10px] md:text-[0.65vw]">{r.prod.serialNumber || "—"}</Td>
                 <Td><span className="bg-slate-50 px-2 md:px-[0.4vw] rounded font-bold text-slate-700">{r.prod.problemType || "—"}</span></Td>
+                <Td><span className="bg-orange-50 px-2 md:px-[0.4vw] rounded font-bold text-orange-700">{r.prod.ncType || "Internal"}</span></Td>
                 <Td><span className="bg-blue-50 px-2 md:px-[0.4vw] rounded font-bold text-blue-700">{r.prod.report?.fourMCategory || "—"}</span></Td>
                 <Td><div className="max-w-[15vw] italic text-[11px] md:text-[0.68vw] leading-tight">{r.prod.report?.rootCause || "—"}</div></Td>
                 <Td>{r.prod.report?.partsReplacement || "—"}</Td>
@@ -334,7 +335,7 @@ const AnalysisReport = ({ entries }) => {
           <thead className="sticky top-0 z-20 bg-emerald-50">
             <tr>
               <Th>S.No</Th><Th>Inward Date</Th><Th>Customer</Th><Th>Job Order</Th>
-              <Th>Product Details</Th><Th>Stage</Th><Th>Problem Type</Th><Th>Disposition</Th>
+              <Th>Product Details</Th><Th>Stage</Th><Th>Problem Type</Th><Th>NC Type</Th><Th>Disposition</Th>
               <Th>Closed Date</Th><Th>TAT (Days)</Th><Th>Status</Th>
             </tr>
           </thead>
@@ -351,6 +352,7 @@ const AnalysisReport = ({ entries }) => {
                 </Td>
                 <Td cls="font-bold text-gray-700">{r.prod.stage}</Td>
                 <Td><span className="text-slate-600 font-semibold">{r.prod.problemType || "—"}</span></Td>
+                <Td><span className="text-orange-600 font-bold">{r.prod.ncType || "Internal"}</span></Td>
                 <Td>{r.prod.disposition}</Td>
                 <Td>{fmtDate(r.prod.report?.closedDate)}</Td>
                 <Td cls={`font-black ${r.tat !== null ? (r.tat <= 2 ? "text-green-600" : r.tat <= 5 ? "text-orange-600" : "text-red-600") : "text-black/20"}`}>

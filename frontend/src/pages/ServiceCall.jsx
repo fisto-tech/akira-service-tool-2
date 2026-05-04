@@ -1713,6 +1713,7 @@ export default function ServiceCall() {
   const [escalationQueue, setEscalationQueue] = useState([]);
   const [allFlows, setAllFlows]             = useState({});
   const [isLoading, setIsLoading]       = useState(true);
+  const [isSupervisor, setIsSupervisor] = useState(false);
 
   const [searchTerm, setSearchTerm]       = useState("");
   const [filterStatus, setFilterStatus]   = useState("All");
@@ -1753,6 +1754,8 @@ export default function ServiceCall() {
       }
     };
     fetchData();
+    const user = JSON.parse(sessionStorage.getItem("loggedInUser"));
+    if (user?.role === "Supervisor") setIsSupervisor(true);
   }, []);
 
   // Keep escalation queue in sync
@@ -1980,7 +1983,7 @@ export default function ServiceCall() {
               </div>
               <div className="flex gap-[0.8vw] items-center">
                 <AnimatePresence>
-                  {selectedItems.size > 0 && (
+                  {selectedItems.size > 0 && !isSupervisor && (
                     <motion.button initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
                       onClick={handleBulkDelete}
                       className="flex items-center gap-[0.5vw] bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 px-[1vw] h-[2.4vw] rounded-[0.4vw] font-semibold">
@@ -1992,9 +1995,11 @@ export default function ServiceCall() {
                   <option value="All">All Priorities</option>
                   {PRIORITIES.map(p => <option key={p}>{p}</option>)}
                 </select>
-                <button onClick={goToForm} className="cursor-pointer flex items-center gap-[0.5vw] bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-[1vw] h-[2.4vw] rounded-[0.4vw]">
-                  <Plus className="w-[1.2vw] h-[1.2vw]" />Add
-                </button>
+                {!isSupervisor && (
+                  <button onClick={goToForm} className="cursor-pointer flex items-center gap-[0.5vw] bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-[1vw] h-[2.4vw] rounded-[0.4vw]">
+                    <Plus className="w-[1.2vw] h-[1.2vw]" />Add
+                  </button>
+                )}
               </div>
             </div>
 
@@ -2023,11 +2028,13 @@ export default function ServiceCall() {
                 <table className="min-w-[120vw] w-full text-left border-collapse">
                   <thead className="bg-blue-50 sticky top-0 z-10 shadow-sm">
                     <tr>
-                      <th className="p-[0.6vw] border-b border-r border-gray-200 w-[3%] text-center">
-                        <button onClick={toggleSelectPage} className="flex items-center justify-center w-full cursor-pointer">
-                          {isPageSelected ? <CheckSquare className="w-[1.1vw] h-[1.1vw] text-blue-600" /> : <Square className="w-[1.1vw] h-[1.1vw] text-gray-400" />}
-                        </button>
-                      </th>
+                      {!isSupervisor && (
+                        <th className="p-[0.6vw] border-b border-r border-gray-200 w-[3%] text-center">
+                          <button onClick={toggleSelectPage} className="flex items-center justify-center w-full cursor-pointer">
+                            {isPageSelected ? <CheckSquare className="w-[1.1vw] h-[1.1vw] text-blue-600" /> : <Square className="w-[1.1vw] h-[1.1vw] text-gray-400" />}
+                          </button>
+                        </th>
+                      )}
                       <th className="p-[0.6vw] font-semibold text-gray-800 border-b border-r border-gray-200 text-center w-[3%] text-[0.78vw]">S.No</th>
                       {["Call Info", "Category", "Customer", "Product", "Segment", "Error Code", "Mode", "Priority", "Assigned", "Status"].map(h => (
                         <th key={h} className="p-[0.6vw] font-semibold text-center text-gray-800 border-b border-r border-gray-200 whitespace-nowrap text-[0.78vw]">{h}</th>
@@ -2074,11 +2081,13 @@ export default function ServiceCall() {
                           {/* 0. Select + S.No (rowSpan) */}
                           {pIdx === 0 && (
                             <>
-                              <td rowSpan={rowCount} className={`p-[0.8vw] border-r text-center align-middle ${criticalCellClass}`}>
-                                <button onClick={() => toggleSelect(rowId)} className="flex items-center justify-center w-full cursor-pointer">
-                                  {isSelected ? <CheckSquare className="w-[1.1vw] h-[1.1vw] text-blue-600" /> : <Square className="w-[1.1vw] h-[1.1vw] text-gray-300 hover:text-gray-400" />}
-                                </button>
-                              </td>
+                              {!isSupervisor && (
+                                <td rowSpan={rowCount} className={`p-[0.8vw] border-r text-center align-middle ${criticalCellClass}`}>
+                                  <button onClick={() => toggleSelect(rowId)} className="flex items-center justify-center w-full cursor-pointer">
+                                    {isSelected ? <CheckSquare className="w-[1.1vw] h-[1.1vw] text-blue-600" /> : <Square className="w-[1.1vw] h-[1.1vw] text-gray-300 hover:text-gray-400" />}
+                                  </button>
+                                </td>
+                              )}
                               <td rowSpan={rowCount} className={`p-[0.8vw] border-r text-gray-600 font-medium text-center align-middle text-[0.78vw] ${criticalCellClass}`}>
                                 {sn}
                               </td>
@@ -2239,16 +2248,18 @@ export default function ServiceCall() {
                             <td rowSpan={rowCount} className={`px-[1vw] py-[0.4vw] text-center align-middle whitespace-nowrap sticky right-0 bg-white z-10 shadow-[-4px_0_12px_-4px_rgba(0,0,0,0.1)] ${criticalCellClass} border-l border-gray-100`}>
                               <div className="flex items-center justify-center gap-[0.8vw]">
                                 {/* Edit Button */}
-                                <button
-                                  onClick={() => goToEdit(row)}
-                                  title="Edit Call Details"
-                                  className="group flex flex-col items-center gap-[0.2vw] text-gray-400 hover:text-blue-600 transition-all cursor-pointer"
-                                >
-                                  <div className="p-[0.4vw] rounded-[0.5vw] bg-gray-50 border border-gray-100 group-hover:bg-blue-50 group-hover:border-blue-200 group-hover:shadow-sm transition-all">
-                                    <Edit3 className="w-[1vw] h-[1vw]" />
-                                  </div>
-                                  <span className="text-[0.52vw] font-bold uppercase tracking-wider group-hover:text-blue-700">Edit</span>
-                                </button>
+                                {!isSupervisor && (
+                                  <button
+                                    onClick={() => goToEdit(row)}
+                                    title="Edit Call Details"
+                                    className="group flex flex-col items-center gap-[0.2vw] text-gray-400 hover:text-blue-600 transition-all cursor-pointer"
+                                  >
+                                    <div className="p-[0.4vw] rounded-[0.5vw] bg-gray-50 border border-gray-100 group-hover:bg-blue-50 group-hover:border-blue-200 group-hover:shadow-sm transition-all">
+                                      <Edit3 className="w-[1vw] h-[1vw]" />
+                                    </div>
+                                    <span className="text-[0.52vw] font-bold uppercase tracking-wider group-hover:text-blue-700">Edit</span>
+                                  </button>
+                                )}
 
                                 {/* Unified Flow Button */}
                                 <button

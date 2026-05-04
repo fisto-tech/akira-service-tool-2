@@ -249,8 +249,9 @@ const ProductionResponseModal = ({ entry, product, employees, fourMCategories, o
               <RefInput label="Product Type" value={product.productType} />
 
               <RefInput label="Stage" value={product.stage} />
+              <RefInput label="NC Type" value={product.ncType} />
               <RefInput label="Problem Type" value={product.problemType} />
-              <RefInput label="Problem Reported" value={product.problem} span={2} />
+              <RefInput label="Problem Reported" value={product.problem} span={1} />
               <RefInput label="Qty" value={product.qty} />
             </div>
           </div>
@@ -372,6 +373,7 @@ const ProductionInfoModal = ({ entry, product, onClose }) => {
                <div className="grid grid-cols-1 gap-[0.8vw]">
                  <RefInput label="Description" value={product.productDescription} />
                  <RefInput label="Code" value={product.productCode} />
+                 <RefInput label="NC Type" value={product.ncType || "Internal"} />
                  <RefInput label="Qty" value={product.qty || "1"} />
                  <RefInput label="Serial Number" value={product.serialNumber} />
                  <RefInput label="Current Status" value={product.report?.status || "Open"} />

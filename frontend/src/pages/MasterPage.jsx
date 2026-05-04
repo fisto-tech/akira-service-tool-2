@@ -2522,6 +2522,7 @@ const EmployeeManagementSection = ({ employees, setEmployees, departments, setDe
                   <label className="text-[0.8vw] font-bold text-slate-700 flex items-center gap-[0.4vw]"><ShieldCheck className="w-[0.9vw] h-[0.9vw] text-slate-400" /> Role *</label>
                   <select required value={regData.role} onChange={e => setRegData({...regData, role: e.target.value})} className="w-full border border-slate-200 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw] bg-white">
                     <option value="User">User</option>
+                    <option value="Supervisor">Supervisor</option>
                     <option value="Admin">Admin</option>
                   </select>
                 </div>

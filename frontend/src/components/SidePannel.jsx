@@ -39,6 +39,8 @@ export default function Sidebar() {
   }, []);
 
   const isAdmin = loggedInUser?.role === "Admin" || loggedInUser?.department === "Admin";
+  const isSupervisor = loggedInUser?.role === "Supervisor";
+  const canViewAdminModules = isAdmin || isSupervisor;
 
   const navItems = [
     {
@@ -57,13 +59,13 @@ export default function Sidebar() {
       path: "/customers",
       label: "Customers",
       icon: ActivityIcon,
-      show: isAdmin,
+      show: canViewAdminModules,
     },
     {
       path: "/serviceCall",
       label: "Service Call",
       icon: CallIcon,
-      show: isAdmin,
+      show: canViewAdminModules,
       subItems: [
         { path: "/serviceCall", label: "Call Registration" },
         { path: "/serviceCall/assignment", label: "Call Assignment" },
@@ -74,7 +76,7 @@ export default function Sidebar() {
       path: "/serviceMaterial",
       label: "Service Material",
       icon: ServiceIcon,
-      show: isAdmin,
+      show: canViewAdminModules,
       subItems: [
         { path: "/serviceMaterial", label: "Material Inward Register" },
         { path: "/serviceMaterial/reports", label: "Reports" },
@@ -84,7 +86,7 @@ export default function Sidebar() {
       path: "/productionMaterial",
       label: "Production Material",
       icon: ProductionIcon,
-      show: isAdmin,
+      show: canViewAdminModules,
       subItems: [
         { path: "/productionMaterial", label: "Production NC" },
         { path: "/productionMaterial/reports", label: "Reports" },
@@ -94,19 +96,19 @@ export default function Sidebar() {
       path: "/serviceCallResponse",
       label: "Service Call",
       icon: CallIcon,
-      show: !isAdmin,
+      show: !canViewAdminModules,
     },
     {
       path: "/serviceMaterialResponse",
       label: "Service Material",
       icon: ServiceIcon,
-      show: !isAdmin,
+      show: !canViewAdminModules,
     },
     {
       path: "/productionMaterialResponse",
       label: "Production Material",
       icon: ProductionIcon,
-      show: !isAdmin,
+      show: !canViewAdminModules,
     },
     {
       path: "/troubleshoot",

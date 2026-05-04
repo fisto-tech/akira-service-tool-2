@@ -18,6 +18,7 @@ const COLUMN_FIELDS = [
   "productType",
   "boardType",
   "problemType",
+  "ncType",
   "problem",
   "stage",
   "qty",
@@ -62,6 +63,7 @@ const ProductionEditableProductTable = ({
 }) => {
   const [activeDropdown, setActiveDropdown] = useState(null); 
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   const tableContainerRef = useRef(null);
 
   const [selection, setSelection] = useState(null); 
@@ -113,6 +115,10 @@ const ProductionEditableProductTable = ({
         (p.itemCode && p.itemCode.toLowerCase().includes(s))
     );
   }, [productsForCustomer, searchTerm]);
+
+  useEffect(() => {
+    setSelectedIndex(-1);
+  }, [filteredProds]);
 
   const onDragEnd = (result) => {
     if (!result.destination || isReadOnly) return;
@@ -286,6 +292,26 @@ const ProductionEditableProductTable = ({
     const rect = target.getBoundingClientRect();
     setActiveDropdown({ id, rect });
     setSearchTerm("");
+    setSelectedIndex(-1);
+  };
+
+  const handleDropdownKeyDown = (e, prodId) => {
+    if (!activeDropdown || activeDropdown.id !== prodId || filteredProds.length === 0) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedIndex(prev => (prev < filteredProds.length - 1 ? prev + 1 : prev));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedIndex(prev => (prev > 0 ? prev - 1 : 0));
+    } else if (e.key === "Enter") {
+      if (selectedIndex >= 0) {
+        e.preventDefault();
+        selectProduct(prodId, filteredProds[selectedIndex]);
+      }
+    } else if (e.key === "Escape") {
+      setActiveDropdown(null);
+    }
   };
 
   return (
@@ -303,6 +329,7 @@ const ProductionEditableProductTable = ({
             <th className="w-[10vw] min-w-[140px] py-[0.8vw] px-[0.8vw] text-left text-black font-semibold uppercase tracking-wider whitespace-nowrap">Product Type</th>
             <th className="w-[12vw] min-w-[160px] py-[0.8vw] px-[0.8vw] text-left text-black font-semibold uppercase tracking-wider whitespace-nowrap">Board Type</th>
             <th className="w-[12vw] min-w-[160px] py-[0.8vw] px-[0.8vw] text-left text-black font-semibold uppercase tracking-wider whitespace-nowrap">Problem Type</th>
+            <th className="w-[8vw] min-w-[120px] py-[0.8vw] px-[0.8vw] text-left text-black font-semibold uppercase tracking-wider whitespace-nowrap">NC Type</th>
             <th className="w-[15vw] min-w-[200px] py-[0.8vw] px-[0.8vw] text-left text-black font-semibold uppercase tracking-wider whitespace-nowrap">Problem</th>
             <th className="w-[10vw] min-w-[140px] py-[0.8vw] px-[0.8vw] text-left text-black font-semibold uppercase tracking-wider whitespace-nowrap">Stage</th>
             <th className="w-[7vw] min-w-[120px] py-[0.8vw] px-[0.8vw] text-center text-black font-semibold uppercase tracking-wider whitespace-nowrap">Qty</th>
@@ -360,6 +387,7 @@ const ProductionEditableProductTable = ({
                               }}
                               onFocus={(e) => openDropdown(prod._pid, e.currentTarget.parentElement.parentElement)}
                               onClick={(e) => openDropdown(prod._pid, e.currentTarget.parentElement.parentElement)}
+                              onKeyDown={(e) => handleDropdownKeyDown(e, prod._pid)}
                               placeholder={customerCode ? "Search or enter description..." : "Select customer first"}
                               disabled={!customerCode || isReadOnly}
                               className={`w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.6vw] outline-none transition-all text-black font-regular  disabled:bg-transparent cursor-text description-input`}
@@ -384,11 +412,11 @@ const ProductionEditableProductTable = ({
                                           e.stopPropagation();
                                           selectProduct(prod._pid, p);
                                       }}
-                                      className="p-[0.6vw] hover:bg-blue-100 cursor-pointer border-b border-gray-100 last:border-0"
+                                      className={`p-[0.6vw] cursor-pointer border-b border-gray-100 last:border-0 transition-colors ${selectedIndex === i ? "bg-blue-600 text-white" : "hover:bg-blue-100"}`}
                                     >
-                                      <div className="font-semibold  text-gray-900 text-[0.8vw]">{p.itemDescription || p.productDescription}</div>
-                                      <div className="text-[0.7vw] text-gray-700 flex items-center gap-[0.4vw] mt-[0.1vw]">
-                                        <span className="bg-gray-100 px-[0.3vw] rounded font-mono border border-gray-200">{p.itemCode || p.productCode}</span>
+                                      <div className={`font-semibold text-[0.8vw] ${selectedIndex === i ? "text-white" : "text-gray-900"}`}>{p.itemDescription || p.productDescription}</div>
+                                      <div className={`text-[0.7vw] flex items-center gap-[0.4vw] mt-[0.1vw] ${selectedIndex === i ? "text-white/80" : "text-gray-700"}`}>
+                                        <span className={`px-[0.3vw] rounded font-mono border ${selectedIndex === i ? "bg-white/20 border-white/30" : "bg-gray-100 border-gray-200"}`}>{p.itemCode || p.productCode}</span>
                                       </div>
                                     </div>
                                   ))
@@ -451,13 +479,26 @@ const ProductionEditableProductTable = ({
                         </td>
 
                         <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 5)}`} onMouseDown={(e) => handleCellMouseDown(index, 5, e)} onMouseEnter={() => handleCellMouseEnter(index, 5)}>
-                          <div className="relative flex items-center group">
-                            <input type="text" autoComplete="off" value={prod.problem || ""} onChange={(e) => handleUpdate(prod._pid, "problem", e.target.value)} placeholder="Problem Description" disabled={isReadOnly} className="w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.6vw] outline-none transition-all text-black font-regular  disabled:bg-transparent" />
-                          </div>
+                          <select
+                            value={prod.ncType || "Internal"}
+                            onChange={(e) => handleUpdate(prod._pid, "ncType", e.target.value)}
+                            disabled={isReadOnly}
+                            className="w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.2vw] outline-none transition-all text-black font-bold text-blue-600 disabled:bg-transparent"
+                          >
+                            <option value="Internal">Internal</option>
+                            <option value="External">External</option>
+                          </select>
                           {renderFillHandle(index, 5)}
                         </td>
 
                         <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 6)}`} onMouseDown={(e) => handleCellMouseDown(index, 6, e)} onMouseEnter={() => handleCellMouseEnter(index, 6)}>
+                          <div className="relative flex items-center group">
+                            <input type="text" autoComplete="off" value={prod.problem || ""} onChange={(e) => handleUpdate(prod._pid, "problem", e.target.value)} placeholder="Problem Description" disabled={isReadOnly} className="w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.6vw] outline-none transition-all text-black font-regular  disabled:bg-transparent" />
+                          </div>
+                          {renderFillHandle(index, 6)}
+                        </td>
+
+                        <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 7)}`} onMouseDown={(e) => handleCellMouseDown(index, 7, e)} onMouseEnter={() => handleCellMouseEnter(index, 7)}>
                           <select
                             value={prod.stage || ""}
                             onChange={(e) => handleUpdate(prod._pid, "stage", e.target.value)}
@@ -469,15 +510,15 @@ const ProductionEditableProductTable = ({
                               <option key={s} value={s}>{s}</option>
                             ))}
                           </select>
-                          {renderFillHandle(index, 6)}
-                        </td>
-
-                        <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 7)}`} onMouseDown={(e) => handleCellMouseDown(index, 7, e)} onMouseEnter={() => handleCellMouseEnter(index, 7)}>
-                          <input type="number" min="1" value={prod.qty} onChange={(e) => handleUpdate(prod._pid, "qty", e.target.value)} disabled={isReadOnly} className="w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.6vw] outline-none transition-all text-black font-regular  text-center disabled:bg-transparent" />
                           {renderFillHandle(index, 7)}
                         </td>
 
                         <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 8)}`} onMouseDown={(e) => handleCellMouseDown(index, 8, e)} onMouseEnter={() => handleCellMouseEnter(index, 8)}>
+                          <input type="number" min="1" value={prod.qty} onChange={(e) => handleUpdate(prod._pid, "qty", e.target.value)} disabled={isReadOnly} className="w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.6vw] outline-none transition-all text-black font-regular  text-center disabled:bg-transparent" />
+                          {renderFillHandle(index, 8)}
+                        </td>
+
+                        <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 9)}`} onMouseDown={(e) => handleCellMouseDown(index, 9, e)} onMouseEnter={() => handleCellMouseEnter(index, 9)}>
                           <div className="relative flex items-center group">
                             <input 
                               type="text" 
@@ -494,10 +535,10 @@ const ProductionEditableProductTable = ({
                               </button>
                             )}
                           </div>
-                          {renderFillHandle(index, 8)}
+                          {renderFillHandle(index, 9)}
                         </td>
 
-                        <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 9)}`} onMouseDown={(e) => handleCellMouseDown(index, 9, e)} onMouseEnter={() => handleCellMouseEnter(index, 9)}>
+                        <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 10)}`} onMouseDown={(e) => handleCellMouseDown(index, 10, e)} onMouseEnter={() => handleCellMouseEnter(index, 10)}>
                           <select
                             value={prod.disposition || ""}
                             onChange={(e) => handleUpdate(prod._pid, "disposition", e.target.value)}
@@ -509,10 +550,10 @@ const ProductionEditableProductTable = ({
                               <option key={opt} value={opt}>{opt}</option>
                             ))}
                           </select>
-                          {renderFillHandle(index, 9)}
+                          {renderFillHandle(index, 10)}
                         </td>
 
-                        <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 10)}`} onMouseDown={(e) => handleCellMouseDown(index, 10, e)} onMouseEnter={() => handleCellMouseEnter(index, 10)}>
+                        <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 11)}`} onMouseDown={(e) => handleCellMouseDown(index, 11, e)} onMouseEnter={() => handleCellMouseEnter(index, 11)}>
                           <select
                             value={prod.raisedTo || ""}
                             onChange={(e) => handleUpdate(prod._pid, "raisedTo", e.target.value)}
@@ -524,10 +565,10 @@ const ProductionEditableProductTable = ({
                               <option key={s} value={s}>{s}</option>
                             ))}
                           </select>
-                          {renderFillHandle(index, 10)}
+                          {renderFillHandle(index, 11)}
                         </td>
 
-                        <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 11)}`} onMouseDown={(e) => handleCellMouseDown(index, 11, e)} onMouseEnter={() => handleCellMouseEnter(index, 11)}>
+                        <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 12)}`} onMouseDown={(e) => handleCellMouseDown(index, 12, e)} onMouseEnter={() => handleCellMouseEnter(index, 12)}>
                           <select
                             value={prod.assignedTo || ""}
                             onChange={(e) => {
@@ -538,12 +579,11 @@ const ProductionEditableProductTable = ({
                             disabled={isReadOnly}
                             className="w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.2vw] outline-none transition-all text-black font-regular  disabled:bg-transparent"
                           >
-                            <option value="">Assign To</option>
-                            {employees.map(e => (
+                            {employees.filter(e => e.role === "User").map(e => (
                               <option key={e.userId} value={e.userId}>{e.name}</option>
                             ))}
                           </select>
-                          {renderFillHandle(index, 11)}
+                          {renderFillHandle(index, 12)}
                         </td>
 
                         {!isReadOnly && (

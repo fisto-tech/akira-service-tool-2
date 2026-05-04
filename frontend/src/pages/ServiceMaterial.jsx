@@ -1738,28 +1738,31 @@ const AdminTableView = ({
   paginatedData,
   totalPages,
   isPageSelected,
+  isSupervisor,
 }) => (
   <div className="bg-white rounded-[0.6vw] shadow-sm border border-gray-300 flex flex-col">
     <div className="overflow-auto max-h-[65vh] min-h-[65vh] w-full rounded-t-[0.6vw]">
       <table className="w-full text-left border-collapse">
         <thead className="bg-blue-50 sticky top-0 z-10">
           <tr>
-            <th
-              rowSpan={2}
-              className="p-[0.6vw] border-b-2 border-r border-gray-300 text-center align-middle w-[3%] bg-blue-50"
-            >
-              <button
-                type="button"
-                onClick={onToggleSelectPage}
-                className="flex items-center justify-center w-full cursor-pointer"
+            {!isSupervisor && (
+              <th
+                rowSpan={2}
+                className="p-[0.6vw] border-b-2 border-r border-gray-300 text-center align-middle w-[3%] bg-blue-50"
               >
-                {isPageSelected ? (
-                  <CheckSquare className="w-[1.1vw] h-[1.1vw] text-blue-600" />
-                ) : (
-                  <Square className="w-[1.1vw] h-[1.1vw] text-gray-700" />
-                )}
-              </button>
-            </th>
+                <button
+                  type="button"
+                  onClick={onToggleSelectPage}
+                  className="flex items-center justify-center w-full cursor-pointer"
+                >
+                  {isPageSelected ? (
+                    <CheckSquare className="w-[1.1vw] h-[1.1vw] text-blue-600" />
+                  ) : (
+                    <Square className="w-[1.1vw] h-[1.1vw] text-gray-700" />
+                  )}
+                </button>
+              </th>
+            )}
             {["S.No", "Date", "Customer Name", "Category"].map((h) => {
               const minW = h === "Customer Name" ? "200px" : "100px";
               return (
@@ -1779,7 +1782,8 @@ const AdminTableView = ({
             >
               Products
             </th>
-            {["Edit", "Reports", "Final Status", "Remarks", "Delay"].map((h) => {
+            {["Edit", "Reports", "Final Status", "Remarks", "Delay"].map((h, idx) => {
+              if (isSupervisor && h === "Edit") return null;
               const minW = h === "Remarks" ? "180px" : (h === "Final Status" ? "140px" : "100px");
               return (
                 <th
@@ -1851,22 +1855,24 @@ const AdminTableView = ({
                 >
                   {pi === 0 && (
                     <>
-                      <td
-                        rowSpan={span}
-                        className="p-[0.7vw] border-r border-gray-300 text-center align-middle"
-                      >
-                        <button
-                          type="button"
-                          onClick={() => onToggleSelect(row.id)}
-                          className="flex items-center justify-center w-full cursor-pointer"
+                      {!isSupervisor && (
+                        <td
+                          rowSpan={span}
+                          className="p-[0.7vw] border-r border-gray-300 text-center align-middle"
                         >
-                          {isSelected ? (
-                            <CheckSquare className="w-[1.1vw] h-[1.1vw] text-blue-600" />
-                          ) : (
-                            <Square className="w-[1.1vw] h-[1.1vw] text-gray-700 hover:text-black" />
-                          )}
-                        </button>
-                      </td>
+                          <button
+                            type="button"
+                            onClick={() => onToggleSelect(row.id)}
+                            className="flex items-center justify-center w-full cursor-pointer"
+                          >
+                            {isSelected ? (
+                              <CheckSquare className="w-[1.1vw] h-[1.1vw] text-blue-600" />
+                            ) : (
+                              <Square className="w-[1.1vw] h-[1.1vw] text-gray-700 hover:text-black" />
+                            )}
+                          </button>
+                        </td>
+                      )}
                       <td
                         rowSpan={span}
                         className="p-[0.7vw] border-r border-gray-300 text-black/80 font-medium text-center text-[0.78vw] align-middle"
@@ -1946,7 +1952,7 @@ const AdminTableView = ({
                         className="px-[0.65vw] py-[0.6vw] border-r border-gray-300 text-center align-middle"
                       >
                         <div className="flex flex-col items-center gap-[0.4vw]">
-                          {row.products?.some((p) => !!p.assignedTo) ? (
+                          {isSupervisor ? (
                             <button
                               type="button"
                               onClick={() => onView(row)}
@@ -1959,23 +1965,39 @@ const AdminTableView = ({
                               </span>
                             </button>
                           ) : (
-                            <button
-                              type="button"
-                              onClick={() => onEdit(row)}
-                              title="Edit"
-                              className="text-gray-800 hover:text-blue-600 cursor-pointer p-[0.3vw] rounded-[0.3vw] hover:bg-blue-50 transition-colors mx-auto block"
-                            >
-                              <Edit3 className="w-[0.95vw] h-[0.95vw]" />
-                            </button>
+                            <>
+                              {row.products?.some((p) => !!p.assignedTo) ? (
+                                <button
+                                  type="button"
+                                  onClick={() => onView(row)}
+                                  title="View"
+                                  className="text-purple-400 hover:text-purple-600 cursor-pointer p-[0.3vw] rounded-[0.3vw] hover:bg-purple-50 transition-colors flex flex-col items-center gap-[0.1vw] mx-auto"
+                                >
+                                  <Eye className="w-[0.95vw] h-[0.95vw]" />
+                                  <span className="text-[0.55vw] leading-none">
+                                    View
+                                  </span>
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => onEdit(row)}
+                                  title="Edit"
+                                  className="text-gray-800 hover:text-blue-600 cursor-pointer p-[0.3vw] rounded-[0.3vw] hover:bg-blue-50 transition-colors mx-auto block"
+                                >
+                                  <Edit3 className="w-[0.95vw] h-[0.95vw]" />
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => onDelete(row.id)}
+                                title="Delete"
+                                className="text-red-400 hover:text-red-600 cursor-pointer p-[0.3vw] rounded-[0.3vw] hover:bg-red-50 transition-colors mx-auto block"
+                              >
+                                <Trash2 className="w-[0.95vw] h-[0.95vw]" />
+                              </button>
+                            </>
                           )}
-                          <button
-                            type="button"
-                            onClick={() => onDelete(row.id)}
-                            title="Delete"
-                            className="text-red-400 hover:text-red-600 cursor-pointer p-[0.3vw] rounded-[0.3vw] hover:bg-red-50 transition-colors mx-auto block"
-                          >
-                            <Trash2 className="w-[0.95vw] h-[0.95vw]" />
-                          </button>
                         </div>
                       </td>
 
@@ -2145,6 +2167,7 @@ export default function App() {
   const [reportsRowId, setReportsRowId] = useState(null);
   const [isBoardTypeMasterOpen, setIsBoardTypeMasterOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isSupervisor, setIsSupervisor] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
@@ -2175,6 +2198,8 @@ export default function App() {
       setEmployees(lsLoad(EMPLOYEES_KEY, []));
     };
     fetchData();
+    const user = JSON.parse(sessionStorage.getItem("loggedInUser"));
+    if (user?.role === "Supervisor") setIsSupervisor(true);
   }, []);
 
   const save = (rows) => {
@@ -2444,7 +2469,7 @@ export default function App() {
               </div>
               <div className="flex gap-[0.8vw] items-center">
                 <AnimatePresence>
-                  {selectedItems.size > 0 && (
+                  {selectedItems.size > 0 && !isSupervisor && (
                     <motion.button
                       type="button"
                       initial={{ opacity: 0, scale: 0.9 }}
@@ -2458,20 +2483,24 @@ export default function App() {
                     </motion.button>
                   )}
                 </AnimatePresence>
-                <button
-                  type="button"
-                  onClick={() => setIsBoardTypeMasterOpen(true)}
-                  className="cursor-pointer flex items-center gap-[0.5vw] bg-white border border-gray-300 hover:bg-blue-50 text-blue-700 font-semibold px-[1vw] h-[2.4vw] rounded-[0.4vw] transition-colors"
-                >
-                  <Wrench className="w-[1vw] h-[1vw]" /> Board Types Master
-                </button>
-                <button
-                  type="button"
-                  onClick={goToForm}
-                  className="cursor-pointer flex items-center gap-[0.5vw] bg-white border border-gray-300 hover:bg-gray-50 text-black/90 px-[1vw] h-[2.4vw] rounded-[0.4vw]"
-                >
-                  <Plus className="w-[1.2vw] h-[1.2vw]" />Add
-                </button>
+                {!isSupervisor && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setIsBoardTypeMasterOpen(true)}
+                      className="cursor-pointer flex items-center gap-[0.5vw] bg-white border border-gray-300 hover:bg-blue-50 text-blue-700 font-semibold px-[1vw] h-[2.4vw] rounded-[0.4vw] transition-colors"
+                    >
+                      <Wrench className="w-[1vw] h-[1vw]" /> Board Types Master
+                    </button>
+                    <button
+                      type="button"
+                      onClick={goToForm}
+                      className="cursor-pointer flex items-center gap-[0.5vw] bg-white border border-gray-300 hover:bg-gray-50 text-black/90 px-[1vw] h-[2.4vw] rounded-[0.4vw]"
+                    >
+                      <Plus className="w-[1.2vw] h-[1.2vw]" />Add
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 
@@ -2516,6 +2545,7 @@ export default function App() {
               paginatedData={paginatedData}
               totalPages={totalPages}
               isPageSelected={isPageSelected}
+              isSupervisor={isSupervisor}
             />
           </motion.div>
         )}
