@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useMemo, useEffect } from "react";
 import axios from "axios";
 import {
@@ -18,153 +17,219 @@ import {
   Briefcase,
   Layers,
   X,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
 } from "lucide-react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-// ── Date helpers ─────────────────────────────────────────────
-const getTodayStr = () => {
-  const d = new Date();
-  return d.toISOString().split("T")[0];
-};
+const getTodayStr = () => new Date().toISOString().split("T")[0];
 
 const fmtDate = (s) => {
   if (!s) return "—";
   const d = new Date(s);
   if (isNaN(d.getTime())) return s;
-  return `${String(d.getDate()).padStart(2, "0")}-${String(
-    d.getMonth() + 1
-  ).padStart(2, "0")}-${d.getFullYear()}`;
+  return `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`;
 };
 
-// ── Status Badge ─────────────────────────────────────────────
-const STATUS_COLORS = {
-  Registered: "bg-blue-100 text-blue-700 border-blue-200",
-  Assigned: "bg-purple-100 text-purple-700 border-purple-200",
-  Open: "bg-amber-100 text-amber-700 border-amber-200",
-  Pending: "bg-orange-100 text-orange-700 border-orange-200",
-  Resolved: "bg-emerald-100 text-emerald-700 border-emerald-200",
-  Critical: "bg-red-100 text-red-700 border-red-200",
-  Escalated: "bg-rose-100 text-rose-700 border-rose-200",
+const exportToPDF = (title, headers, data, filename, dateRangeStr) => {
+  const doc = new jsPDF('l', 'mm', 'a4');
+  doc.setFontSize(18);
+  doc.setTextColor(30, 64, 175);
+  doc.text(title, 10, 15);
+  doc.setFontSize(10);
+  doc.setTextColor(100);
+  doc.text(`Report Period: ${dateRangeStr}`, 10, 22);
+  doc.text(`Generated on: ${new Date().toLocaleString()}`, 10, 27);
+
+  autoTable(doc, {
+    startY: 32,
+    head: [headers],
+    body: data,
+    theme: 'striped',
+    styles: { fontSize: 7, cellPadding: 2, font: 'helvetica', textColor: 50, lineColor: [200, 200, 200], lineWidth: 0.1 },
+    headStyles: { fillColor: [30, 64, 175], textColor: [255, 255, 255], fontSize: 8, fontStyle: 'bold', halign: 'center' },
+    alternateRowStyles: { fillColor: [248, 250, 252] },
+    margin: { top: 30, left: 10, right: 10 },
+  });
+  doc.save(`${filename}.pdf`);
 };
 
-const StatusBadge = ({ status }) => (
-  <span
-    className={`px-[0.55vw] py-[0.1vw] rounded-full text-[0.65vw] font-medium border ${
-      STATUS_COLORS[status] || "bg-blue-50 text-blue-600 border-blue-100"
-    }`}
-  >
-    {status || "—"}
-  </span>
+const exportToExcel = ({ data, filename }) => {
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Report");
+  XLSX.writeFile(wb, `${filename}.xlsx`);
+};
+
+const DateRangeFilter = ({ from, setFrom, to, setTo }) => (
+  <div className="flex items-center gap-[0.4vw] bg-white p-[0.1vw] rounded-[0.5vw] border border-slate-300 shadow-sm">
+    <div className="flex items-center gap-[0.3vw] px-[0.6vw] border-r border-slate-200">
+      <Calendar className="w-[0.8vw] h-[0.8vw] text-black/40" />
+      <input type="date" value={from} onChange={(e) => setFrom(e.target.value)}
+        className="text-[0.72vw] font-semibold outline-none bg-transparent h-[1.8vw] w-[6.5vw] cursor-pointer text-black" />
+    </div>
+    <div className="flex items-center gap-[0.3vw] px-[0.6vw]">
+      <input type="date" value={to} onChange={(e) => setTo(e.target.value)}
+        className="text-[0.72vw] font-semibold outline-none bg-transparent h-[1.8vw] w-[6.5vw] cursor-pointer text-black" />
+    </div>
+  </div>
 );
 
-// ── Shared UI Components ─────────────────────────────────────
+const StatusBadge = ({ status }) => {
+  const colors = {
+    Resolved: "bg-green-100 text-green-700 border-green-200",
+    Pending: "bg-orange-100 text-orange-700 border-orange-200",
+    Open: "bg-amber-100 text-amber-700 border-amber-200",
+    Registered: "bg-blue-100 text-blue-700 border-blue-200",
+    Critical: "bg-red-100 text-red-700 border-red-200",
+  };
+  return (
+    <span className={`px-[0.55vw] py-[0.1vw] rounded-full text-[0.75vw] font-semibold border ${colors[status] || "bg-slate-50 text-black border-slate-200"}`}>
+      {status || "—"}
+    </span>
+  );
+};
+
 const Th = ({ children, cls = "" }) => (
-  <th
-    className={`px-[1vw] py-[0.9vw] text-[0.7vw] text-black font-bold uppercase tracking-widest border-b border-r border-black/10 last:border-r-0 bg-slate-50/50 text-left ${cls}`}
-  >
+  <th className={`px-[0.8vw] py-[0.7vw] text-[0.85vw] text-black font-bold whitespace-nowrap border-b-2 border-r border-slate-300 last:border-r-0 bg-blue-50/50 ${cls}`}>
     {children}
   </th>
 );
 
 const Td = ({ children, cls = "" }) => (
-  <td
-    className={`px-[1vw] py-[1vw] text-[0.78vw] text-black border-b border-r border-black/5 last:border-r-0 align-middle ${cls}`}
-  >
+  <td className={`px-[1vw] py-[1vw] text-[0.8vw] text-black border-r border-b border-slate-200 last:border-r-0 align-middle ${cls}`}>
     {children}
   </td>
 );
 
-const ExportButtons = ({ onCsv, onPdf }) => (
-  <div className="flex items-center gap-[0.5vw]">
-    <button
-      onClick={onCsv}
-      className="flex items-center gap-[0.4vw] px-[1vw] py-[0.5vw] bg-emerald-600 text-white rounded-[0.5vw] text-[0.75vw] font-semibold hover:bg-emerald-700 transition-all border border-emerald-700 cursor-pointer active:scale-95"
-    >
-      <FileSpreadsheet className="w-[1vw] h-[1vw]" /> Excel
-    </button>
-    <button
-      onClick={onPdf}
-      className="flex items-center gap-[0.4vw] px-[1vw] py-[0.5vw] bg-blue-600 text-white rounded-[0.5vw] text-[0.75vw] font-semibold hover:bg-blue-700 transition-all border border-blue-700 cursor-pointer active:scale-95"
-    >
-      <Download className="w-[1vw] h-[1vw]" /> PDF
-    </button>
+const Pagination = ({ totalItems, itemsPerPage, currentPage, onPageChange }) => {
+  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+  const pages = [];
+  for (let i = 1; i <= totalPages; i++) {
+    if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) pages.push(i);
+    else if (i === currentPage - 2 || i === currentPage + 2) if (!pages.includes("...")) pages.push("...");
+  }
+  return (
+    <div className="flex items-center justify-between px-[1vw] py-[0.8vw] bg-white border-t border-slate-200">
+      <div className="text-[0.7vw] text-black font-semibold uppercase">
+        Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems}
+      </div>
+      <div className="flex items-center gap-[0.4vw]">
+        <button onClick={() => onPageChange(Math.max(1, currentPage - 1))} disabled={currentPage === 1}
+          className="p-[0.4vw] border border-slate-200 rounded-[0.4vw] hover:bg-slate-50 disabled:opacity-30 transition-all">
+          <ChevronLeft className="w-[1vw] h-[1vw] text-black" />
+        </button>
+        {pages.map((p, i) => (
+          <button key={i} onClick={() => typeof p === 'number' && onPageChange(p)}
+            className={`min-w-[2vw] h-[2vw] rounded-[0.4vw] text-[0.75vw] font-semibold border transition-all ${currentPage === p ? 'bg-blue-600 text-white border-blue-700' : 'bg-white text-black border-slate-200 hover:border-slate-400'}`}>
+            {p}
+          </button>
+        ))}
+        <button onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages}
+          className="p-[0.4vw] border border-slate-200 rounded-[0.4vw] hover:bg-slate-50 disabled:opacity-30 transition-all">
+          <ChevronRight className="w-[1vw] h-[1vw] text-black" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const SummaryBar = ({ items }) => (
+  <div className="bg-black px-[1.5vw] py-[1vw] flex items-center gap-[2.5vw] rounded-b-[0.75vw] rounded-t-[0.75vw]">
+    {items.map((it, i) => (
+      <div key={i} className="flex items-center gap-[0.8vw]">
+        <div className="w-[2vw] h-[2vw] rounded-full bg-white/10 flex items-center justify-center border border-white/20">
+          <Layers className="w-[1vw] h-[1vw] text-white" />
+        </div>
+        <div>
+          <span className="block text-[0.55vw] text-white uppercase font-semibold tracking-widest">{it.label}</span>
+          <span className="text-[1vw] font-semibold text-white leading-tight">{it.value}</span>
+        </div>
+      </div>
+    ))}
   </div>
 );
 
-// ── Popup Modal for Call Details ──────────────────────────────
+const ExportButtons = ({ onCsv, onPdf, color = "blue" }) => {
+  const colors = {
+    blue: "bg-blue-600 hover:bg-blue-700 border-blue-800",
+    green: "bg-emerald-600 hover:bg-emerald-700 border-emerald-800",
+    amber: "bg-amber-600 hover:bg-amber-700 border-amber-800",
+    purple: "bg-purple-600 hover:bg-purple-700 border-purple-800"
+  };
+  return (
+    <div className="flex items-center gap-[0.5vw]">
+      <button onClick={onCsv} className="flex items-center gap-[0.4vw] px-[0.8vw] py-[0.5vw] bg-white cursor-pointer text-black border border-slate-300 rounded-[0.5vw] text-[0.72vw] font-semibold hover:bg-slate-50 transition-all active:scale-95">
+        <FileSpreadsheet className="w-[0.9vw] h-[0.9vw] text-emerald-600" /> Excel
+      </button>
+      <button onClick={onPdf} className={`flex items-center gap-[0.4vw] px-[0.8vw] py-[0.5vw] bg-white cursor-pointer text-black border border-slate-300 rounded-[0.5vw] text-[0.72vw] font-semibold hover:bg-slate-50 transition-all active:scale-95`}>
+        <Download className="w-[0.9vw] h-[0.9vw]" /> PDF Report
+      </button>
+    </div>
+  );
+};
+
 const CallDetailsModal = ({ isOpen, onClose, employee, calls }) => {
   if (!isOpen) return null;
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-[2vw]">
-      <div className="bg-white rounded-[1.2vw] w-[85vw] max-h-[85vh] flex flex-col overflow-hidden border-2 border-black">
+      <div className="bg-white rounded-[1.2vw] w-[80vw] max-h-[85vh] flex flex-col overflow-hidden border-2 border-black shadow-2xl">
         <div className="bg-slate-900 px-[1.5vw] py-[1.2vw] flex items-center justify-between">
-          <div className="flex items-center gap-[0.8vw]">
-            <div className="w-[2.5vw] h-[2.5vw] rounded-full bg-slate-500/20 flex items-center justify-center border border-slate-400/30">
-              <User className="w-[1.2vw] h-[1.2vw] text-slate-300" />
+          <div className="flex items-center gap-[1vw]">
+            <div className="w-[3vw] h-[3vw] rounded-full bg-white/10 flex items-center justify-center border border-white/20">
+              <User className="w-[1.4vw] h-[1.4vw] text-white" />
             </div>
             <div>
-              <h3 className="text-white text-[1.1vw] font-semibold tracking-tight">
-                {employee?.name || "Unassigned"}
-              </h3>
-              <p className="text-white/60 text-[0.7vw]">
-                {employee?.department || "N/A"} • <span className="text-white font-medium">{calls.length}</span> Allocated Calls
-              </p>
+              <h3 className="text-white text-[1.1vw] font-bold tracking-tight">{employee?.name || "Unassigned"}</h3>
+              <p className="text-white text-[0.7vw] font-semibold uppercase tracking-wider">{employee?.department || "N/A"} • {calls.length} Calls Allocated</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="text-white/60 hover:text-white transition-colors cursor-pointer p-[0.5vw] hover:bg-white/10 rounded-full"
-          >
-            <X className="w-[1.4vw] h-[1.4vw]" />
+          <button onClick={onClose} className="text-white hover:bg-white/10 transition-colors p-[0.5vw] rounded-full cursor-pointer">
+            <X className="w-[1.5vw] h-[1.5vw]" />
           </button>
         </div>
-
-        <div className="flex-1 overflow-auto p-[1.5vw] bg-white">
-          <table className="w-full border-separate border-spacing-0">
+        <div className="flex-1 overflow-auto p-[1vw] bg-white">
+          <table className="w-full border-collapse">
             <thead>
               <tr>
-                <Th>Call No</Th>
-                <Th>Date</Th>
-                <Th>Customer</Th>
-                <Th>Products</Th>
-                <Th>Status</Th>
-                <Th>Priority</Th>
+                <Th cls="text-center">Call No</Th>
+                <Th cls="min-w-[7vw] text-center">Date</Th>
+                <Th cls="min-w-[12vw] text-center">Customer</Th>
+                <Th cls="min-w-[15vw] text-center">Products</Th>
+                <Th cls="text-center">Status</Th>
+                <Th cls="text-center">Priority</Th>
               </tr>
             </thead>
             <tbody>
               {calls.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="text-center py-[5vw] text-black/30 font-medium">
-                    No calls found for this period.
-                  </td>
-                </tr>
+                <tr><td colSpan={6} className="text-center py-[5vw] text-black font-semibold text-[1vw]">No calls allocated.</td></tr>
               ) : (
                 calls.map((call) => (
-                  <tr key={call._id} className="hover:bg-blue-50/30 transition-colors group">
-                    <Td className="font-medium text-black">{call.callNumber}</Td>
-                    <Td className="text-black/70">{fmtDate(call.dateTime)}</Td>
-                    <Td className="font-medium text-black">{call.customerName}</Td>
-                    <Td>
-                      <div className="flex flex-col gap-[0.2vw]">
+                  <tr key={call._id} className="hover:bg-blue-50/30 transition-colors">
+                    <Td cls="font-semibold text-blue-700 text-center">{call.callNumber}</Td>
+                    <Td cls="text-center">{fmtDate(call.dateTime)}</Td>
+                    <Td cls="font-semibold text-black text-center">{call.customerName}</Td>
+                    <Td cls="text-center">
+                      <div className="flex flex-col items-center gap-[0.2vw]">
                         {call.products?.map((p, i) => (
-                          <span key={i} className="text-[0.68vw] text-black bg-slate-50 px-[0.4vw] py-[0.1vw] rounded border border-black/10 truncate max-w-[15vw]">
-                            {p.itemDescription} <span className="text-black/40 text-[0.6vw]">({p.serialNumber})</span>
+                          <span key={i} className="text-[.8vw] text-black font-medium px-[0.4vw] py-[0.1vw] rounded ">
+                            {p.itemDescription || p.productDescription || p.productName || p.description || p.itemCode || p.productCode || (typeof p === 'string' ? p : "Product Details Missing")} 
+                            {p.serialNumber ? <span className="ml-[0.2vw] text-black/60 text-[0.6vw]">({p.serialNumber})</span> : ""}
                           </span>
                         ))}
                       </div>
                     </Td>
-                    <Td>
-                      <StatusBadge status={call.status} />
-                    </Td>
-                    <Td>
-                      <span className={`px-[0.5vw] py-[0.1vw] rounded text-[0.65vw] font-medium border ${
-                        call.priority === 'Critical' ? 'text-red-700 bg-red-50 border-red-100' : 
-                        call.priority === 'High' ? 'text-orange-700 bg-orange-50 border-orange-100' : 'text-black bg-slate-50 border-black/10'
-                      }`}>
-                        {call.priority}
-                      </span>
+                    <Td cls="text-center"><StatusBadge status={call.status} /></Td>
+                    <Td cls="text-center">
+                      <span className={`px-[0.6vw] py-[0.2vw] rounded text-[0.7vw] font-semibold border shadow-sm ${call.priority === 'Critical' ? 'bg-red-50 text-red-700 border-red-200' :
+                        call.priority === 'High' ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-slate-50 text-black border-slate-200'
+                        }`}>{call.priority}</span>
                     </Td>
                   </tr>
                 ))
@@ -188,7 +253,7 @@ export default function ServiceCallReports() {
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 10;
+  const rowsPerPage = 8;
 
   // Modal State
   const [selectedEmp, setSelectedEmp] = useState(null);
@@ -274,11 +339,11 @@ export default function ServiceCallReports() {
   // Final filtered list for display
   const displayRows = useMemo(() => {
     const searchLow = search.toLowerCase();
-    const filteredEmps = reportData.employees.filter(emp => 
-      emp.name.toLowerCase().includes(searchLow) || 
+    const filteredEmps = reportData.employees.filter(emp =>
+      emp.name.toLowerCase().includes(searchLow) ||
       emp.department?.toLowerCase().includes(searchLow)
     );
-    
+
     filteredEmps.sort((a, b) => b.allocatedCount - a.allocatedCount);
     return filteredEmps;
   }, [reportData, search]);
@@ -301,29 +366,29 @@ export default function ServiceCallReports() {
     setIsModalOpen(true);
   };
 
+  const dateRangeStr = `${fmtDate(fromDate)} to ${fmtDate(toDate)}`;
+
   const exportCsv = () => {
-    const headers = ["Employee Name", "Department", "Role", "Total Allocated", "Resolved", "Pending/Open", "Registered/Unassigned"];
-    const rows = displayRows.map(row => [
-      row.name,
-      row.department || "N/A",
-      row.role || "N/A",
-      row.allocatedCount,
-      row.statusCounts["Resolved"] || 0,
-      (row.statusCounts["Pending"] || 0) + (row.statusCounts["Open"] || 0),
-      row.statusCounts["Registered"] || 0
-    ]);
-    
-    const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `Service_Call_Report_${fromDate}_to_${toDate}.csv`;
-    link.click();
+    const data = displayRows.map((row, i) => ({
+      "S.No": i + 1,
+      "Employee Name": row.name,
+      "Department": row.department || "N/A",
+      "Role": row.role || "N/A",
+      "Total Allocated": row.allocatedCount
+    }));
+    exportToExcel({ data, filename: `Service_Allocation_Report_${dateRangeStr.replace(/ /g, "_")}` });
   };
 
   const exportPdf = () => {
-    window.print();
+    const headers = ["S.No", "Employee Name", "Department", "Role", "Total"];
+    const data = displayRows.map((row, i) => [
+      i + 1,
+      row.name,
+      row.department || "N/A",
+      row.role || "N/A",
+      row.allocatedCount
+    ]);
+    exportToPDF("Service Call Allocation Report", headers, data, `Service_Allocation_Report_${dateRangeStr.replace(/ /g, "_")}`, dateRangeStr);
   };
 
   if (loading) {
@@ -336,235 +401,110 @@ export default function ServiceCallReports() {
   }
 
   return (
-    <div className="w-full h-full flex flex-col gap-[1vw] p-[0.6vw] overflow-hidden bg-white">
-      {/* Header Section */}
-      <div className="bg-white border border-black/20 rounded-[1.2vw] p-[1.2vw]">
-        <div className="flex items-center justify-between mb-[1.2vw]">
-          <div className="flex items-center gap-[1vw]">
-            <div className="bg-indigo-600 p-[0.7vw] rounded-xl border border-indigo-700">
-              <BarChart2 className="w-[1.5vw] h-[1.5vw] text-white" />
-            </div>
-            <div>
-              <h2 className="text-[1.4vw] font-bold text-blue-800 uppercase tracking-tight leading-none">Service Call Allocation Report</h2>
-              <p className="text-[0.75vw] text-black/50 font-medium mt-[0.2vw]">Engineer workload analytics & distribution</p>
-            </div>
+    <div className="flex flex-col h-full overflow-hidden p-[0.6vw] bg-white gap-[0.8vw] max-h-[88vh]">
+      {/* Action Bar */}
+      <div className="flex-shrink-0 flex items-center justify-between mb-[0.2vw] gap-[0.6vw]">
+        <div className="flex items-center gap-[0.8vw]">
+          <div className="bg-blue-600 p-[0.5vw] rounded-lg shadow-blue-200 shadow-lg">
+            <BarChart2 className="w-[1.2vw] h-[1.2vw] text-white" />
           </div>
-          <ExportButtons onCsv={exportCsv} onPdf={exportPdf} />
+          <div>
+            <h2 className="text-[1.2vw] font-bold text-black tracking-tight leading-none">Service Call Allocation</h2>
+            <p className="text-[0.68vw] text-black font-normal uppercase mt-[0.2vw]">Engineer Workload Analysis</p>
+          </div>
         </div>
-
-        <div className="flex items-center gap-[1.5vw] bg-slate-50/50 p-[0.8vw] rounded-[1vw] border border-black/5">
-          <div className="flex items-center gap-[1vw]">
-            <div className="flex flex-col gap-[0.2vw]">
-              <label className="text-[0.6vw] font-bold text-black/40 uppercase ml-[0.2vw] tracking-wider">From Date</label>
-              <div className="relative">
-                <Calendar className="absolute left-[0.7vw] top-1/2 -translate-y-1/2 w-[0.8vw] h-[0.8vw] text-black/30" />
-                <input 
-                  type="date" 
-                  value={fromDate}
-                  onChange={(e) => setFromDate(e.target.value)}
-                  className="pl-[2vw] pr-[0.8vw] py-[0.45vw] border border-blue-100 rounded-[0.6vw] text-[0.75vw] focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-white font-medium text-black cursor-pointer"
-                />
-              </div>
-            </div>
-            <div className="flex flex-col gap-[0.2vw]">
-              <label className="text-[0.6vw] font-bold text-black/40 uppercase ml-[0.2vw] tracking-wider">To Date</label>
-              <div className="relative">
-                <Calendar className="absolute left-[0.7vw] top-1/2 -translate-y-1/2 w-[0.8vw] h-[0.8vw] text-black/30" />
-                <input 
-                  type="date" 
-                  value={toDate}
-                  onChange={(e) => setToDate(e.target.value)}
-                  className="pl-[2vw] pr-[0.8vw] py-[0.45vw] border border-blue-100 rounded-[0.6vw] text-[0.75vw] focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-white font-medium text-black cursor-pointer"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="h-[2.5vw] w-[1.5px] bg-black/5 mx-[0.5vw]" />
-
-          <div className="flex-1 relative">
-            <Search className="absolute left-[0.8vw] top-1/2 -translate-y-1/2 w-[1vw] h-[1vw] text-black/30" />
-            <input 
-              type="text"
-              placeholder="Search by Employee Name or Department..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-[2.4vw] pr-[1vw] py-[0.5vw] bg-white border border-black/10 rounded-[0.8vw] text-[0.8vw] focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 outline-none transition-all placeholder:text-black/30 font-normal text-black"
+        <div className="flex items-center gap-[0.8vw]">
+          <div className="relative">
+            <Search className="absolute left-[0.6vw] top-1/2 -translate-y-1/2 w-[0.85vw] h-[0.85vw] text-black" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search employee..."
+              className="pl-[2vw] pr-[0.8vw] h-[2.2vw] border border-slate-300 rounded-[0.5vw] focus:outline-none focus:border-blue-500 text-[0.75vw] w-[11vw] text-black font-medium"
             />
           </div>
+          <DateRangeFilter from={fromDate} setFrom={setFromDate} to={toDate} setTo={setToDate} />
+          <ExportButtons onCsv={exportCsv} onPdf={exportPdf} color="blue" />
         </div>
       </div>
 
-      {/* Main Content - Table */}
-      <div className="flex-1 bg-white border border-black/20 rounded-[1.2vw] overflow-hidden flex flex-col max-h-[60vh]">
-        <div className="overflow-auto flex-1">
-          <table className="w-full border-separate border-spacing-0">
-            <thead className="sticky top-0 z-10 bg-white">
-              <tr>
-                <Th cls="w-[3vw] text-center">S.No</Th>
-                <Th>Employee Details</Th>
-                <Th>Department</Th>
-                <Th cls="text-center">Total Allocated</Th>
-                <Th>Status Breakdown</Th>
-                <Th cls="text-center">Action</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedRows.map((row, idx) => {
+      {/* Main Table */}
+      <div className="flex-1 overflow-auto rounded-lg md:rounded-[0.5vw] border border-slate-300 shadow-sm relative bg-white">
+        <table className="w-full border-collapse text-left min-w-[1000px]">
+          <thead className="sticky top-0 z-20 bg-blue-50">
+            <tr>
+              <Th cls="w-[3vw] text-center">S.No</Th>
+              <Th cls="min-w-[15vw]">Employee Details</Th>
+              <Th cls="min-w-[10vw]">Department</Th>
+              <Th cls="text-center min-w-[8vw]">Allocated</Th>
+              <Th cls="min-w-[20vw]">Status Breakdown</Th>
+              <Th cls="text-center min-w-[8vw]">Action</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {displayRows.length === 0 ? (
+              <tr><td colSpan={6} className="text-center py-[5vw] text-black/30 font-bold">No records found.</td></tr>
+            ) : (
+              paginatedRows.map((row, idx) => {
                 const sNo = (currentPage - 1) * rowsPerPage + idx + 1;
                 return (
-                <tr 
-                  key={row.userId || `row-${idx}`} 
-                  className={`
-                    group transition-all duration-200
-                    ${row.isUnassignedRow ? 'bg-orange-50/30 hover:bg-orange-50' : 'hover:bg-blue-50/20'}
-                  `}
-                >
-                  <Td cls="text-center font-bold text-black/40">{sNo}</Td>
-                  <Td>
-                    <div className="flex items-center gap-[1vw]">
-                      <div className={`
-                        w-[2.8vw] h-[2.8vw] rounded-xl flex items-center justify-center font-bold text-[1vw] border
-                        ${row.isUnassignedRow ? 'bg-orange-100 text-orange-600 border-orange-200' : 'bg-indigo-50 text-indigo-600 border-indigo-200'}
-                      `}>
-                        {row.isUnassignedRow ? <AlertCircle className="w-[1.4vw] h-[1.4vw]" /> : row.name.charAt(0).toUpperCase()}
+                  <tr key={row.userId || `row-${idx}`} className={`hover:bg-blue-50/30 transition-colors ${row.isUnassignedRow ? 'bg-orange-50/50' : ''}`}>
+                    <Td cls="text-center font-semibold text-black">{sNo}</Td>
+                    <Td>
+                      <div className="flex items-center gap-[0.8vw]">
+                        <div className={`w-[2.4vw] h-[2.4vw] rounded-lg flex items-center justify-center font-bold text-[0.9vw] border ${row.isUnassignedRow ? 'bg-orange-100 text-orange-600 border-orange-200' : 'bg-blue-50 text-blue-600 border-blue-200'}`}>
+                          {row.isUnassignedRow ? <AlertCircle className="w-[1.2vw] h-[1.2vw]" /> : row.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <div className={`text-[0.85vw] font-semibold tracking-tight ${row.isUnassignedRow ? 'text-orange-700' : 'text-black'}`}>{row.name}</div>
+                          {!row.isUnassignedRow && <div className="text-[0.6vw] text-black font-semibold uppercase tracking-wider">{row.role}</div>}
+                        </div>
                       </div>
-                      <div>
-                        <div className={`text-[0.85vw] font-semibold tracking-tight ${row.isUnassignedRow ? 'text-orange-700' : 'text-black'}`}>{row.name}</div>
-                        {!row.isUnassignedRow && <div className="text-[0.65vw] text-gray-700 font-bold uppercase tracking-tight mt-[0.1vw]">( {row.role} )</div>}
+                    </Td>
+                    <Td><span className="text-black font-semibold px-[0.6vw] py-[0.1vw] bg-slate-50 rounded border border-slate-200">{row.department || "—"}</span></Td>
+                    <Td cls="text-center">
+                      <span className={`inline-block px-[0.8vw] py-[0.1vw] rounded-full text-[0.85vw] font-semibold border ${row.allocatedCount > 0 ? (row.isUnassignedRow ? 'bg-orange-600 text-white border-orange-700' : 'bg-blue-600 text-white border-blue-700') : 'bg-white text-black border-slate-200'}`}>
+                        {row.allocatedCount}
+                      </span>
+                    </Td>
+                    <Td>
+                      <div className="flex items-center gap-[0.4vw] flex-wrap">
+                        {Object.entries(row.statusCounts).length > 0 ? (
+                          Object.entries(row.statusCounts).map(([status, count]) => (
+                            <div key={status} className="flex items-center gap-[0.3vw] bg-white border border-slate-200 rounded-[0.4vw] px-[0.5vw] py-[0.1vw] shadow-sm">
+                              <span className="text-[0.6vw] font-semibold text-black uppercase">{status}:</span>
+                              <span className="text-[0.75vw] font-semibold text-black">{count}</span>
+                            </div>
+                          ))
+                        ) : (
+                          <span className="text-black text-[0.7vw]">No activity</span>
+                        )}
                       </div>
-                    </div>
-                  </Td>
-                  <Td>
-                    <span className="text-black/80 font-regular px-[0.6vw] py-[0.2vw] bg-white rounded-[0.4vw] border border-black/10">{row.department || "—"}</span>
-                  </Td>
-                  <Td cls="text-center">
-                    <div className={`
-                      inline-flex items-center justify-center min-w-[3vw] h-[1.8vw] rounded-full text-[0.85vw] font-regular border
-                      ${row.allocatedCount > 0 ? (row.isUnassignedRow ? 'bg-orange-600 text-white border-orange-700' : 'bg-blue-600 text-white border-blue-700') : 'bg-white text-black border-black/10'}
-                    `}>
-                      {row.allocatedCount}
-                    </div>
-                  </Td>
-                  <Td>
-                    <div className="flex items-center gap-[0.4vw] flex-wrap">
-                      {Object.entries(row.statusCounts).length > 0 ? (
-                        Object.entries(row.statusCounts).map(([status, count]) => (
-                          <div key={status} className="flex items-center gap-[0.3vw] bg-white border border-black/20 rounded-[0.6vw] px-[0.6vw] py-[0.25vw] hover:border-black/40 transition-colors">
-                            <span className="text-[0.65vw] font-bold text-black/30 uppercase tracking-tight">{status}:</span>
-                            <span className="text-[0.75vw] font-bold text-black">{count}</span>
-                          </div>
-                        ))
-                      ) : (
-                        <span className="text-black font-regular text-[0.7vw]">No calls in this period</span>
-                      )}
-                    </div>
-                  </Td>
-                  <Td cls="text-center">
-                    <button 
-                      onClick={() => handleViewDetails(row)}
-                      disabled={row.allocatedCount === 0}
-                      className={`
-                        inline-flex items-center gap-[0.5vw] px-[1.2vw] py-[0.5vw] rounded-[0.8vw] text-[0.75vw] font-bold transition-all border
-                        ${row.allocatedCount > 0 
-                          ? (row.isUnassignedRow ? 'bg-white text-orange-700 border-orange-300 hover:bg-orange-50 active:scale-95' : 'bg-white text-black border-black/30 hover:bg-slate-50 hover:border-black/50 active:scale-95') 
-                          : 'bg-white text-black/10 border-black/5 cursor-not-allowed'}
-                      `}
-                    >
-                      <Layers className="w-[1vw] h-[1vw]" />
-                      View Details
-                    </button>
-                  </Td>
-                </tr>
-              ); })}
-            </tbody>
-          </table>
-          {displayRows.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-[8vw] gap-[1vw]">
-              <div className="bg-slate-50 p-[1.5vw] rounded-full border border-black/5">
-                <Users className="w-[3vw] h-[3vw] text-black/10" />
-              </div>
-              <p className="text-[1vw] font-bold text-black/20">No matching employees found</p>
-            </div>
-          )}
-        </div>
-        
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-[1.5vw] py-[0.8vw] bg-white border-t border-black/10">
-            <div className="text-[0.7vw] text-black/40 font-bold uppercase tracking-wider">
-              Showing <span className="text-black">{((currentPage - 1) * rowsPerPage) + 1}</span> to <span className="text-black">{Math.min(currentPage * rowsPerPage, displayRows.length)}</span> of <span className="text-black">{displayRows.length}</span> Results
-            </div>
-            <div className="flex items-center gap-[0.4vw]">
-              <button 
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-                className="p-[0.5vw] border border-black/10 rounded-[0.5vw] hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-90"
-              >
-                <ChevronDown className="w-[1.2vw] h-[1.2vw] rotate-90 text-black" />
-              </button>
-              
-              <div className="flex items-center gap-[0.2vw]">
-                {[...Array(totalPages)].map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setCurrentPage(i + 1)}
-                    className={`
-                      min-w-[2.2vw] h-[2.2vw] rounded-[0.5vw] text-[0.75vw] font-bold transition-all
-                      ${currentPage === i + 1 
-                        ? 'bg-blue-600 text-white border border-blue-700' 
-                        : 'bg-white text-black border border-black/10 hover:border-black/30'}
-                    `}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-              </div>
-
-              <button 
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
-                className="p-[0.5vw] border border-black/10 rounded-[0.5vw] hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-90"
-              >
-                <ChevronDown className="w-[1.2vw] h-[1.2vw] -rotate-90 text-black" />
-              </button>
-            </div>
-          </div>
-        )}
-        
-        {/* Footer Summary */}
-        <div className="bg-black px-[1.5vw] py-[1.2vw] flex items-center gap-[3vw]">
-          <div className="flex items-center gap-[0.8vw]">
-            <div className="w-[2.2vw] h-[2.2vw] rounded-full bg-white/10 flex items-center justify-center border border-white/20">
-              <Layers className="w-[1.1vw] h-[1.1vw] text-white/50" />
-            </div>
-            <div>
-              <span className="block text-[0.6vw] text-white/40 uppercase font-medium tracking-widest">Total Period Calls</span>
-              <span className="text-[1.1vw] font-semibold text-white leading-tight">{filteredCalls.length}</span>
-            </div>
-          </div>
-
-          <div className="w-[1px] h-[2.2vw] bg-white/10 mx-[0.5vw]" />
-
-          <div className="flex items-center gap-[2vw]">
-             <div className="flex items-center gap-[0.5vw] group">
-                <div className="w-[0.5vw] h-[0.5vw] rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)] group-hover:scale-125 transition-transform" />
-                <span className="text-[0.75vw] text-white/70 font-medium tracking-tight">Resolved: <span className="text-white ml-[0.3vw] font-semibold">{filteredCalls.filter(c => c.status === 'Resolved').length}</span></span>
-             </div>
-             <div className="flex items-center gap-[0.5vw] group">
-                <div className="w-[0.5vw] h-[0.5vw] rounded-full bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.4)] group-hover:scale-125 transition-transform" />
-                <span className="text-[0.75vw] text-white/70 font-medium tracking-tight">Pending/Open: <span className="text-white ml-[0.3vw] font-semibold">{filteredCalls.filter(c => ['Pending', 'Open'].includes(c.status)).length}</span></span>
-             </div>
-             <div className="flex items-center gap-[0.5vw] group">
-                <div className="w-[0.5vw] h-[0.5vw] rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.4)] group-hover:scale-125 transition-transform" />
-                <span className="text-[0.75vw] text-white/70 font-medium tracking-tight">Critical: <span className="text-white ml-[0.3vw] font-semibold">{filteredCalls.filter(c => c.priority === 'Critical').length}</span></span>
-             </div>
-          </div>
-        </div>
+                    </Td>
+                    <Td cls="text-center">
+                      <button onClick={() => handleViewDetails(row)} disabled={row.allocatedCount === 0}
+                        className={`inline-flex items-center gap-[0.4vw] px-[1vw] py-[0.4vw] rounded-[0.5vw] text-[0.72vw] font-semibold transition-all border shadow-sm ${row.allocatedCount > 0 ? 'bg-white text-black border-slate-300 hover:bg-slate-50 active:scale-95 cursor-pointer' : 'bg-slate-50 text-black border-slate-100 cursor-not-allowed'}`}>
+                        <Layers className="w-[0.9vw] h-[0.9vw]" /> View Details
+                      </button>
+                    </Td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
       </div>
 
+      {/* Footer */}
+      <div className="flex-shrink-0">
+        <Pagination totalItems={displayRows.length} itemsPerPage={rowsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} />
+        <SummaryBar items={[
+          { label: "Total Calls", value: filteredCalls.length },
+          { label: "Resolved", value: filteredCalls.filter(c => c.status === 'Resolved').length },
+          { label: "Critical", value: filteredCalls.filter(c => c.priority === 'Critical').length },
+          { label: "Unassigned", value: reportData.unassigned.allocatedCount }
+        ]} />
+      </div>
       {/* Details Modal */}
-      <CallDetailsModal 
+      <CallDetailsModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         employee={selectedEmp}

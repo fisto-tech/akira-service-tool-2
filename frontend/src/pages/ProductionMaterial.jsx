@@ -1085,10 +1085,10 @@ export default function ProductionMaterial() {
           <div className="bg-white rounded-[0.6vw] shadow-sm border border-gray-300 flex flex-col overflow-hidden">
             <div className="overflow-auto max-h-[65vh] min-h-[65vh]">
               <table className="w-full text-left border-collapse">
-                <thead className="bg-blue-50 sticky top-0 z-20">
+                <thead className="bg-blue-50 sticky top-0 z-40">
                   <tr>
                     {!isSupervisor && (
-                      <th rowSpan={2} className="p-[0.6vw] border-b-2 border-r border-gray-300 text-center align-middle w-[3%]">
+                      <th rowSpan={2} className="p-[0.6vw] border-b-2 border-r border-gray-300 text-center align-middle w-[3%] bg-blue-50 sticky top-0 left-0 z-50">
                         <button onClick={toggleSelectPage} className="flex items-center justify-center w-full cursor-pointer">
                           {isPageSelected ? <CheckCircle className="w-[1.2vw] h-[1.2vw] text-blue-600" /> : <div className="w-[1.1vw] h-[1.1vw] border-2 border-gray-300 rounded"></div>}
                         </button>
@@ -1097,18 +1097,17 @@ export default function ProductionMaterial() {
                     {["S.No", "Date", "Job Order No", "Customer", "Cus Code", "Category"].map(h => {
                       const minW = h === "Customer" ? "180px" : (h === "Job Order No" ? "140px" : "80px");
                       return (
-                        <th key={h} rowSpan={2} style={{ minWidth: minW }} className="px-[0.6vw] py-[0.5vw] font-bold text-black text-center border-b-2 border-r border-gray-300 whitespace-nowrap text-[0.78vw] align-middle bg-blue-50">{h}</th>
+                        <th key={h} rowSpan={2} style={{ minWidth: minW }} className="px-[0.6vw] py-[0.5vw] font-bold text-black text-center border-b-2 border-r border-gray-300 whitespace-nowrap text-[0.78vw] align-middle bg-blue-50 sticky top-0 z-20">{h}</th>
                       );
                     })}
-                    <th colSpan={12} className="px-[0.6vw] py-[0.4vw] font-semibold text-black border-b border-r border-gray-300 text-center text-[0.78vw] bg-blue-100/50">Product Manifest Details</th>
-                    <th rowSpan={2} className="px-[0.8vw] py-[0.5vw] font-semibold text-black text-center border-b-2 border-l border-gray-300 whitespace-nowrap text-[0.78vw] align-middle bg-blue-50 sticky right-0 z-30 shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.05)]">Actions</th>
+                    <th colSpan={12} className="px-[0.6vw] py-[0.4vw] font-semibold text-black border-b border-r border-gray-300 text-center text-[0.78vw] bg-blue-100 sticky top-0 z-40">Product Manifest Details</th>
+                    <th rowSpan={2} className="px-[0.8vw] py-[0.5vw] font-semibold text-black text-center border-b-2 border-l border-gray-300 whitespace-nowrap text-[0.78vw] align-middle bg-blue-50 sticky right-0 top-0 z-50 shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.05)]">Actions</th>
                   </tr>
                   <tr>
                     {["Item Code", "Description", "NC Type", "Stage", "Qty", "Serial/Batch", "Assigned To", "Verified By", "Verified Date", "CAE", "Final Status", "Final Remarks"].map((h, i) => {
                       const minW = h === "Description" ? "220px" : (h === "Final Remarks" ? "180px" : (h === "Qty" ? "120px" : (h === "Verified By" ? "130px" : (h === "Verified Date" ? "100px" : (h === "CAE" ? "150px" : "110px")))));
-                      if (h === "NC Type") return <th key={h} style={{ minWidth: "90px" }} className="px-[0.6vw] py-[0.4vw] font-bold text-black border-b-2 border-r border-gray-300 whitespace-nowrap text-[0.72vw] bg-blue-50 text-center">{h}</th>;
                       return (
-                        <th key={h} style={{ minWidth: minW }} className={`px-[0.6vw] py-[0.4vw] font-bold text-black border-b-2 border-r border-gray-300 whitespace-nowrap text-[0.72vw] bg-blue-50 ${h === "Qty" ? "text-center" : "text-center"}`}>{h}</th>
+                        <th key={h} style={{ minWidth: minW }} className={`px-[0.6vw] py-[0.4vw] font-bold text-black border-b-2 border-r border-gray-300 whitespace-nowrap text-[0.72vw] bg-blue-50 text-center`}>{h}</th>
                       );
                     })}
                   </tr>
@@ -1153,11 +1152,11 @@ export default function ProductionMaterial() {
                                 <span className="text-[0.6vw] font-normal text-emerald-700 whitespace-nowrap">Employee completed</span>
                               </div>
                             )}
-                            <div className="font-semibold text-gray-600 text-[0.72vw]">{prod.productCode || "—"}</div>
+                            <div className="font-semibold text-black text-[0.72vw]">{prod.productCode || "—"}</div>
                           </td>
-                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-gray-900 text-[0.72vw] truncate max-w-[10vw]" title={prod.productDescription}>{prod.productDescription || "—"}</td>
+                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-black text-[0.72vw] truncate max-w-[10vw]" title={prod.productDescription}>{prod.productDescription || "—"}</td>
                           <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle"><span className={`text-[0.68vw] font-medium px-[0.4vw] py-[0.1vw] rounded border ${prod.ncType === "External" ? "bg-orange-50 text-orange-700 border-orange-200" : "bg-blue-50 text-blue-700 border-blue-200"}`}>{prod.ncType || "Internal"}</span></td>
-                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle"><span className="text-[0.72vw] font-normal text-gray-900">{prod.stage || "Assembly"}</span></td>
+                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle"><span className="text-[0.72vw] font-normal text-black">{prod.stage || "Assembly"}</span></td>
                           <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 text-center align-middle font-normal text-black text-[0.75vw]">{prod.qty || "1"}</td>
                           <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-normal text-black text-[0.72vw]">{prod.serialNumber || "—"}</td>
                           <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-black text-[0.75vw]">{prod.assignedToName || "Unassigned"}</td>
@@ -1167,7 +1166,7 @@ export default function ProductionMaterial() {
                           <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center">
                             <FinalStatusCell row={row} prod={prod} onUpdateProduct={onUpdateProduct} isSupervisor={isSupervisor} />
                           </td>
-                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-gray-900 text-[0.72vw] truncate max-w-[10vw]" title={prod.finalStatusRemarks}>{prod.finalStatusRemarks || "—"}</td>
+                          <td className="px-[0.8vw] py-[0.7vw] border-r border-gray-200 align-middle text-center font-semibold text-black text-[0.72vw] truncate max-w-[10vw]" title={prod.finalStatusRemarks}>{prod.finalStatusRemarks || "—"}</td>
                           <td className={`px-[0.8vw] py-[0.7vw] text-center align-middle border-l border-gray-200 sticky right-0 z-30 shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.05)] ${isSelected ? "bg-blue-50/50" : "bg-white"}`}>
                             <div className="flex items-center justify-start gap-[0.5vw]">
                               <button onClick={() => setReportsRow(row)} className="w-[2vw] h-[2vw] flex items-center justify-center bg-blue-50 text-blue-600 rounded-full hover:bg-blue-600 hover:text-white transition-all cursor-pointer border border-blue-100 shadow-sm" title="View Report"><Eye className="w-[1vw] h-[1vw]" /></button>

@@ -30,6 +30,9 @@ import {
   Activity,
   ClipboardList
 } from "lucide-react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -45,6 +48,85 @@ const diffDays = (a, b) => {
   const da = new Date(a), db = new Date(b);
   if (isNaN(da.getTime()) || isNaN(db.getTime())) return null;
   return Math.round((db - da) / 86400000);
+};
+
+// ── NEW DATE FILTER COMPONENT ───────────────────────────────
+const DateRangeFilter = ({ from, setFrom, to, setTo }) => (
+  <div className="flex items-center gap-[0.4vw] bg-white p-[0.1vw] rounded-[0.5vw] border border-slate-300 shadow-sm">
+    <div className="flex items-center gap-[0.3vw] px-[0.6vw] border-r border-slate-200">
+      <Calendar className="w-[0.8vw] h-[0.8vw] text-black/40" />
+      <input type="date" value={from} onChange={(e) => setFrom(e.target.value)}
+        className="text-[0.72vw] font-semibold outline-none bg-transparent h-[1.8vw] w-[6.5vw] cursor-pointer text-black" />
+    </div>
+    <div className="flex items-center gap-[0.3vw] px-[0.6vw]">
+      <span className="text-[0.6vw] font-semibold text-black/90 uppercase">to</span>
+      <input type="date" value={to} onChange={(e) => setTo(e.target.value)}
+        className="text-[0.72vw] font-semibold outline-none bg-transparent h-[1.8vw] w-[6.5vw] cursor-pointer text-black" />
+    </div>
+  </div>
+);
+
+const exportToPDF = (title, headers, data, filename, dateRange = "") => {
+  const doc = new jsPDF("landscape");
+  
+  // Header
+  doc.setFillColor(30, 64, 175);
+  doc.rect(0, 0, 297, 25, 'F');
+  
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(20);
+  doc.setFont("helvetica", "bold");
+  doc.text("AKIRA", 14, 16);
+  
+  doc.setFontSize(14);
+  doc.text(title.toUpperCase(), 45, 16);
+  
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.text(`REPORT PERIOD: ${dateRange || "ALL DATA"}`, 283, 12, { align: 'right' });
+  doc.text(`GENERATED: ${new Date().toLocaleString()}`, 283, 18, { align: 'right' });
+
+  autoTable(doc, {
+    head: [headers],
+    body: data,
+    startY: 30,
+    theme: 'striped',
+    styles: { 
+      fontSize: 8, 
+      cellPadding: 2,
+      lineColor: [200, 200, 200],
+      lineWidth: 0.1,
+      textColor: [0, 0, 0]
+    },
+    headStyles: { 
+      fillColor: [30, 64, 175],
+      textColor: [255, 255, 255],
+      fontSize: 8,
+      fontStyle: 'bold',
+      halign: 'center'
+    },
+    columnStyles: {
+      0: { halign: 'center', cellWidth: 10 }
+    },
+    alternateRowStyles: { fillColor: [248, 250, 252] },
+    margin: { top: 30, left: 10, right: 10 },
+    didParseCell: function(data) {
+      if (data.section === 'body' && data.column.index === headers.length - 1) {
+        const val = String(data.cell.raw || "").toLowerCase();
+        if (val.includes("completed")) data.cell.styles.textColor = [22, 163, 74];
+        if (val.includes("pending")) data.cell.styles.textColor = [217, 119, 6];
+        if (val.includes("rejected")) data.cell.styles.textColor = [220, 38, 38];
+      }
+    }
+  });
+  doc.save(`${filename}.pdf`);
+};
+
+const exportToExcel = ({ data, filename }) => {
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Data");
+  XLSX.writeFile(wb, `${filename}.xlsx`);
 };
 
 const TABS = [
@@ -68,19 +150,19 @@ const StatusBadge = ({ status }) => {
     Pending: "bg-orange-100 text-orange-700 border-orange-200",
   };
   return (
-    <span className={`px-[0.55vw] py-[0.1vw] rounded-full text-[0.62vw] font-bold border ${colors[status] || "bg-blue-50 text-blue-700 border-blue-200"}`}>
+    <span className={`px-[0.55vw] py-[0.1vw] rounded-full text-[0.75vw] font-semibold border ${colors[status] || "bg-blue-50 text-black border-blue-200"}`}>
       {status || "Pending"}
     </span>
   );
 };
 
 const Th = ({ children, cls = "" }) => (
-  <th className={`px-2 md:px-[0.6vw] py-1.5 md:py-[0.4vw] text-[11px] md:text-[0.72vw] text-black font-bold whitespace-nowrap border-b-2 border-r border-slate-300 last:border-r-0 bg-blue-50/50 ${cls}`}>
+  <th className={`px-[0.8vw] py-[0.7vw] text-[0.85vw] text-black font-semibold whitespace-nowrap border-b-2 border-r border-slate-300 last:border-r-0 bg-blue-50/50 ${cls}`}>
     {children}
   </th>
 );
 const Td = ({ children, cls = "" }) => (
-  <td className={`px-2 md:px-[0.6vw] py-1 md:py-[0.3vw] text-[11px] md:text-[0.7vw] border-r border-b border-slate-200 last:border-r-0 align-middle ${cls}`}>
+  <td className={`px-[1vw] py-[1vw] text-[0.8vw] text-black border-r border-b border-slate-200 last:border-r-0 align-middle ${cls}`}>
     {children}
   </td>
 );
@@ -89,8 +171,8 @@ const SummaryBar = ({ items }) => (
   <div className="flex items-center gap-[1.5vw] mt-[0.8vw] px-[0.5vw]">
     {items.map((it, i) => (
       <div key={i} className="flex items-center gap-[0.4vw]">
-        <span className="text-[0.68vw] text-black font-medium">{it.label}:</span>
-        <span className={`text-[0.8vw] font-bold ${it.color}`}>{it.value}</span>
+        <span className="text-[0.68vw] text-black font-semibold">{it.label}:</span>
+        <span className={`text-[0.8vw] font-semibold ${it.color}`}>{it.value}</span>
       </div>
     ))}
   </div>
@@ -105,8 +187,11 @@ const ExportButtons = ({ onCsv, onPdf, color = "blue" }) => {
   };
   return (
     <div className="flex items-center gap-2 md:gap-[0.4vw]">
-      <button onClick={onCsv} className={`flex items-center gap-1 md:gap-[0.3vw] px-3 md:px-[0.8vw] h-9 md:h-[2.2vw] border rounded-lg md:rounded-[0.4vw] text-[12px] md:text-[0.7vw] font-bold cursor-pointer transition-all ${colors[color]}`}>
-        <FileSpreadsheet className="w-4 h-4 md:w-[0.9vw] md:h-[0.9vw]" /> Export Excel
+      <button onClick={onCsv} className={`flex items-center gap-1 md:gap-[0.3vw] px-3 md:px-[0.8vw] h-9 md:h-[2.2vw] border rounded-lg md:rounded-[0.4vw] text-[12px] md:text-[0.7vw] font-semibold cursor-pointer transition-all ${colors[color]}`}>
+        <FileSpreadsheet className="w-4 h-4 md:w-[0.9vw] md:h-[0.9vw]" /> Excel
+      </button>
+      <button onClick={onPdf} className={`flex items-center gap-1 md:gap-[0.3vw] px-3 md:px-[0.8vw] h-9 md:h-[2.2vw] border rounded-lg md:rounded-[0.4vw] text-[12px] md:text-[0.7vw] font-semibold cursor-pointer transition-all ${colors[color]}`}>
+        <Download className="w-4 h-4 md:w-[0.9vw] md:h-[0.9vw]" /> PDF
       </button>
     </div>
   );
@@ -185,7 +270,7 @@ const Pagination = ({ totalItems, itemsPerPage, currentPage, onPageChange }) => 
 };
 
 // ── REPORT 1 — Production Technical Report ────────────────────
-const TechnicalReport = ({ entries }) => {
+const TechnicalReport = ({ entries, fromDate, setFromDate, toDate, setToDate }) => {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
@@ -197,10 +282,17 @@ const TechnicalReport = ({ entries }) => {
   const rows = useMemo(() => {
     const flat = [];
     entries.forEach(e => {
+      const rowDate = new Date(e.date).setHours(0, 0, 0, 0);
+      const from = fromDate ? new Date(fromDate).setHours(0, 0, 0, 0) : null;
+      const to = toDate ? new Date(toDate).setHours(0, 0, 0, 0) : null;
+
+      if (from && rowDate < from) return;
+      if (to && rowDate > to) return;
+
       e.products?.forEach(p => flat.push({ entry: e, prod: p }));
     });
     return flat;
-  }, [entries]);
+  }, [entries, fromDate, toDate]);
 
   const filtered = useMemo(() => {
     if (!search) return rows;
@@ -216,47 +308,99 @@ const TechnicalReport = ({ entries }) => {
     return filtered.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
   }, [filtered, currentPage]);
 
+  const dateRangeStr = fromDate && toDate ? `${fmtDate(fromDate)} to ${fmtDate(toDate)}` : "All Dates";
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <div className="flex-shrink-0 flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 md:mb-[0.8vw] gap-3">
-        <div className="relative w-full sm:w-auto">
-          <Search className="absolute left-3 md:left-[0.6vw] top-1/2 -translate-y-1/2 w-4 h-4 md:w-[0.85vw] md:h-[0.85vw] text-black/40" />
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search reports..."
-            className="pl-10 md:pl-[2vw] pr-3 md:pr-[0.8vw] h-10 md:h-[2.2vw] border border-slate-300 rounded-lg md:rounded-[0.5vw] outline-none text-[14px] md:text-[0.75vw] w-full sm:w-[200px] md:w-[15vw] focus:border-blue-400 transition-all"
+      <div className="flex-shrink-0 flex items-center justify-between mb-[0.8vw] gap-[0.6vw]">
+        <div></div>
+        <div className="flex items-center gap-[0.5vw]">
+          <div className="relative">
+            <Search className="absolute left-[0.6vw] top-1/2 -translate-y-1/2 w-[0.85vw] h-[0.85vw] text-black" />
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search reports..."
+              className="pl-[2vw] pr-[0.8vw] h-[2.2vw] border border-slate-300 rounded-[0.5vw] outline-none text-[0.75vw] w-[11vw] focus:border-blue-400 transition-all text-black font-medium"
+            />
+          </div>
+          <DateRangeFilter from={fromDate} setFrom={setFromDate} to={toDate} setTo={setToDate} />
+          <ExportButtons 
+            onCsv={() => {
+              const data = filtered.map((r, i) => ({
+                "S.No": i + 1,
+                "Date": fmtDate(r.entry.date),
+                "Job Order": r.entry.jobOrderNo,
+                "Customer": r.entry.customerName,
+                "Product": r.prod.productDescription,
+                "Serial No": r.prod.serialNumber,
+                "Problem Type": r.prod.problemType,
+                "NC Type": r.prod.ncType,
+                "4M Category": r.prod.report?.fourMCategory,
+                "Root Cause": r.prod.report?.rootCause,
+                "Parts Replaced": r.prod.report?.partsReplaced,
+                "Personnel": r.prod.report?.testedByName,
+                "Status": r.prod.finalStatus || "Pending"
+              }));
+              exportToExcel({ data, filename: `Production_Technical_Report_${dateRangeStr.replace(/ /g, "_")}` });
+            }} 
+            onPdf={() => {
+              const headers = ["S.No", "Date", "JO#", "Customer", "Product", "Serial", "Problem", "NC", "4M", "Status"];
+              const data = filtered.map((r, i) => [
+                i + 1,
+                fmtDate(r.entry.date),
+                r.entry.jobOrderNo,
+                r.entry.customerName,
+                r.prod.productDescription,
+                r.prod.serialNumber || "—",
+                r.prod.problemType || "—",
+                r.prod.ncType || "—",
+                r.prod.report?.fourMCategory || "—",
+                r.prod.finalStatus || "Pending"
+              ]);
+              exportToPDF("Production Technical Report", headers, data, `Production_Technical_Report_${dateRangeStr.replace(/ /g, "_")}`, dateRangeStr);
+            }}
+            color="blue" 
           />
         </div>
-        <ExportButtons onCsv={() => { }} color="blue" />
       </div>
       <div className="flex-1 overflow-auto rounded-lg md:rounded-[0.5vw] border border-slate-300 shadow-sm relative">
         <table className="w-full text-left border-collapse min-w-[1000px]">
           <thead className="sticky top-0 z-20 bg-blue-50">
             <tr>
-              <Th>S.No</Th><Th>Date</Th><Th>Job Order</Th><Th>Customer</Th>
-              <Th>Product</Th><Th>Serial No</Th><Th>Problem Type</Th><Th>NC Type</Th><Th>4M Category</Th>
-              <Th>Root Cause</Th><Th>Parts Replaced</Th><Th>Personnel</Th><Th>Status</Th>
+              <Th>S.No</Th>
+              <Th cls="min-w-[6.5vw]">Date</Th>
+              <Th cls="min-w-[8vw]">Job Order</Th>
+              <Th cls="min-w-[12vw]">Customer</Th>
+              <Th cls="min-w-[15vw]">Product</Th>
+              <Th cls="min-w-[8vw]">Serial No</Th>
+              <Th cls="min-w-[9vw]">Problem Type</Th>
+              <Th cls="min-w-[7vw]">NC Type</Th>
+              <Th>4M Category</Th>
+              <Th cls="min-w-[15vw]">Root Cause</Th>
+              <Th>Parts Replaced</Th>
+              <Th>Personnel</Th>
+              <Th>Status</Th>
             </tr>
           </thead>
           <tbody>
             {paginated.map((r, i) => (
               <tr key={i} className="hover:bg-blue-50/30 transition-colors">
-                <Td cls="text-center font-bold">{(currentPage - 1) * rowsPerPage + i + 1}</Td>
+                <Td cls="text-center font-semibold">{((currentPage - 1) * rowsPerPage) + i + 1}</Td>
                 <Td>{fmtDate(r.entry.date)}</Td>
-                <Td cls="font-bold text-blue-700">{r.entry.jobOrderNo}</Td>
-                <Td cls="font-semibold">{r.entry.customerName}</Td>
+                <Td cls="font-semibold text-blue-700">{r.entry.jobOrderNo}</Td>
+                <Td cls="font-normal">{r.entry.customerName}</Td>
                 <Td><div className="max-w-[12vw] truncate" title={r.prod.productDescription}>{r.prod.productDescription}</div></Td>
-                <Td cls="font-mono text-[10px] md:text-[0.65vw]">{r.prod.serialNumber || "—"}</Td>
-                <Td><span className="bg-slate-50 px-2 md:px-[0.4vw] rounded font-bold text-slate-700">{r.prod.problemType || "—"}</span></Td>
-                <Td><span className="bg-orange-50 px-2 md:px-[0.4vw] rounded font-bold text-orange-700">{r.prod.ncType || "Internal"}</span></Td>
-                <Td><span className="bg-blue-50 px-2 md:px-[0.4vw] rounded font-bold text-blue-700">{r.prod.report?.fourMCategory || "—"}</span></Td>
-                <Td><div className="max-w-[15vw] italic text-[11px] md:text-[0.68vw] leading-tight">{r.prod.report?.rootCause || "—"}</div></Td>
+                <Td cls="font-normal">{r.prod.serialNumber || "—"}</Td>
+                <Td><span className="bg-slate-50 px-[0.4vw] rounded font-semibold text-black">{r.prod.problemType || "—"}</span></Td>
+                <Td><span className="bg-orange-50 px-[0.4vw] rounded font-semibold text-black">{r.prod.ncType || "Internal"}</span></Td>
+                <Td><span className="bg-blue-50 px-[0.4vw] rounded font-semibold text-black">{r.prod.report?.fourMCategory || "—"}</span></Td>
+                <Td><div className="max-w-[15vw]  text-black">{r.prod.report?.rootCause || "—"}</div></Td>
                 <Td>{r.prod.report?.partsReplacement || "—"}</Td>
                 <Td>
-                  <div className="text-[10px] md:text-[0.6vw] space-y-1 md:space-y-[0.1vw]">
-                    <div className="flex gap-1 md:gap-[0.2vw]"><span className="text-black/40">A:</span><span className="font-bold">{r.prod.report?.assembledByName || "—"}</span></div>
-                    <div className="flex gap-1 md:gap-[0.2vw]"><span className="text-black/40">T:</span><span className="font-bold">{r.prod.report?.testedByName || "—"}</span></div>
+                  <div className="space-y-[0.1vw]">
+                    <div className="flex gap-[0.2vw]"><span className="text-black">A:</span><span className="font-semibold">{r.prod.report?.assembledByName || "—"}</span></div>
+                    <div className="flex gap-[0.2vw]"><span className="text-black">T:</span><span className="font-semibold">{r.prod.report?.testedByName || "—"}</span></div>
                   </div>
                 </Td>
                 <Td><StatusBadge status={r.prod.finalStatus} /></Td>
@@ -282,7 +426,7 @@ const TechnicalReport = ({ entries }) => {
 };
 
 // ── REPORT 2 — Inward Analysis & TAT ──────────────────────────
-const AnalysisReport = ({ entries }) => {
+const AnalysisReport = ({ entries, fromDate, setFromDate, toDate, setToDate }) => {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
@@ -294,13 +438,20 @@ const AnalysisReport = ({ entries }) => {
   const rows = useMemo(() => {
     const flat = [];
     entries.forEach(e => {
+      const rowDate = new Date(e.date).setHours(0, 0, 0, 0);
+      const from = fromDate ? new Date(fromDate).setHours(0, 0, 0, 0) : null;
+      const to = toDate ? new Date(toDate).setHours(0, 0, 0, 0) : null;
+
+      if (from && rowDate < from) return;
+      if (to && rowDate > to) return;
+
       e.products?.forEach(p => {
         const tat = diffDays(e.date, p.report?.closedDate);
         flat.push({ entry: e, prod: p, tat });
       });
     });
     return flat;
-  }, [entries]);
+  }, [entries, fromDate, toDate]);
 
   const filtered = useMemo(() => {
     if (!search) return rows;
@@ -316,46 +467,96 @@ const AnalysisReport = ({ entries }) => {
     return filtered.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
   }, [filtered, currentPage]);
 
+  const dateRangeStr = fromDate && toDate ? `${fmtDate(fromDate)} to ${fmtDate(toDate)}` : "All Dates";
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <div className="flex-shrink-0 flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 md:mb-[0.8vw] gap-3">
-        <div className="relative w-full sm:w-auto">
-          <Search className="absolute left-3 md:left-[0.6vw] top-1/2 -translate-y-1/2 w-4 h-4 md:w-[0.85vw] md:h-[0.85vw] text-black/40" />
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search analytics..."
-            className="pl-10 md:pl-[2vw] pr-3 md:pr-[0.8vw] h-10 md:h-[2.2vw] border border-slate-300 rounded-lg md:rounded-[0.5vw] outline-none text-[14px] md:text-[0.75vw] w-full sm:w-[200px] md:w-[15vw] focus:border-emerald-400 transition-all"
+      <div className="flex-shrink-0 flex items-center justify-between mb-[0.8vw] gap-[0.6vw]">
+        <div></div>
+        <div className="flex items-center gap-[0.5vw]">
+          <div className="relative">
+            <Search className="absolute left-[0.6vw] top-1/2 -translate-y-1/2 w-[0.85vw] h-[0.85vw] text-black" />
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search analytics..."
+              className="pl-[2vw] pr-[0.8vw] h-[2.2vw] border border-slate-300 rounded-[0.5vw] outline-none text-[0.75vw] w-[11vw] focus:border-emerald-400 transition-all text-black font-medium"
+            />
+          </div>
+          <DateRangeFilter from={fromDate} setFrom={setFromDate} to={toDate} setTo={setToDate} />
+          <ExportButtons 
+            onCsv={() => {
+              const data = filtered.map((r, i) => ({
+                "S.No": i + 1,
+                "Inward Date": fmtDate(r.entry.date),
+                "Customer": r.entry.customerName,
+                "Job Order": r.entry.jobOrderNo,
+                "Product Code": r.prod.productCode,
+                "Description": r.prod.productDescription,
+                "Stage": r.prod.stage,
+                "Problem Type": r.prod.problemType,
+                "NC Type": r.prod.ncType,
+                "Disposition": r.prod.disposition,
+                "Closed Date": fmtDate(r.prod.report?.closedDate),
+                "TAT (Days)": r.tat,
+                "Status": r.prod.finalStatus
+              }));
+              exportToExcel({ data, filename: `Inward_Analysis_Report_${dateRangeStr.replace(/ /g, "_")}` });
+            }} 
+            onPdf={() => {
+              const headers = ["S.No", "Inward Date", "Customer", "JO#", "Code", "Stage", "Problem", "TAT", "Status"];
+              const data = filtered.map((r, i) => [
+                i + 1,
+                fmtDate(r.entry.date),
+                r.entry.customerName,
+                r.entry.jobOrderNo,
+                r.prod.productCode,
+                r.prod.stage,
+                r.prod.problemType || "—",
+                r.tat !== null ? `${r.tat}d` : "—",
+                r.prod.finalStatus
+              ]);
+              exportToPDF("Inward Analysis & TAT Report", headers, data, `Inward_Analysis_Report_${dateRangeStr.replace(/ /g, "_")}`, dateRangeStr);
+            }}
+            color="green" 
           />
         </div>
-        <ExportButtons onCsv={() => { }} color="green" />
       </div>
       <div className="flex-1 overflow-auto rounded-lg md:rounded-[0.5vw] border border-slate-300 shadow-sm relative">
         <table className="w-full text-left border-collapse min-w-[1000px]">
           <thead className="sticky top-0 z-20 bg-emerald-50">
             <tr>
-              <Th>S.No</Th><Th>Inward Date</Th><Th>Customer</Th><Th>Job Order</Th>
-              <Th>Product Details</Th><Th>Stage</Th><Th>Problem Type</Th><Th>NC Type</Th><Th>Disposition</Th>
-              <Th>Closed Date</Th><Th>TAT (Days)</Th><Th>Status</Th>
+              <Th>S.No</Th>
+              <Th cls="min-w-[7vw]">Inward Date</Th>
+              <Th cls="min-w-[12vw]">Customer</Th>
+              <Th cls="min-w-[8vw]">Job Order</Th>
+              <Th cls="min-w-[15vw]">Product Details</Th>
+              <Th>Stage</Th>
+              <Th cls="min-w-[9vw]">Problem Type</Th>
+              <Th>NC Type</Th>
+              <Th>Disposition</Th>
+              <Th cls="min-w-[7vw]">Closed Date</Th>
+              <Th>TAT (Days)</Th>
+              <Th>Status</Th>
             </tr>
           </thead>
           <tbody>
             {paginated.map((r, i) => (
               <tr key={i} className="hover:bg-emerald-50/30 transition-colors">
-                <Td cls="text-center font-bold">{(currentPage - 1) * rowsPerPage + i + 1}</Td>
+                <Td cls="text-center font-semibold text-black">{((currentPage - 1) * rowsPerPage) + i + 1}</Td>
                 <Td>{fmtDate(r.entry.date)}</Td>
                 <Td cls="font-semibold">{r.entry.customerName}</Td>
-                <Td cls="font-bold text-blue-700">{r.entry.jobOrderNo}</Td>
+                <Td cls="font-semibold text-blue-700">{r.entry.jobOrderNo}</Td>
                 <Td>
-                  <div className="font-bold">{r.prod.productCode}</div>
-                  <div className="text-[10px] md:text-[0.65vw] text-black/50">{r.prod.productDescription}</div>
+                  <div className="font-semibold text-black">{r.prod.productCode}</div>
+                  <div className="text-[0.68vw] text-black">{r.prod.productDescription}</div>
                 </Td>
-                <Td cls="font-bold text-gray-700">{r.prod.stage}</Td>
-                <Td><span className="text-slate-600 font-semibold">{r.prod.problemType || "—"}</span></Td>
-                <Td><span className="text-orange-600 font-bold">{r.prod.ncType || "Internal"}</span></Td>
+                <Td cls="font-semibold text-black">{r.prod.stage}</Td>
+                <Td><span className="text-black font-semibold">{r.prod.problemType || "—"}</span></Td>
+                <Td><span className="text-orange-600 font-semibold">{r.prod.ncType || "Internal"}</span></Td>
                 <Td>{r.prod.disposition}</Td>
                 <Td>{fmtDate(r.prod.report?.closedDate)}</Td>
-                <Td cls={`font-black ${r.tat !== null ? (r.tat <= 2 ? "text-green-600" : r.tat <= 5 ? "text-orange-600" : "text-red-600") : "text-black/20"}`}>
+                <Td cls={`font-semibold ${r.tat !== null ? (r.tat <= 2 ? "text-green-600" : r.tat <= 5 ? "text-orange-600" : "text-red-600") : "text-black"}`}>
                   {r.tat !== null ? `${r.tat}d` : "—"}
                 </Td>
                 <Td><StatusBadge status={r.prod.finalStatus} /></Td>
@@ -381,7 +582,7 @@ const AnalysisReport = ({ entries }) => {
 };
 
 // ── REPORT 3 — RCA Log ───────────────────────────────────────
-const RCALogReport = ({ entries }) => {
+const RCALogReport = ({ entries, fromDate, setFromDate, toDate, setToDate }) => {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
@@ -393,10 +594,17 @@ const RCALogReport = ({ entries }) => {
   const rows = useMemo(() => {
     const flat = [];
     entries.forEach(e => {
+      const rowDate = new Date(e.date).setHours(0, 0, 0, 0);
+      const from = fromDate ? new Date(fromDate).setHours(0, 0, 0, 0) : null;
+      const to = toDate ? new Date(toDate).setHours(0, 0, 0, 0) : null;
+
+      if (from && rowDate < from) return;
+      if (to && rowDate > to) return;
+
       e.products?.forEach(p => { if (p.report?.rootCause) flat.push({ entry: e, prod: p }); });
     });
     return flat;
-  }, [entries]);
+  }, [entries, fromDate, toDate]);
 
   const filtered = useMemo(() => {
     if (!search) return rows;
@@ -412,25 +620,68 @@ const RCALogReport = ({ entries }) => {
     return filtered.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
   }, [filtered, currentPage]);
 
+  const dateRangeStr = fromDate && toDate ? `${fmtDate(fromDate)} to ${fmtDate(toDate)}` : "All Dates";
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <div className="flex-shrink-0 flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 md:mb-[0.8vw] gap-3">
-        <div className="relative w-full sm:w-auto">
-          <Search className="absolute left-3 md:left-[0.6vw] top-1/2 -translate-y-1/2 w-4 h-4 md:w-[0.85vw] md:h-[0.85vw] text-black/40" />
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search RCA details..."
-            className="pl-10 md:pl-[2vw] pr-3 md:pr-[0.8vw] h-10 md:h-[2.2vw] border border-slate-300 rounded-lg md:rounded-[0.5vw] outline-none text-[14px] md:text-[0.75vw] w-full sm:w-[220px] md:w-[18vw] focus:border-amber-400 transition-all"
+      <div className="flex-shrink-0 flex items-center justify-between mb-[0.8vw] gap-[0.6vw]">
+        <div></div>
+        <div className="flex items-center gap-[0.5vw]">
+          <div className="relative">
+            <Search className="absolute left-[0.6vw] top-1/2 -translate-y-1/2 w-[0.85vw] h-[0.85vw] text-black/40" />
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search RCA details..."
+              className="pl-[2vw] pr-[0.8vw] h-[2.2vw] border border-slate-300 rounded-[0.5vw] outline-none text-[0.75vw] w-[11vw] focus:border-amber-400 transition-all text-black"
+            />
+          </div>
+          <DateRangeFilter from={fromDate} setFrom={setFromDate} to={toDate} setTo={setToDate} />
+          <ExportButtons 
+            onCsv={() => {
+              const data = filtered.map((r, i) => ({
+                "S.No": i + 1,
+                "Product Code": r.prod.productCode,
+                "Description": r.prod.productDescription,
+                "Job Order": r.entry.jobOrderNo,
+                "Problem Type": r.prod.problemType,
+                "4M Category": r.prod.report?.fourMCategory,
+                "Root Cause": r.prod.report?.rootCause,
+                "Corrective Action": r.prod.report?.correctiveAction,
+                "Analysed By": r.prod.report?.testedByName
+              }));
+              exportToExcel({ data, filename: `Production_RCA_Log_${dateRangeStr.replace(/ /g, "_")}` });
+            }} 
+            onPdf={() => {
+              const headers = ["S.No", "Product", "JO#", "Problem", "4M", "Root Cause", "Action", "Analysed By"];
+              const data = filtered.map((r, i) => [
+                i + 1,
+                r.prod.productCode,
+                r.entry.jobOrderNo,
+                r.prod.problemType || "—",
+                r.prod.report?.fourMCategory,
+                r.prod.report?.rootCause,
+                r.prod.report?.correctiveAction,
+                r.prod.report?.testedByName || "—"
+              ]);
+              exportToPDF("Root Cause Analysis (RCA) Log", headers, data, `Production_RCA_Log_${dateRangeStr.replace(/ /g, "_")}`, dateRangeStr);
+            }}
+            color="amber" 
           />
         </div>
-        <ExportButtons onCsv={() => { }} color="amber" />
       </div>
       <div className="flex-1 overflow-auto rounded-lg md:rounded-[0.5vw] border border-slate-300 shadow-sm relative">
         <table className="w-full text-left border-collapse min-w-[1000px]">
           <thead className="sticky top-0 z-20 bg-amber-50">
             <tr>
-              <Th>S.No</Th><Th>Product</Th><Th>JO#</Th><Th>Problem Type</Th><Th>4M Cat</Th><Th>Root Cause Detail</Th><Th>Corrective Action</Th><Th>Analysed By</Th>
+              <Th>S.No</Th>
+              <Th cls="min-w-[10vw]">Product</Th>
+              <Th cls="min-w-[8vw]">JO#</Th>
+              <Th cls="min-w-[10vw]">Problem Type</Th>
+              <Th>4M Cat</Th>
+              <Th cls="min-w-[22vw]">Root Cause Detail</Th>
+              <Th cls="min-w-[20vw]">Corrective Action</Th>
+              <Th>Analysed By</Th>
             </tr>
           </thead>
           <tbody>
@@ -438,15 +689,15 @@ const RCALogReport = ({ entries }) => {
               <tr key={i} className="hover:bg-amber-50/30 transition-colors">
                 <Td cls="text-center font-bold">{(currentPage - 1) * rowsPerPage + i + 1}</Td>
                 <Td>
-                  <div className="font-bold text-black">{r.prod.productCode}</div>
-                  <div className="text-[10px] md:text-[0.65vw] text-black/50 truncate max-w-[10vw]">{r.prod.productDescription}</div>
+                  <div className="font-bold text-slate-900">{r.prod.productCode}</div>
+                  <div className="text-[0.68vw] text-black/50 truncate max-w-[10vw]">{r.prod.productDescription}</div>
                 </Td>
                 <Td cls="font-bold text-blue-700">{r.entry.jobOrderNo}</Td>
-                <Td><span className="font-semibold text-slate-700 bg-slate-100 px-2 md:px-[0.4vw] rounded">{r.prod.problemType || "—"}</span></Td>
+                <Td><span className="font-semibold text-slate-700 bg-slate-100 px-[0.4vw] rounded">{r.prod.problemType || "—"}</span></Td>
                 <Td><span className="font-bold text-amber-700">{r.prod.report?.fourMCategory}</span></Td>
-                <Td><div className="max-w-[20vw] italic text-black/80 font-medium leading-relaxed">"{r.prod.report?.rootCause}"</div></Td>
-                <Td><div className="max-w-[20vw] text-green-700 font-semibold">{r.prod.report?.correctiveAction || "—"}</div></Td>
-                <Td cls="font-bold text-gray-600">{r.prod.report?.testedByName || "—"}</Td>
+                <Td><div className="max-w-[20vw] italic text-slate-900 font-medium leading-relaxed text-[0.68vw]">"{r.prod.report?.rootCause}"</div></Td>
+                <Td><div className="max-w-[20vw] text-green-700 font-semibold text-[0.68vw]">{r.prod.report?.correctiveAction || "—"}</div></Td>
+                <Td cls="font-semibold text-gray-600">{r.prod.report?.testedByName || "—"}</Td>
               </tr>
             ))}
           </tbody>
@@ -468,7 +719,7 @@ const RCALogReport = ({ entries }) => {
 };
 
 // ── REPORT 4 — Action Effectiveness ──────────────────────────
-const EffectivenessReport = ({ entries }) => {
+const EffectivenessReport = ({ entries, fromDate, setFromDate, toDate, setToDate }) => {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
@@ -480,10 +731,17 @@ const EffectivenessReport = ({ entries }) => {
   const rows = useMemo(() => {
     const flat = [];
     entries.forEach(e => {
+      const rowDate = new Date(e.date).setHours(0, 0, 0, 0);
+      const from = fromDate ? new Date(fromDate).setHours(0, 0, 0, 0) : null;
+      const to = toDate ? new Date(toDate).setHours(0, 0, 0, 0) : null;
+
+      if (from && rowDate < from) return;
+      if (to && rowDate > to) return;
+
       e.products?.forEach(p => { if (p.report?.cae) flat.push({ entry: e, prod: p }); });
     });
     return flat;
-  }, [entries]);
+  }, [entries, fromDate, toDate]);
 
   const filtered = useMemo(() => {
     if (!search) return rows;
@@ -499,25 +757,62 @@ const EffectivenessReport = ({ entries }) => {
     return filtered.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
   }, [filtered, currentPage]);
 
+  const dateRangeStr = fromDate && toDate ? `${fmtDate(fromDate)} to ${fmtDate(toDate)}` : "All Dates";
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <div className="flex-shrink-0 flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 md:mb-[0.8vw] gap-3">
-        <div className="relative w-full sm:w-auto">
-          <Search className="absolute left-3 md:left-[0.6vw] top-1/2 -translate-y-1/2 w-4 h-4 md:w-[0.85vw] md:h-[0.85vw] text-black/40" />
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search CAE..."
-            className="pl-10 md:pl-[2vw] pr-3 md:pr-[0.8vw] h-10 md:h-[2.2vw] border border-slate-300 rounded-lg md:rounded-[0.5vw] outline-none text-[14px] md:text-[0.75vw] w-full sm:w-[220px] md:w-[18vw] focus:border-teal-400 transition-all"
+      <div className="flex-shrink-0 flex items-center justify-between mb-[0.8vw] gap-[0.6vw]">
+        <div></div>
+        <div className="flex items-center gap-[0.5vw]">
+          <div className="relative">
+            <Search className="absolute left-[0.6vw] top-1/2 -translate-y-1/2 w-[0.85vw] h-[0.85vw] text-black/40" />
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search CAE..."
+              className="pl-[2vw] pr-[0.8vw] h-[2.2vw] border border-slate-300 rounded-[0.5vw] outline-none text-[0.75vw] w-[11vw] focus:border-teal-400 transition-all text-black"
+            />
+          </div>
+          <DateRangeFilter from={fromDate} setFrom={setFromDate} to={toDate} setTo={setToDate} />
+          <ExportButtons 
+            onCsv={() => {
+              const data = filtered.map((r, i) => ({
+                "S.No": i + 1,
+                "Product Code": r.prod.productCode,
+                "Description": r.prod.productDescription,
+                "Corrective Action": r.prod.report?.correctiveAction,
+                "Effectiveness (CAE)": r.prod.report?.cae,
+                "Verified By": r.prod.report?.verifiedByName,
+                "Verified Date": fmtDate(r.prod.report?.verifiedDate)
+              }));
+              exportToExcel({ data, filename: `Action_Effectiveness_Report_${dateRangeStr.replace(/ /g, "_")}` });
+            }} 
+            onPdf={() => {
+              const headers = ["S.No", "Product", "Corrective Action", "Effectiveness (CAE)", "Verified By", "Date"];
+              const data = filtered.map((r, i) => [
+                i + 1,
+                r.prod.productCode,
+                r.prod.report?.correctiveAction,
+                r.prod.report?.cae,
+                r.prod.report?.verifiedByName || "—",
+                fmtDate(r.prod.report?.verifiedDate)
+              ]);
+              exportToPDF("Action Effectiveness Report", headers, data, `Action_Effectiveness_Report_${dateRangeStr.replace(/ /g, "_")}`, dateRangeStr);
+            }}
+            color="teal" 
           />
         </div>
-        <ExportButtons onCsv={() => { }} color="teal" />
       </div>
       <div className="flex-1 overflow-auto rounded-lg md:rounded-[0.5vw] border border-slate-300 shadow-sm relative">
         <table className="w-full text-left border-collapse min-w-[1000px]">
           <thead className="sticky top-0 z-20 bg-teal-50">
             <tr>
-              <Th>S.No</Th><Th>Product</Th><Th>Corrective Action</Th><Th>Effectiveness (CAE)</Th><Th>Verified By</Th><Th>Verified Date</Th>
+              <Th>S.No</Th>
+              <Th cls="min-w-[12vw]">Product</Th>
+              <Th cls="min-w-[22vw]">Corrective Action</Th>
+              <Th cls="min-w-[18vw]">Effectiveness (CAE)</Th>
+              <Th>Verified By</Th>
+              <Th cls="min-w-[7vw]">Verified Date</Th>
             </tr>
           </thead>
           <tbody>
@@ -525,12 +820,12 @@ const EffectivenessReport = ({ entries }) => {
               <tr key={i} className="hover:bg-teal-50/30 transition-colors">
                 <Td cls="text-center font-bold">{(currentPage - 1) * rowsPerPage + i + 1}</Td>
                 <Td>
-                  <div className="font-bold">{r.prod.productCode}</div>
-                  <div className="text-[10px] md:text-[0.65vw] text-black/50">{r.prod.productDescription}</div>
+                  <div className="font-bold text-slate-900">{r.prod.productCode}</div>
+                  <div className="text-[0.68vw] text-black/50">{r.prod.productDescription}</div>
                 </Td>
-                <Td><div className="max-w-[20vw] font-medium text-black/70 italic leading-tight">"{r.prod.report?.correctiveAction}"</div></Td>
-                <Td cls="bg-green-50/50"><div className="font-black text-green-700 text-[13px] md:text-[0.75vw]">{r.prod.report?.cae}</div></Td>
-                <Td cls="font-bold text-teal-800">{r.prod.report?.verifiedByName || "—"}</Td>
+                <Td><div className="max-w-[20vw] font-medium text-slate-900 italic leading-tight text-[0.68vw]">"{r.prod.report?.correctiveAction}"</div></Td>
+                <Td cls="bg-green-50/50"><div className="font-black text-green-700 text-[0.75vw]">{r.prod.report?.cae}</div></Td>
+                <Td cls="font-semibold text-teal-800">{r.prod.report?.verifiedByName || "—"}</Td>
                 <Td>{fmtDate(r.prod.report?.verifiedDate)}</Td>
               </tr>
             ))}
@@ -557,6 +852,10 @@ export default function ProductionMaterialReports() {
   const [activeTab, setActiveTab] = useState("technical");
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Global Date Filters
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
   const fetchData = async () => {
     try {
@@ -589,7 +888,7 @@ export default function ProductionMaterialReports() {
           </div>
           <div className="z-10">
             <h2 className="text-[17px] md:text-[1.1vw] font-bold text-white drop-shadow-sm">Production NC Register</h2>
-            <p className="text-[11px] md:text-[0.65vw] text-white opacity-90 font-semibold ">{entries.length} Inward Records Found</p>
+            <p className="text-[11px] md:text-[0.65vw] text-white font-semibold ">{entries.length} Inward Records Found</p>
           </div>
         </div>
 
@@ -599,7 +898,7 @@ export default function ProductionMaterialReports() {
             <button
               key={t.id}
               onClick={() => setActiveTab(t.id)}
-              className={`flex items-center gap-1.5 md:gap-[0.5vw] px-3 md:px-[1vw] py-1.5 md:py-[0.4vw] rounded-full text-[11px] md:text-[0.7vw] font-bold border transition-all cursor-pointer ${activeTab === t.id ? TAB_COLORS[t.color].active : TAB_COLORS[t.color].inactive
+              className={`flex items-center gap-1.5 md:gap-[0.5vw] px-3 md:px-[1vw] py-1.5 md:py-[0.4vw] rounded-full text-[11px] md:text-[0.7vw] font-semibold border transition-all cursor-pointer ${activeTab === t.id ? TAB_COLORS[t.color].active : TAB_COLORS[t.color].inactive
                 }`}
             >
               <t.icon className="w-3.5 h-3.5 md:w-[0.9vw] md:h-[0.9vw]" /> {t.label}
@@ -610,10 +909,34 @@ export default function ProductionMaterialReports() {
 
       {/* Main Tab Content */}
       <div className="flex-1 bg-white border border-slate-300 rounded-xl md:rounded-[0.8vw] shadow-sm p-3 md:p-[1vw] overflow-hidden">
-        {activeTab === "technical" && <TechnicalReport entries={entries} />}
-        {activeTab === "analysis" && <AnalysisReport entries={entries} />}
-        {activeTab === "rca" && <RCALogReport entries={entries} />}
-        {activeTab === "action" && <EffectivenessReport entries={entries} />}
+        {activeTab === "technical" && (
+          <TechnicalReport 
+            entries={entries} 
+            fromDate={fromDate} setFromDate={setFromDate}
+            toDate={toDate} setToDate={setToDate}
+          />
+        )}
+        {activeTab === "analysis" && (
+          <AnalysisReport 
+            entries={entries} 
+            fromDate={fromDate} setFromDate={setFromDate}
+            toDate={toDate} setToDate={setToDate}
+          />
+        )}
+        {activeTab === "rca" && (
+          <RCALogReport 
+            entries={entries} 
+            fromDate={fromDate} setFromDate={setFromDate}
+            toDate={toDate} setToDate={setToDate}
+          />
+        )}
+        {activeTab === "action" && (
+          <EffectivenessReport 
+            entries={entries} 
+            fromDate={fromDate} setFromDate={setFromDate}
+            toDate={toDate} setToDate={setToDate}
+          />
+        )}
       </div>
     </div>
   );
