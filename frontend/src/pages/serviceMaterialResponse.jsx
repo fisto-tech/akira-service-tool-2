@@ -83,8 +83,25 @@ const ServiceResponseModal = ({ entry, product, employees, fourMCategories, onSa
     correctiveAction: product.report?.correctiveAction || "",
     completedDate: product.report?.completedDate || "",
     status: product.report?.status || "Under Testing",
-    currentRemark: ""
+    currentRemark: "",
+    designators: product.report?.designators || "",
+    image: product.report?.image || ""
   });
+
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(product.report?.image ? `${API_URL}${product.report.image}` : null);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const STATUS_OPTIONS = ["Under Testing", "Repair in Progress", "Pending", "Completed", "Not Repairable"];
   const DISPOSITION_OPTIONS = ["Repaired", "Replaced", "Scrap", "Return As Is"];
@@ -163,7 +180,7 @@ const ServiceResponseModal = ({ entry, product, employees, fourMCategories, onSa
       history: [...(product.report?.history || []), historyEntry]
     };
 
-    onSave(updatedReport);
+    onSave(updatedReport, imageFile);
   };
 
   const currentStatus = STATUS_CONFIG[formData.status] || STATUS_CONFIG["Open"];
@@ -328,6 +345,38 @@ const ServiceResponseModal = ({ entry, product, employees, fourMCategories, onSa
                       ))}
                     </ul>
                   )}
+                </div>
+
+                {/* New Fields: Designators & Image */}
+                <div className="col-span-2 flex flex-col gap-[0.3vw]">
+                  <label className="text-[0.8vw] font-semibold text-black flex items-center gap-[0.3vw]">
+                    <User className="w-[0.8vw] h-[0.8vw] text-blue-600" />
+                    Designators
+                  </label>
+                  <select value={formData.designators} onChange={e => sp("designators", e.target.value)}
+                    className="border border-gray-300 bg-white rounded-[0.4vw] py-[0.5vw] px-[0.6vw] text-[0.78vw] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
+                    <option value="">Select Designator</option>
+                    {employees.map(e => <option key={e.userId} value={e.name}>{e.name}</option>)}
+                  </select>
+                </div>
+                <div className="col-span-2 flex flex-col gap-[0.3vw]">
+                   <label className="text-[0.8vw] font-semibold text-black flex items-center gap-[0.3vw]">
+                    <Package className="w-[0.8vw] h-[0.8vw] text-blue-600" />
+                    Image Upload
+                  </label>
+                  <div className="flex items-center gap-[1vw]">
+                    <input type="file" accept="image/*" onChange={handleImageChange}
+                      className="border border-gray-300 rounded-[0.4vw] py-[0.4vw] px-[0.6vw] text-[0.7vw] outline-none focus:border-blue-500 w-full" />
+                    {imagePreview && (
+                      <div className="w-[3vw] h-[3vw] rounded-[0.4vw] border border-gray-200 overflow-hidden flex-shrink-0 relative group">
+                        <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                             onClick={() => window.open(imagePreview, '_blank')}>
+                          <Eye className="w-[1vw] h-[1vw] text-white" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -570,12 +619,31 @@ const ServiceInfoModal = ({ entry, product, onClose }) => {
             <div className="space-y-[1vw] mt-[1vw] p-[1vw] bg-white rounded-[0.6vw] border border-gray-200">
                <h4 className="text-[0.85vw] font-bold text-gray-800 border-b border-gray-100 pb-[0.3vw]">Technical Report</h4>
                <div className="grid grid-cols-2 gap-[1vw]">
+                 <RefInput label="Tested By" value={product.report.testedBy} />
+                 <RefInput label="Designators" value={product.report.designators} />
+                 <RefInput label="4M Category" value={product.report.fourMCategory} />
+                 <RefInput label="Error Code" value={product.report.errorCode} />
+                 <RefInput label="Problem Description" value={product.report.problemDescription} span={2} />
                  <RefInput label="Root Cause" value={product.report.rootCause} span={2} />
                  <RefInput label="Corrective Action" value={product.report.correctiveAction} span={2} />
                  <RefInput label="Parts Replaced" value={product.report.partsReplacement} span={2} />
-                 <RefInput label="Fault Found" value={product.report.faultFound} span={2} />
-                 <RefInput label="Verified By" value={product.report.verifiedByName} />
                  <RefInput label="Status" value={product.report.status} />
+                 <RefInput label="Disposition" value={product.report.disposition} />
+                 <div className="col-span-2">
+                    <label className="text-[0.75vw] font-semibold text-black mb-[0.25vw] block">Technical Image</label>
+                    {product.report.image ? (
+                        <div className="mt-[0.5vw]">
+                             <img 
+                                src={`${API_URL}${product.report.image}`} 
+                                alt="Report" 
+                                className="max-w-[15vw] rounded-[0.4vw] border border-gray-300 shadow-sm cursor-pointer hover:scale-105 transition-transform"
+                                onClick={() => window.open(`${API_URL}${product.report.image}`, '_blank')}
+                             />
+                        </div>
+                    ) : (
+                        <div className="text-[0.75vw] text-gray-400 italic">No image uploaded</div>
+                    )}
+                 </div>
                </div>
             </div>
           )}
@@ -686,11 +754,15 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
   }, [entries]);
 
   // Update handler
-  const updateEntry = async (id, productId, report) => {
+  const updateEntry = async (id, productId, report, imageFile) => {
     try {
-      const res = await axios.patch(`${API_URL}/service-material/${id}/report`, {
-        productId,
-        report
+      const fd = new FormData();
+      fd.append("productId", productId);
+      fd.append("report", JSON.stringify(report));
+      if (imageFile) fd.append("image", imageFile);
+
+      const res = await axios.patch(`${API_URL}/service-material/${id}/report`, fd, {
+        headers: { "Content-Type": "multipart/form-data" }
       });
       const updatedRow = { ...res.data, id: res.data._id };
       setEntries(prev => prev.map(e => e.id === id ? updatedRow : e));
@@ -1026,8 +1098,8 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
             entry={selected.entry}
             product={selected.product}
             employees={employees}
-            onSave={(report) => {
-              updateEntry(selected.entry.id, selected.product._pid, report);
+            onSave={(report, imageFile) => {
+              updateEntry(selected.entry.id, selected.product._pid, report, imageFile);
               setSelected(null);
             }}
             onClose={() => setSelected(null)}

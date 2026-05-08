@@ -360,7 +360,9 @@ const TestingRepairReport = ({ entries, fromDate, setFromDate, toDate, setToDate
       "Product": p.productDescription,
       "Board Type": p.boardType,
       "Serial No": p.serialNumber,
+      "Type": p.type === "W" ? "Warranty" : "Paid",
       "Tested By": p.report?.testedBy || "—",
+      "Designators": p.report?.designators || "—",
       "Completed Date": fmtDate(p.report?.completedDate),
       "Status": p.report?.status || "Pending"
     }));
@@ -397,10 +399,10 @@ const TestingRepairReport = ({ entries, fromDate, setFromDate, toDate, setToDate
             <tr>
               <Th>S.No</Th><Th cls="min-w-[6vw]">Date</Th><Th>Customer</Th><Th>Ref No.</Th>
               <Th>Product</Th><Th>Board Type</Th><Th>Serial No</Th><Th>Type</Th>
-              <Th>Tested By</Th><Th>Comp. Date</Th>
+              <Th>Tested By</Th><Th>Designators</Th><Th>Comp. Date</Th>
               <Th>4M Cat</Th><Th>Err Code</Th>
               <Th>Problem Identified</Th><Th>Root Cause</Th>
-              <Th>Corrective Action</Th><Th>Parts Replaced</Th><Th>Status</Th>
+              <Th>Corrective Action</Th><Th>Parts Replaced</Th><Th>Image</Th><Th>Status</Th>
             </tr>
           </thead>
           <tbody>
@@ -420,6 +422,7 @@ const TestingRepairReport = ({ entries, fromDate, setFromDate, toDate, setToDate
                     </span>
                   </Td>
                   <Td cls="font-semibold">{p.report?.testedBy || "—"}</Td>
+                  <Td cls="font-semibold">{p.report?.designators || "—"}</Td>
                   <Td cls="min-w-[6vw]">{fmtDate(p.report?.completedDate)}</Td>
                   <Td><span className="bg-blue-50 px-[0.4vw] rounded font-semibold text-black">{p.report?.fourMCategory || "—"}</span></Td>
                   <Td><span className="bg-slate-50 px-[0.4vw] rounded font-semibold text-black">{p.report?.errorCode || "—"}</span></Td>
@@ -427,6 +430,11 @@ const TestingRepairReport = ({ entries, fromDate, setFromDate, toDate, setToDate
                   <Td><div className="break-words whitespace-normal text-[0.68vw] min-w-[12vw] text-black">{p.report?.rootCause || "—"}</div></Td>
                   <Td><div className="break-words whitespace-normal text-[0.68vw] min-w-[12vw] text-blue-700">{p.report?.correctiveAction || "—"}</div></Td>
                   <Td>{p.report?.partsReplacement || "—"}</Td>
+                  <Td>
+                    {p.report?.image ? (
+                        <button onClick={() => window.open(`${API_URL}${p.report.image}`, '_blank')} className="text-blue-600 hover:underline text-[0.7vw] font-bold cursor-pointer">View</button>
+                    ) : "—"}
+                  </Td>
                   <Td><StatusBadge status={p.report?.status} /></Td>
                 </tr>
               ))
@@ -663,6 +671,7 @@ const RootCauseReport = ({ entries, fromDate, setFromDate, toDate, setToDate }) 
       "4M Cat": p.report?.fourMCategory,
       "Root Cause": p.report?.rootCause,
       "Tested By": p.report?.testedBy,
+      "Designators": p.report?.designators,
       "Status": p.report?.status
     }));
     exportToExcel({ data, filename: "RCA_Report" });
@@ -693,7 +702,7 @@ const RootCauseReport = ({ entries, fromDate, setFromDate, toDate, setToDate }) 
               <Th>Product</Th><Th>Board Type</Th><Th>Serial No</Th><Th>Type</Th>
               <Th>Err Code</Th><Th>4M Cat</Th>
               <Th>Root Cause (Analysis)</Th>
-              <Th>Tested By</Th><Th>Status</Th><Th>Details</Th>
+              <Th>Tested By</Th><Th>Designators</Th><Th>Image</Th><Th>Status</Th><Th>Details</Th>
             </tr>
           </thead>
           <tbody>
@@ -716,6 +725,12 @@ const RootCauseReport = ({ entries, fromDate, setFromDate, toDate, setToDate }) 
                     <Td><span className="bg-amber-50 px-[0.4vw] rounded font-semibold text-amber-700">{p.report?.fourMCategory || "—"}</span></Td>
                     <Td><div className="break-words whitespace-normal text-[0.68vw] font-semibold text-amber-900 min-w-[11vw] italic leading-tight">"{p.report?.rootCause || "—"}"</div></Td>
                     <Td cls="font-semibold text-slate-700">{p.report?.testedBy || "—"}</Td>
+                    <Td cls="font-semibold text-slate-700">{p.report?.designators || "—"}</Td>
+                    <Td>
+                      {p.report?.image ? (
+                          <button onClick={() => window.open(`${API_URL}${p.report.image}`, '_blank')} className="text-amber-600 hover:underline text-[0.7vw] font-bold cursor-pointer">View</button>
+                      ) : "—"}
+                    </Td>
                     <Td><StatusBadge status={p.report?.status} /></Td>
                     <Td cls="text-center">
                       <button type="button"
@@ -849,6 +864,7 @@ const CorrectiveActionReport = ({ entries, fromDate, setFromDate, toDate, setToD
       "Corrective Action": p.report?.correctiveAction,
       "Parts Replaced": p.report?.partsReplacement,
       "Implemented By": p.report?.testedBy,
+      "Designators": p.report?.designators || "—",
       "Comp. Date": fmtDate(p.report?.completedDate),
       "Verification": p.report?.status
     }));
@@ -888,6 +904,7 @@ const CorrectiveActionReport = ({ entries, fromDate, setFromDate, toDate, setToD
               <Th>4M Cat</Th><Th>Err Code</Th>
               <Th>Root Cause Summary</Th><Th>Corrective Action Taken</Th>
               <Th>Parts Replaced</Th><Th>Implemented By</Th>
+              <Th>Designators</Th><Th>Image</Th>
               <Th>Comp. Date</Th><Th>Verification</Th>
             </tr>
           </thead>
@@ -920,6 +937,12 @@ const CorrectiveActionReport = ({ entries, fromDate, setFromDate, toDate, setToD
                       )}
                       <span className="text-[0.72vw] font-semibold text-black">{p.report?.testedBy || "—"}</span>
                     </div>
+                  </Td>
+                  <Td cls="font-semibold text-slate-700">{p.report?.designators || "—"}</Td>
+                  <Td>
+                    {p.report?.image ? (
+                        <button onClick={() => window.open(`${API_URL}${p.report.image}`, '_blank')} className="text-teal-600 hover:underline text-[0.7vw] font-bold cursor-pointer">View</button>
+                    ) : "—"}
                   </Td>
                   <Td cls="min-w-[6vw]">{fmtDate(p.report?.completedDate)}</Td>
                   <Td>

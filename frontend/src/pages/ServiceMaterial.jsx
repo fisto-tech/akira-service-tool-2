@@ -547,6 +547,7 @@ const ReportsModal = ({ row, onClose }) => {
                           <div className="space-y-[1.2vw]">
                             <div className="grid grid-cols-2 gap-[1vw]">
                               <DetailItem label="Tested By" value={r.testedBy} />
+                              <DetailItem label="Designators" value={r.designators} />
                               <DetailItem
                                 label="Completed Date"
                                 value={fmtDate(r.completedDate)}
@@ -582,6 +583,19 @@ const ReportsModal = ({ row, onClose }) => {
                                     <div className="text-[0.82vw] text-slate-400 italic">No parts recorded</div>
                                   )}
                                 </div>
+                              </div>
+                            )}
+                            {r.image && (
+                              <div className="bg-white border border-slate-200 rounded-[0.5vw] p-[0.8vw] shadow-sm hover:border-blue-200 transition-all">
+                                <span className="text-[0.62vw] font-bold text-blue-500 uppercase block mb-[0.6vw]">
+                                  Technical Image
+                                </span>
+                                <img 
+                                  src={`${API_URL}${r.image}`} 
+                                  alt="Technical" 
+                                  className="max-w-full h-auto rounded-[0.4vw] border border-gray-200 cursor-pointer hover:scale-[1.02] transition-transform"
+                                  onClick={() => window.open(`${API_URL}${r.image}`, '_blank')}
+                                />
                               </div>
                             )}
                           </div>

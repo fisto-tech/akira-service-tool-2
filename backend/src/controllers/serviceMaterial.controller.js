@@ -87,13 +87,26 @@ exports.claimProduct = async (req, res) => {
 exports.updateProductReport = async (req, res) => {
   try {
     const { id } = req.params;
-    const { productId, report } = req.body;
+    let { productId, report } = req.body;
+
+    if (typeof report === 'string') {
+        try {
+            report = JSON.parse(report);
+        } catch (e) {
+            return res.status(400).json({ message: 'Invalid report data' });
+        }
+    }
 
     const inward = await ServiceMaterial.findById(id);
     if (!inward) return res.status(404).json({ message: 'Inward not found' });
 
     const product = inward.products.find(p => p._pid === productId);
     if (!product) return res.status(404).json({ message: 'Product not found' });
+
+    // Handle image upload
+    if (req.file) {
+        report.image = `/uploads/${req.file.filename}`;
+    }
 
     product.report = report;
     product.status = report.status;

@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 
 const reportSchema = new mongoose.Schema({
   testedBy: String,
+  designators: String,
+  image: String,
   disposition: String,
   fourMCategory: String,
   errorCode: String,
