@@ -8,7 +8,8 @@ import {
   Plus,
   ChevronDown,
   Calendar,
-  ScanBarcode
+  ScanBarcode,
+  X
 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
@@ -20,6 +21,9 @@ const COLUMN_FIELDS = [
   "problemType",
   "ncType",
   "problem",
+  "inspectedBy",
+  "designators",
+  "boardImage",
   "stage",
   "qty",
   "serialNumber",
@@ -331,6 +335,9 @@ const ProductionEditableProductTable = ({
             <th className="w-[12vw] min-w-[160px] py-[0.8vw] px-[0.8vw] text-left text-black font-semibold uppercase tracking-wider whitespace-nowrap">Problem Type</th>
             <th className="w-[8vw] min-w-[120px] py-[0.8vw] px-[0.8vw] text-left text-black font-semibold uppercase tracking-wider whitespace-nowrap">NC Type</th>
             <th className="w-[15vw] min-w-[200px] py-[0.8vw] px-[0.8vw] text-left text-black font-semibold uppercase tracking-wider whitespace-nowrap">Problem</th>
+            <th className="w-[12vw] min-w-[160px] py-[0.8vw] px-[0.8vw] text-left text-black font-semibold uppercase tracking-wider whitespace-nowrap">Inspected By</th>
+            <th className="w-[12vw] min-w-[160px] py-[0.8vw] px-[0.8vw] text-left text-black font-semibold uppercase tracking-wider whitespace-nowrap">Designators</th>
+            <th className="w-[10vw] min-w-[140px] py-[0.8vw] px-[0.8vw] text-left text-black font-semibold uppercase tracking-wider whitespace-nowrap">Board Image</th>
             <th className="w-[10vw] min-w-[140px] py-[0.8vw] px-[0.8vw] text-left text-black font-semibold uppercase tracking-wider whitespace-nowrap">Stage</th>
             <th className="w-[7vw] min-w-[120px] py-[0.8vw] px-[0.8vw] text-center text-black font-semibold uppercase tracking-wider whitespace-nowrap">Qty</th>
             <th className="w-[12vw] min-w-[180px] py-[0.8vw] px-[0.8vw] text-left text-black font-semibold uppercase tracking-wider whitespace-nowrap">Batch / SN</th>
@@ -500,6 +507,84 @@ const ProductionEditableProductTable = ({
 
                         <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 7)}`} onMouseDown={(e) => handleCellMouseDown(index, 7, e)} onMouseEnter={() => handleCellMouseEnter(index, 7)}>
                           <select
+                            value={prod.inspectedBy || ""}
+                            onChange={(e) => {
+                              const emp = employees.find(emp => emp.userId === e.target.value);
+                              handleUpdate(prod._pid, "inspectedBy", e.target.value);
+                              handleUpdate(prod._pid, "inspectedByName", emp?.name || "");
+                            }}
+                            disabled={isReadOnly}
+                            className="w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.2vw] outline-none transition-all text-black font-regular  disabled:bg-transparent"
+                          >
+                            <option value="">Select</option>
+                            {employees.map(e => (
+                              <option key={e.userId} value={e.userId}>{e.name}</option>
+                            ))}
+                          </select>
+                          {renderFillHandle(index, 7)}
+                        </td>
+
+                        <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 8)}`} onMouseDown={(e) => handleCellMouseDown(index, 8, e)} onMouseEnter={() => handleCellMouseEnter(index, 8)}>
+                          <select
+                            value={prod.designators || ""}
+                            onChange={(e) => handleUpdate(prod._pid, "designators", e.target.value)}
+                            disabled={isReadOnly}
+                            className="w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.2vw] outline-none transition-all text-black font-regular  disabled:bg-transparent"
+                          >
+                            <option value="">Select</option>
+                            {employees.map(e => (
+                              <option key={e.userId} value={e.name}>{e.name}</option>
+                            ))}
+                          </select>
+                          {renderFillHandle(index, 8)}
+                        </td>
+
+                        <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 9)}`} onMouseDown={(e) => handleCellMouseDown(index, 9, e)} onMouseEnter={() => handleCellMouseEnter(index, 9)}>
+                           <div className="flex flex-col items-center gap-[0.4vw]">
+                             {prod.boardImage && (
+                               <div className="relative group">
+                                 <img 
+                                   src={prod.boardImage.startsWith('data:') || prod.boardImage.startsWith('blob:') ? prod.boardImage : `${import.meta.env.VITE_API_URL}${prod.boardImage}`} 
+                                   alt="Board" 
+                                   className="w-[2.5vw] h-[2.5vw] object-cover rounded-[0.3vw] border border-gray-300"
+                                 />
+                                 {!isReadOnly && (
+                                   <button 
+                                     onClick={(e) => { e.stopPropagation(); handleUpdate(prod._pid, "boardImage", ""); handleUpdate(prod._pid, "_boardImageFile", null); }}
+                                     className="absolute -top-[0.4vw] -right-[0.4vw] bg-red-500 text-white rounded-full p-[0.1vw] opacity-0 group-hover:opacity-100 transition-opacity"
+                                   >
+                                     <X className="w-[0.6vw] h-[0.6vw]" />
+                                   </button>
+                                 )}
+                               </div>
+                             )}
+                             {!isReadOnly && !prod.boardImage && (
+                               <label className="cursor-pointer hover:text-blue-600 transition-colors">
+                                 <Plus className="w-[1.2vw] h-[1.2vw]" />
+                                 <input 
+                                   type="file" 
+                                   className="hidden" 
+                                   accept="image/*"
+                                   onChange={(e) => {
+                                     const file = e.target.files[0];
+                                     if (file) {
+                                       const reader = new FileReader();
+                                       reader.onloadend = () => {
+                                         handleUpdate(prod._pid, "boardImage", reader.result);
+                                         handleUpdate(prod._pid, "_boardImageFile", file);
+                                       };
+                                       reader.readAsDataURL(file);
+                                     }
+                                   }}
+                                 />
+                               </label>
+                             )}
+                           </div>
+                           {renderFillHandle(index, 9)}
+                        </td>
+
+                        <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 10)}`} onMouseDown={(e) => handleCellMouseDown(index, 10, e)} onMouseEnter={() => handleCellMouseEnter(index, 10)}>
+                          <select
                             value={prod.stage || ""}
                             onChange={(e) => handleUpdate(prod._pid, "stage", e.target.value)}
                             disabled={isReadOnly}
@@ -510,15 +595,15 @@ const ProductionEditableProductTable = ({
                               <option key={s} value={s}>{s}</option>
                             ))}
                           </select>
-                          {renderFillHandle(index, 7)}
+                          {renderFillHandle(index, 10)}
                         </td>
 
-                        <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 8)}`} onMouseDown={(e) => handleCellMouseDown(index, 8, e)} onMouseEnter={() => handleCellMouseEnter(index, 8)}>
+                        <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 11)}`} onMouseDown={(e) => handleCellMouseDown(index, 11, e)} onMouseEnter={() => handleCellMouseEnter(index, 11)}>
                           <input type="number" min="1" value={prod.qty} onChange={(e) => handleUpdate(prod._pid, "qty", e.target.value)} disabled={isReadOnly} className="w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.6vw] outline-none transition-all text-black font-regular  text-center disabled:bg-transparent" />
-                          {renderFillHandle(index, 8)}
+                          {renderFillHandle(index, 11)}
                         </td>
 
-                        <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 9)}`} onMouseDown={(e) => handleCellMouseDown(index, 9, e)} onMouseEnter={() => handleCellMouseEnter(index, 9)}>
+                        <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 12)}`} onMouseDown={(e) => handleCellMouseDown(index, 12, e)} onMouseEnter={() => handleCellMouseEnter(index, 12)}>
                           <div className="relative flex items-center group">
                             <input 
                               type="text" 
@@ -535,10 +620,10 @@ const ProductionEditableProductTable = ({
                               </button>
                             )}
                           </div>
-                          {renderFillHandle(index, 9)}
+                          {renderFillHandle(index, 12)}
                         </td>
 
-                        <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 10)}`} onMouseDown={(e) => handleCellMouseDown(index, 10, e)} onMouseEnter={() => handleCellMouseEnter(index, 10)}>
+                        <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 13)}`} onMouseDown={(e) => handleCellMouseDown(index, 13, e)} onMouseEnter={() => handleCellMouseEnter(index, 13)}>
                           <select
                             value={prod.disposition || ""}
                             onChange={(e) => handleUpdate(prod._pid, "disposition", e.target.value)}
@@ -550,10 +635,10 @@ const ProductionEditableProductTable = ({
                               <option key={opt} value={opt}>{opt}</option>
                             ))}
                           </select>
-                          {renderFillHandle(index, 10)}
+                          {renderFillHandle(index, 13)}
                         </td>
 
-                        <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 11)}`} onMouseDown={(e) => handleCellMouseDown(index, 11, e)} onMouseEnter={() => handleCellMouseEnter(index, 11)}>
+                        <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 14)}`} onMouseDown={(e) => handleCellMouseDown(index, 14, e)} onMouseEnter={() => handleCellMouseEnter(index, 14)}>
                           <select
                             value={prod.raisedTo || ""}
                             onChange={(e) => handleUpdate(prod._pid, "raisedTo", e.target.value)}
@@ -565,10 +650,10 @@ const ProductionEditableProductTable = ({
                               <option key={s} value={s}>{s}</option>
                             ))}
                           </select>
-                          {renderFillHandle(index, 11)}
+                          {renderFillHandle(index, 14)}
                         </td>
 
-                        <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 12)}`} onMouseDown={(e) => handleCellMouseDown(index, 12, e)} onMouseEnter={() => handleCellMouseEnter(index, 12)}>
+                        <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 15)}`} onMouseDown={(e) => handleCellMouseDown(index, 15, e)} onMouseEnter={() => handleCellMouseEnter(index, 15)}>
                           <select
                             value={prod.assignedTo || ""}
                             onChange={(e) => {
@@ -579,11 +664,12 @@ const ProductionEditableProductTable = ({
                             disabled={isReadOnly}
                             className="w-full bg-transparent border-none rounded-[0.3vw] py-[0.4vw] px-[0.2vw] outline-none transition-all text-black font-regular  disabled:bg-transparent"
                           >
+                            <option value="">Select</option>
                             {employees.filter(e => e.role === "User").map(e => (
                               <option key={e.userId} value={e.userId}>{e.name}</option>
                             ))}
                           </select>
-                          {renderFillHandle(index, 12)}
+                          {renderFillHandle(index, 15)}
                         </td>
 
                         {!isReadOnly && (

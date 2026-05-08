@@ -251,8 +251,21 @@ const ProductionResponseModal = ({ entry, product, employees, fourMCategories, o
               <RefInput label="Stage" value={product.stage} />
               <RefInput label="NC Type" value={product.ncType} />
               <RefInput label="Problem Type" value={product.problemType} />
-              <RefInput label="Problem Reported" value={product.problem} span={1} />
+              <RefInput label="Problem Reported" value={product.problem} />
               <RefInput label="Qty" value={product.qty} />
+              <RefInput label="Inspected By" value={product.inspectedByName} />
+              <RefInput label="Designators" value={product.designators} />
+              {product.boardImage && (
+                <div className="col-span-1 flex flex-col gap-[0.25vw]">
+                  <label className="text-[0.75vw] font-semibold text-black uppercase">Board Image</label>
+                  <img 
+                    src={`${API_URL}${product.boardImage}`} 
+                    alt="Board" 
+                    className="w-full h-[4vw] object-cover rounded-[0.4vw] border border-gray-300 cursor-pointer hover:scale-105 transition-transform"
+                    onClick={() => window.open(`${API_URL}${product.boardImage}`, '_blank')}
+                  />
+                </div>
+              )}
             </div>
           </div>
 

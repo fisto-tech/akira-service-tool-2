@@ -336,6 +336,8 @@ const TechnicalReport = ({ entries, fromDate, setFromDate, toDate, setToDate }) 
                 "Serial No": r.prod.serialNumber,
                 "Problem Type": r.prod.problemType,
                 "NC Type": r.prod.ncType,
+                "Inspected By": r.prod.inspectedByName,
+                "Designators": r.prod.designators,
                 "4M Category": r.prod.report?.fourMCategory,
                 "Root Cause": r.prod.report?.rootCause,
                 "Parts Replaced": r.prod.report?.partsReplaced,
@@ -345,7 +347,7 @@ const TechnicalReport = ({ entries, fromDate, setFromDate, toDate, setToDate }) 
               exportToExcel({ data, filename: `Production_Technical_Report_${dateRangeStr.replace(/ /g, "_")}` });
             }} 
             onPdf={() => {
-              const headers = ["S.No", "Date", "JO#", "Customer", "Product", "Serial", "Problem", "NC", "4M", "Status"];
+              const headers = ["S.No", "Date", "JO#", "Customer", "Product", "Serial", "Problem", "NC", "Inspected", "Desig.", "Image", "4M", "Status"];
               const data = filtered.map((r, i) => [
                 i + 1,
                 fmtDate(r.entry.date),
@@ -355,6 +357,9 @@ const TechnicalReport = ({ entries, fromDate, setFromDate, toDate, setToDate }) 
                 r.prod.serialNumber || "—",
                 r.prod.problemType || "—",
                 r.prod.ncType || "—",
+                r.prod.inspectedByName || "—",
+                r.prod.designators || "—",
+                r.prod.boardImage ? "Yes" : "No",
                 r.prod.report?.fourMCategory || "—",
                 r.prod.finalStatus || "Pending"
               ]);
@@ -376,6 +381,9 @@ const TechnicalReport = ({ entries, fromDate, setFromDate, toDate, setToDate }) 
               <Th cls="min-w-[8vw]">Serial No</Th>
               <Th cls="min-w-[9vw]">Problem Type</Th>
               <Th cls="min-w-[7vw]">NC Type</Th>
+              <Th cls="min-w-[8vw]">Inspected By</Th>
+              <Th cls="min-w-[8vw]">Designators</Th>
+              <Th cls="min-w-[8vw]">Image</Th>
               <Th>4M Category</Th>
               <Th cls="min-w-[15vw]">Root Cause</Th>
               <Th>Parts Replaced</Th>
@@ -394,6 +402,13 @@ const TechnicalReport = ({ entries, fromDate, setFromDate, toDate, setToDate }) 
                 <Td cls="font-normal">{r.prod.serialNumber || "—"}</Td>
                 <Td><span className="bg-slate-50 px-[0.4vw] rounded font-semibold text-black">{r.prod.problemType || "—"}</span></Td>
                 <Td><span className="bg-orange-50 px-[0.4vw] rounded font-semibold text-black">{r.prod.ncType || "Internal"}</span></Td>
+                <Td><span className="text-black font-semibold">{r.prod.inspectedByName || "—"}</span></Td>
+                <Td><span className="text-black font-semibold">{r.prod.designators || "—"}</span></Td>
+                <Td>
+                  {r.prod.boardImage ? (
+                    <button onClick={() => window.open(`${API_URL.replace('/api', '')}${r.prod.boardImage}`, '_blank')} className="text-blue-600 hover:underline font-bold text-[0.7vw]">View</button>
+                  ) : "—"}
+                </Td>
                 <Td><span className="bg-blue-50 px-[0.4vw] rounded font-semibold text-black">{r.prod.report?.fourMCategory || "—"}</span></Td>
                 <Td><div className="max-w-[15vw]  text-black">{r.prod.report?.rootCause || "—"}</div></Td>
                 <Td>{r.prod.report?.partsReplacement || "—"}</Td>

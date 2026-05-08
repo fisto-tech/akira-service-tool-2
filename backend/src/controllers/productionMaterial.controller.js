@@ -24,7 +24,31 @@ exports.getInwardById = async (req, res) => {
 // --- POST /api/production-material ---
 exports.createInward = async (req, res) => {
   try {
-    const inward = await ProductionMaterial.create(req.body);
+    let data = req.body;
+    
+    // Parse products if sent as a string (FormData)
+    if (typeof data.products === 'string') {
+      try {
+        data.products = JSON.parse(data.products);
+      } catch (e) {
+        return res.status(400).json({ message: 'Invalid products data' });
+      }
+    }
+
+    // Handle files mapping to products
+    if (req.files && req.files.length > 0) {
+      req.files.forEach(file => {
+        const match = file.fieldname.match(/^boardImage_(\d+)$/);
+        if (match) {
+          const idx = parseInt(match[1]);
+          if (data.products[idx]) {
+            data.products[idx].boardImage = `/uploads/${file.filename}`;
+          }
+        }
+      });
+    }
+
+    const inward = await ProductionMaterial.create(data);
     res.status(201).json(inward);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -34,9 +58,33 @@ exports.createInward = async (req, res) => {
 // --- PUT /api/production-material/:id ---
 exports.updateInward = async (req, res) => {
   try {
+    let data = req.body;
+
+    // Parse products if sent as a string (FormData)
+    if (typeof data.products === 'string') {
+      try {
+        data.products = JSON.parse(data.products);
+      } catch (e) {
+        return res.status(400).json({ message: 'Invalid products data' });
+      }
+    }
+
+    // Handle files mapping to products
+    if (req.files && req.files.length > 0) {
+      req.files.forEach(file => {
+        const match = file.fieldname.match(/^boardImage_(\d+)$/);
+        if (match) {
+          const idx = parseInt(match[1]);
+          if (data.products[idx]) {
+            data.products[idx].boardImage = `/uploads/${file.filename}`;
+          }
+        }
+      });
+    }
+
     const inward = await ProductionMaterial.findByIdAndUpdate(
       req.params.id,
-      { $set: req.body },
+      { $set: data },
       { new: true }
     );
     if (!inward) return res.status(404).json({ message: 'Inward not found' });

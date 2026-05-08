@@ -53,7 +53,9 @@ const fmtDate = (s) => {
 
 const emptyProduct = () => ({
   _pid: `p-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-  productCode: "", productDescription: "", category: "", boardType: "", productType: "", problemType: "", ncType: "Internal", problem: "", qty: "1", stage: DEFAULT_STAGE_OPTIONS[0],
+  productCode: "", productDescription: "", category: "", boardType: "", productType: "", problemType: "", ncType: "Internal", problem: "", 
+  inspectedBy: "", inspectedByName: "", designators: "", boardImage: "",
+  qty: "1", stage: DEFAULT_STAGE_OPTIONS[0],
   serialNumber: "", assignedTo: "", assignedToName: "", assembledBy: "", assembledByName: "", testedBy: "", testedByName: "", fiBy: "", fiByName: "",
   disposition: DEFAULT_DISPOSITION_OPTIONS[0], raisedTo: DEFAULT_STAGE_OPTIONS[0],
   report: null, finalStatus: "Pending", finalStatusRemarks: "", finalStatusDate: todayDateStr(), finalStatusHistory: []
@@ -151,12 +153,29 @@ const ReportsModal = ({ row, onClose }) => {
                           <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Category</div><div className="font-regular text-black text-[0.8vw]">{row.category || prod.category || "—"}</div></div>
                           <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">NC Type</div><div className="font-regular text-black text-[0.8vw]">{prod.ncType || "Internal"}</div></div>
                           <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Problem Type</div><div className="font-regular text-black text-[0.8vw]">{prod.problemType || "—"}</div></div>
-                          <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Assembled By</div><div className="font-regular text-black text-[0.8vw]">{prod.report?.assembledByName || prod.assembledByName || "—"}</div></div>
-                          <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Tested By</div><div className="font-regular text-black text-[0.8vw]">{prod.report?.testedByName || prod.testedByName || "—"}</div></div>
+                          <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Inspected By</div><div className="font-regular text-black text-[0.8vw]">{prod.inspectedByName || "—"}</div></div>
+                          <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Designators</div><div className="font-regular text-black text-[0.8vw]">{prod.designators || "—"}</div></div>
                         </div>
-                        <div className="bg-gray-50/50 p-[1vw] rounded-[0.5vw] border border-gray-100 mb-[1vw]">
-                          <div className="text-[0.65vw] text-blue-600 font-bold uppercase mb-[0.4vw]">Initial Problem Description</div>
-                          <div className="text-[0.8vw] text-black font-regular leading-relaxed">{prod.problem || "No description provided."}</div>
+                        <div className="flex gap-[1.5vw] mb-[1vw]">
+                          <div className="flex-1">
+                            <div className="text-[0.65vw] text-blue-600 font-bold uppercase mb-[0.4vw]">Initial Problem Description</div>
+                            <div className="text-[0.8vw] text-black font-regular leading-relaxed bg-gray-50/50 p-[1vw] rounded-[0.5vw] border border-gray-100">{prod.problem || "No description provided."}</div>
+                          </div>
+                          {prod.boardImage && (
+                            <div className="w-[10vw]">
+                              <div className="text-[0.65vw] text-blue-600 font-bold uppercase mb-[0.4vw]">Board Image</div>
+                              <img 
+                                src={`${API_URL}${prod.boardImage}`} 
+                                alt="Board" 
+                                className="w-full h-[6vw] object-cover rounded-[0.5vw] border border-blue-100 cursor-pointer hover:scale-105 transition-transform"
+                                onClick={() => window.open(`${API_URL}${prod.boardImage}`, '_blank')}
+                              />
+                            </div>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-6 gap-[1.5vw] mb-[1vw]">
+                           <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Assembled By</div><div className="font-regular text-black text-[0.8vw]">{prod.report?.assembledByName || prod.assembledByName || "—"}</div></div>
+                           <div><div className="text-blue-600 mb-[0.3vw] uppercase text-[0.65vw] font-bold">Tested By</div><div className="font-regular text-black text-[0.8vw]">{prod.report?.testedByName || prod.testedByName || "—"}</div></div>
                         </div>
                       </div>
 
@@ -917,12 +936,32 @@ export default function ProductionMaterial() {
       creatorName: loggedUser.name || "Admin"
     };
 
+    const fd = new FormData();
+    Object.keys(entryData).forEach(key => {
+      if (key === 'products') {
+        const productsWithFiles = entryData.products.map((p, idx) => {
+          if (p._boardImageFile) {
+            fd.append(`boardImage_${idx}`, p._boardImageFile);
+          }
+          const { _boardImageFile, ...rest } = p;
+          // If boardImage is a data URL, we should remove it before sending JSON so backend doesn't store base64
+          if (rest.boardImage && rest.boardImage.startsWith('data:')) {
+            delete rest.boardImage;
+          }
+          return rest;
+        });
+        fd.append('products', JSON.stringify(productsWithFiles));
+      } else {
+        fd.append(key, entryData[key]);
+      }
+    });
+
     try {
       if (selectedRow?.id) {
-        const res = await axios.put(`${API_URL}/production-material/${selectedRow.id}`, entryData);
+        const res = await axios.put(`${API_URL}/production-material/${selectedRow.id}`, fd);
         setData(prev => prev.map(d => d.id === selectedRow.id ? { ...res.data, id: res.data._id } : d));
       } else {
-        const res = await axios.post(`${API_URL}/production-material`, entryData);
+        const res = await axios.post(`${API_URL}/production-material`, fd);
         setData(prev => [{ ...res.data, id: res.data._id }, ...prev]);
       }
       setView("list"); setSelectedRow(null); toast("Registration Saved", "success");
