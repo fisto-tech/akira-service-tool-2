@@ -120,13 +120,13 @@ const ProductSLATimer = ({ product, globalTimer }) => {
 };
 
 // ── Support Escalation Modal (per-product) ────────────────────────────────────
-const SupportEscalationModal = ({ product, entry, currentUser, onConfirm, onClose, showAll = false }) => {
+const SupportEscalationModal = ({ product, entry, currentUser, employees: propsEmployees, onConfirm, onClose, showAll = false }) => {
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [notes, setNotes] = useState("");
   const [search, setSearch] = useState("");
 
   const candidates = useMemo(() => {
-    const emps = load(EMPLOYEES_KEY, []);
+    const emps = propsEmployees || load(EMPLOYEES_KEY, []);
     const flows = load(ESCALATION_FLOWS_KEY, {});
     const q = search.toLowerCase();
     const matchesSearch = (e) =>
@@ -145,7 +145,7 @@ const SupportEscalationModal = ({ product, entry, currentUser, onConfirm, onClos
         e.userId !== currentUser?.userId &&
         matchesSearch(e)
     );
-  }, [entry, product, currentUser, search, showAll]);
+  }, [entry, product, currentUser, search, showAll, propsEmployees]);
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
@@ -270,9 +270,12 @@ const SupportEscalationModal = ({ product, entry, currentUser, onConfirm, onClos
 };
 
 // ── Assign Field Visit Modal ──────────────────────────────────────────────────
-const AssignVisitModal = ({ type, entry, product, currentUser, onSave, onClose, inlineMode = false }) => {
-  const employees = load(EMPLOYEES_KEY, []);
-  const techEngs  = employees.filter(e => ["Support Engineer", "Service Engineer", "R&D"].includes(e.department));
+const AssignVisitModal = ({ type, entry, product, currentUser, employees: propsEmployees, onSave, onClose, inlineMode = false }) => {
+  const employees = propsEmployees || load(EMPLOYEES_KEY, []);
+  const techEngs  = employees.filter(e => {
+    const dept = (e.department || "").toLowerCase();
+    return dept.includes("engineer") || dept.includes("service") || dept.includes("r&d") || dept.includes("support") || dept.includes("technician");
+  });
   const [form, setForm] = useState({
     assignedTo: "", assignedToName: "",
     assignmentDate: new Date().toISOString().slice(0, 16),
@@ -385,7 +388,7 @@ const Badge = ({ label, color = "gray" }) => {
 };
 
 // ── Product Closure Panel ─────────────────────────────────────────────────────
-const ProductClosurePanel = ({ prod, prodIdx, entry, currentUser, onAssignFieldVisit, onProductClose, onSupportRequest }) => {
+const ProductClosurePanel = ({ prod, prodIdx, entry, currentUser, employees: propsEmployees, onAssignFieldVisit, onProductClose, onSupportRequest }) => {
   const existing = prod._productClosure || {};
   const saved    = existing.status;
   const [selected, setSelected]             = useState("");
@@ -393,6 +396,19 @@ const ProductClosurePanel = ({ prod, prodIdx, entry, currentUser, onAssignFieldV
   const [notes, setNotes]                   = useState(""); // For Support Request
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [search, setSearch]                 = useState("");
+  const [showDropdown, setShowDropdown]     = useState(false);
+  const dropdownRef                         = useRef(null);
+
+  // Click outside listener to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   if (saved === "Closed") return (
     <div className="mt-[0.5vw] bg-green-50 border border-green-200 rounded-[0.4vw] px-[0.7vw] py-[0.4vw] flex items-center gap-[0.5vw]">
@@ -425,11 +441,14 @@ const ProductClosurePanel = ({ prod, prodIdx, entry, currentUser, onAssignFieldV
   };
 
   const candidates = useMemo(() => {
-    const emps = load(EMPLOYEES_KEY, []);
+    const emps = propsEmployees || load(EMPLOYEES_KEY, []);
     const q = search.toLowerCase();
-    if (!q || search === selectedPerson?.name) return [];
-    return emps.filter(e => e.userId !== currentUser?.userId && (e.name.toLowerCase().includes(q) || e.department.toLowerCase().includes(q)));
-  }, [currentUser, search, selectedPerson]);
+    // Allow showing all if search is empty, but filter out current user
+    return emps.filter(e => 
+      e.userId !== currentUser?.userId && 
+      (!q || e.name.toLowerCase().includes(q) || e.department.toLowerCase().includes(q))
+    );
+  }, [currentUser, search, propsEmployees]);
 
   const tabs = [
     { k: "Open",       l: "Open",        e: "🔄", c: "bg-blue-400" },
@@ -454,12 +473,19 @@ const ProductClosurePanel = ({ prod, prodIdx, entry, currentUser, onAssignFieldV
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="bg-blue-50 border border-blue-200 rounded-[0.5vw] p-[0.7vw] space-y-[0.6vw] overflow-hidden">
             <div className="text-[0.65vw] font-bold text-blue-700 uppercase tracking-tight">Request Support / Escalate</div>
             <div className="flex flex-col gap-[0.4vw]">
-              <div className="relative">
-                <input type="text" value={search} onChange={e => { setSearch(e.target.value); setSelectedPerson(null); }} placeholder="Search person/department..." className="w-full border border-gray-200 rounded-[0.4vw] px-[0.6vw] py-[0.5vw] text-[0.75vw] outline-none bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all shadow-sm" />
-                {candidates.length > 0 && (
+              <div className="relative" ref={dropdownRef}>
+                <input 
+                  type="text" 
+                  value={search} 
+                  onFocus={() => setShowDropdown(true)}
+                  onChange={e => { setSearch(e.target.value); setSelectedPerson(null); setShowDropdown(true); }} 
+                  placeholder="Search person/department..." 
+                  className="w-full border border-gray-200 rounded-[0.4vw] px-[0.6vw] py-[0.5vw] text-[0.75vw] outline-none bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all shadow-sm" 
+                />
+                {showDropdown && candidates.length > 0 && (
                   <div className="absolute top-full left-0 right-0 z-20 border border-gray-200 bg-white rounded-b-[0.4vw] max-h-[10vw] overflow-y-auto divide-y divide-gray-50 shadow-lg mt-[-0.1vw]">
                     {candidates.map(emp => (
-                      <div key={emp.userId} onClick={() => { setSelectedPerson(emp); setSearch(emp.name); }} className={`px-[0.6vw] py-[0.5vw] text-[0.72vw] cursor-pointer hover:bg-blue-50 flex justify-between items-center transition-colors ${selectedPerson?.userId === emp.userId ? "bg-blue-100 font-bold" : ""}`}>
+                      <div key={emp.userId} onClick={() => { setSelectedPerson(emp); setSearch(emp.name); setShowDropdown(false); }} className={`px-[0.6vw] py-[0.5vw] text-[0.72vw] cursor-pointer hover:bg-blue-50 flex justify-between items-center transition-colors ${selectedPerson?.userId === emp.userId ? "bg-blue-100 font-bold" : ""}`}>
                         <span>{emp.name} ({emp.department})</span>
                         {selectedPerson?.userId === emp.userId && <CheckCircle className="w-[0.75vw] h-[0.75vw] text-blue-600" />}
                       </div>
@@ -491,7 +517,7 @@ const ProductClosurePanel = ({ prod, prodIdx, entry, currentUser, onAssignFieldV
 
         {selected === "FVRequired" && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="p-[0.1vw] overflow-hidden">
-             <AssignVisitModal type="Field Visit" entry={entry} product={prod} currentUser={currentUser} inlineMode onClose={() => setSelected("")} onSave={f => { onAssignFieldVisit(f, prodIdx); handleUpdate("Field Visit Required", { visitDate: f.visitDate, assignedTo: f.assignedToName }); }} />
+             <AssignVisitModal type="Field Visit" entry={entry} product={prod} currentUser={currentUser} employees={propsEmployees} inlineMode onClose={() => setSelected("")} onSave={f => { onAssignFieldVisit(f, prodIdx); handleUpdate("Field Visit Required", { visitDate: f.visitDate, assignedTo: f.assignedToName }); }} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -500,7 +526,7 @@ const ProductClosurePanel = ({ prod, prodIdx, entry, currentUser, onAssignFieldV
 };
 
 // ── Escalation Card ───────────────────────────────────────────────────────────
-const EscalationCard = ({ entry, currentUser, timer, isExpanded, onToggle, onSupportRequest, onAssignFieldVisit, onProductClose, isPendingTab }) => {
+const EscalationCard = ({ entry, currentUser, employees, timer, isExpanded, onToggle, onSupportRequest, onAssignFieldVisit, onProductClose, isPendingTab }) => {
   const [activeProductIdx, setActiveProductIdx] = useState(0);
 
   const isProductHandled = (p) => {
@@ -588,7 +614,7 @@ const EscalationCard = ({ entry, currentUser, timer, isExpanded, onToggle, onSup
                 </div>
                 <IssueDetailsContainer product={activeProd} />
               </div>
-              <ProductClosurePanel prod={activeProd} prodIdx={safeActiveIdx} entry={entry} currentUser={currentUser} onAssignFieldVisit={onAssignFieldVisit} onProductClose={onProductClose} onSupportRequest={onSupportRequest} />
+              <ProductClosurePanel prod={activeProd} prodIdx={safeActiveIdx} entry={entry} currentUser={currentUser} employees={employees} onAssignFieldVisit={onAssignFieldVisit} onProductClose={onProductClose} onSupportRequest={onSupportRequest} />
             </div>
           ) : null}
         </div>
@@ -598,7 +624,7 @@ const EscalationCard = ({ entry, currentUser, timer, isExpanded, onToggle, onSup
 };
 
 // ── Tab Components ────────────────────────────────────────────────────────────
-const PendingTab = ({ queue, currentUser, onProductClose, onAssignFieldVisit, expandedCall, setExpanded, onSupportRequest }) => {
+const PendingTab = ({ queue, currentUser, employees, onProductClose, onAssignFieldVisit, expandedCall, setExpanded, onSupportRequest }) => {
   // Filter to show only entries where currentUser has products pending closure
   const items = queue.filter(e => {
     const hasUserProducts = (e.products || []).some(p => 
@@ -611,7 +637,7 @@ const PendingTab = ({ queue, currentUser, onProductClose, onAssignFieldVisit, ex
   if (items.length === 0) return <div className="bg-white rounded-[0.5vw] p-[3vw] text-center border border-gray-200 text-gray-400">No pending products.</div>;
   return (
     <div className="space-y-[0.8vw]">
-      {items.map(e => <EscalationCard key={e.callId} entry={e} currentUser={currentUser} isPendingTab isExpanded={expandedCall === e.callId} onToggle={() => setExpanded(expandedCall === e.callId ? null : e.callId)} onProductClose={(pIdx, d) => onProductClose(e.callId, pIdx, d)} onAssignFieldVisit={(f, p) => onAssignFieldVisit(e.callId, f, p)} onSupportRequest={(p, d) => onSupportRequest(e.callId, p, d)} />)}
+      {items.map(e => <EscalationCard key={e.callId} entry={e} currentUser={currentUser} employees={employees} isPendingTab isExpanded={expandedCall === e.callId} onToggle={() => setExpanded(expandedCall === e.callId ? null : e.callId)} onProductClose={(pIdx, d) => onProductClose(e.callId, pIdx, d)} onAssignFieldVisit={(f, p) => onAssignFieldVisit(e.callId, f, p)} onSupportRequest={(p, d) => onSupportRequest(e.callId, p, d)} />)}
     </div>
   );
 };
@@ -860,6 +886,7 @@ const ServiceCallResponse = () => {
 
   const [supportReqs, setSupportReqs] = useState([]);
   const [fieldVisits, setFieldVisits] = useState([]);
+  const [employees, setEmployees]     = useState([]);
 
   useEffect(() => {
     const u = JSON.parse(sessionStorage.getItem("loggedInUser") || localStorage.getItem("loggedInUser") || "null");
@@ -875,6 +902,11 @@ const ServiceCallResponse = () => {
           const fRes = await axios.get(`${API_URL}/service-calls/field-visit/${u.userId}`);
           setFieldVisits(fRes.data);
         }
+
+        // Fetch employees
+        const empRes = await axios.get(`${API_URL}/auth/employees`);
+        setEmployees(empRes.data);
+        localStorage.setItem(EMPLOYEES_KEY, JSON.stringify(empRes.data));
       } catch (err) {
         console.error("Error fetching data:", err);
       }
@@ -1006,8 +1038,8 @@ const ServiceCallResponse = () => {
         ))}
       </div>
       <div className="flex-1 overflow-y-auto pr-[0.3vw] pb-[5vw]">
-        {activeTab === "escalation" && myEscalations.map(e => <EscalationCard key={e.callId} entry={e} currentUser={loggedInUser} timer={timers.find(t => t.callId === e.callId)} isExpanded={expandedCall === e.callId} onToggle={() => setExpanded(expandedCall === e.callId ? null : e.callId)} onSupportRequest={(p, d) => handleSupportRequest(e.callId, p, d)} onAssignFieldVisit={(f, p) => handleAssignVisit(e.callId, "Field Visit", f, p)} onProductClose={(p, d) => handleProductClose(e.callId, p, d)} />)}
-        {activeTab === "pending"    && <PendingTab queue={queue} currentUser={loggedInUser} onProductClose={handleProductClose} onAssignFieldVisit={handleAssignVisit} expandedCall={expandedCall} setExpanded={setExpanded} onSupportRequest={handleSupportRequest} />}
+        {activeTab === "escalation" && myEscalations.map(e => <EscalationCard key={e.callId} entry={e} currentUser={loggedInUser} employees={employees} timer={timers.find(t => t.callId === e.callId)} isExpanded={expandedCall === e.callId} onToggle={() => setExpanded(expandedCall === e.callId ? null : e.callId)} onSupportRequest={(p, d) => handleSupportRequest(e.callId, p, d)} onAssignFieldVisit={(f, p) => handleAssignVisit(e.callId, "Field Visit", f, p)} onProductClose={(p, d) => handleProductClose(e.callId, p, d)} />)}
+        {activeTab === "pending"    && <PendingTab queue={queue} currentUser={loggedInUser} employees={employees} onProductClose={handleProductClose} onAssignFieldVisit={handleAssignVisit} expandedCall={expandedCall} setExpanded={setExpanded} onSupportRequest={handleSupportRequest} />}
         {activeTab === "support"    && <SupportRequestsTab currentUser={loggedInUser} reqs={supportReqs} onRefresh={refreshData} />}
         {activeTab === "fieldvisit" && <VisitsTab type="Field Visit" visits={fieldVisits} onRefresh={refreshData} />}
         {activeTab === "reports"    && <ReportsTab currentUser={loggedInUser} queue={queue} supportReqs={supportReqs} fieldVisits={fieldVisits} />}

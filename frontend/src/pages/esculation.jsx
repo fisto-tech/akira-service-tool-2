@@ -69,8 +69,21 @@ const Badge = ({ label, color = "gray" }) => {
 // ── Support Escalation Modal (per-product) ────────────────────────────────────
 const SupportEscalationModal = ({ product, entry, currentUser, onConfirm, onClose, showAll = false }) => {
   const [selectedPerson, setSelectedPerson] = useState(null);
-  const [notes, setNotes]   = useState("");
-  const [search, setSearch] = useState("");
+  const [notes, setNotes]                   = useState("");
+  const [search, setSearch]                 = useState("");
+  const [showDropdown, setShowDropdown]     = useState(false);
+  const dropdownRef                         = useRef(null);
+
+  // Click outside listener to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const candidates = useMemo(() => {
     const emps  = load(EMPLOYEES_KEY, []);
@@ -83,13 +96,22 @@ const SupportEscalationModal = ({ product, entry, currentUser, onConfirm, onClos
       return emps.filter(e => e.userId !== currentUser?.userId && matchesSearch(e));
     }
 
-    // Original flow-based filtering for escalation tab
-    const prodDept    = product._currentDepartment || entry.currentDepartment;
-    const allFlowsArr = Object.values(flows).find(f => Array.isArray(f)) || [];
-    const allowedDepts = new Set([prodDept]);
-    const myIdx = allFlowsArr.findIndex(s => s.dept === prodDept);
-    if (myIdx >= 0 && myIdx + 1 < allFlowsArr.length) allowedDepts.add(allFlowsArr[myIdx + 1].dept);
-    return emps.filter(e => allowedDepts.has(e.department) && e.userId !== currentUser?.userId && matchesSearch(e));
+    if (!search && !showAll) {
+      // Show some defaults or everyone eligible if search is empty
+      // Original flow-based filtering for escalation tab
+      const prodDept    = product._currentDepartment || entry.currentDepartment;
+      const allFlowsArr = Object.values(flows).find(f => Array.isArray(f)) || [];
+      const allowedDepts = new Set([prodDept]);
+      const myIdx = allFlowsArr.findIndex(s => s.dept === prodDept);
+      if (myIdx >= 0 && myIdx + 1 < allFlowsArr.length) allowedDepts.add(allFlowsArr[myIdx + 1].dept);
+      
+      const filtered = emps.filter(e => allowedDepts.has(e.department) && e.userId !== currentUser?.userId);
+      if (filtered.length > 0) return filtered;
+      // If no one in department, fallback to showing all for selection
+      return emps.filter(e => e.userId !== currentUser?.userId);
+    }
+
+    return emps.filter(e => matchesSearch(e) && e.userId !== currentUser?.userId);
   }, [entry, product, currentUser, search, showAll]);
 
   return (
@@ -115,26 +137,34 @@ const SupportEscalationModal = ({ product, entry, currentUser, onConfirm, onClos
           </div>
           <div className="flex flex-col gap-[0.4vw]">
             <label className="text-[0.8vw] font-semibold text-gray-600">Select Support Person *</label>
-            <input type="text" value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Search by name or department…"
-              className="w-full border border-gray-300 rounded-[0.4vw] px-[0.8vw] py-[0.5vw] text-[0.82vw] outline-none focus:border-orange-400" />
-            <div className="border border-gray-200 rounded-[0.4vw] max-h-[14vw] overflow-y-auto divide-y divide-gray-50">
-              {candidates.length === 0
-                ? <div className="p-[1vw] text-center text-gray-400 text-[0.78vw]">No eligible support personnel found</div>
-                : candidates.map(emp => (
-                  <div key={emp.userId} onClick={() => setSelectedPerson(emp)}
-                    className={`flex items-center gap-[0.7vw] px-[0.8vw] py-[0.6vw] cursor-pointer ${selectedPerson?.userId === emp.userId ? "bg-orange-50 border-l-2 border-orange-400" : "hover:bg-gray-50"}`}>
-                    <div className="w-[1.8vw] h-[1.8vw] rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center flex-shrink-0">
-                      <span className="text-white text-[0.6vw] font-bold">{emp.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}</span>
+            <div className="relative" ref={dropdownRef}>
+              <input type="text" value={search} 
+                onFocus={() => setShowDropdown(true)}
+                onChange={e => { setSearch(e.target.value); setSelectedPerson(null); setShowDropdown(true); }}
+                placeholder="Search by name or department…"
+                className="w-full border border-gray-300 rounded-[0.4vw] px-[0.8vw] py-[0.5vw] text-[0.82vw] outline-none focus:border-orange-400" />
+              {showDropdown && candidates.length > 0 && (
+                <div className="absolute top-full left-0 right-0 z-20 bg-white border border-gray-200 rounded-[0.4vw] max-h-[14vw] overflow-y-auto divide-y divide-gray-50 shadow-lg">
+                  {candidates.map(emp => (
+                    <div key={emp.userId} onClick={() => { setSelectedPerson(emp); setSearch(emp.name); setShowDropdown(false); }}
+                      className={`flex items-center gap-[0.7vw] px-[0.8vw] py-[0.6vw] cursor-pointer ${selectedPerson?.userId === emp.userId ? "bg-orange-50 border-l-2 border-orange-400" : "hover:bg-gray-50"}`}>
+                      <div className="w-[1.8vw] h-[1.8vw] rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-[0.6vw] font-bold">{emp.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[0.82vw] font-semibold text-gray-700">{emp.name}</div>
+                        <div className="text-[0.7vw] text-gray-400">{emp.department} · {emp.userId}</div>
+                      </div>
+                      {selectedPerson?.userId === emp.userId && <CheckCircle className="w-[1vw] h-[1vw] text-orange-500 flex-shrink-0" />}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[0.82vw] font-semibold text-gray-700">{emp.name}</div>
-                      <div className="text-[0.7vw] text-gray-400">{emp.department} · {emp.userId}</div>
-                    </div>
-                    {selectedPerson?.userId === emp.userId && <CheckCircle className="w-[1vw] h-[1vw] text-orange-500 flex-shrink-0" />}
-                  </div>
-                ))
-              }
+                  ))}
+                </div>
+              )}
+              {showDropdown && candidates.length === 0 && (
+                <div className="absolute top-full left-0 right-0 z-20 bg-white border border-gray-200 rounded-b-[0.4vw] p-[1vw] text-center text-gray-400 text-[0.78vw] shadow-lg">
+                  No eligible support personnel found
+                </div>
+              )}
             </div>
           </div>
           <div className="flex flex-col gap-[0.3vw]">
@@ -162,7 +192,10 @@ const SupportEscalationModal = ({ product, entry, currentUser, onConfirm, onClos
 // ── Assign Field Visit Modal ────────────────────────────────────────────────
 const AssignVisitModal = ({ type, entry, product, currentUser, onSave, onClose, inlineMode = false }) => {
   const employees = load(EMPLOYEES_KEY, []);
-  const techEngs  = employees.filter(e => ["Support Engineer", "Service Engineer", "R&D"].includes(e.department));
+  const techEngs  = employees.filter(e => {
+    const dept = (e.department || "").toLowerCase();
+    return dept.includes("engineer") || dept.includes("service") || dept.includes("r&d") || dept.includes("support") || dept.includes("technician");
+  });
   const [form, setForm] = useState({
     assignedTo: "", assignedToName: "",
     assignmentDate: new Date().toISOString().slice(0, 16),
