@@ -123,7 +123,11 @@ export default function ServiceCallAssignment() {
             
             const seg = p.productSegment || "Default";
             const flowKey = `${partyType}|${seg}`;
-            const flowSteps = flows[flowKey] || flows[`${partyType}|Default`] || flows[partyType] || [];
+            const flowSteps = flows[flowKey] || flows[`${partyType}|Default`] || flows[partyType] || [
+              { dept: "Support Engineer", durationHours: 2, durationMins: 0 },
+              { dept: "Service Engineer", durationHours: 4, durationMins: 0 },
+              { dept: "R&D", durationHours: 8, durationMins: 0 },
+            ];
             
             // A product is "dead" if its escalation level has reached or exceeded the flow length
             return (p._escalationLevel || 0) < flowSteps.length;

@@ -62,7 +62,13 @@ exports.getAllCalls = async (req, res) => {
 // Returns calls that have at least one product that is un-assigned.
 exports.getPendingAssignments = async (req, res) => {
   try {
-    const calls = await ServiceCall.find({ 'products._assigned': false });
+    const calls = await ServiceCall.find({
+      $or: [
+        { 'products._assigned': false },
+        { 'products._assigned': { $exists: false } },
+        { 'products': { $elemMatch: { _assigned: { $ne: true } } } }
+      ]
+    });
     res.json(calls);
   } catch (err) {
     res.status(500).json({ message: err.message });
