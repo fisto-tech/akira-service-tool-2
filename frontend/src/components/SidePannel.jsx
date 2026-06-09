@@ -111,6 +111,12 @@ export default function Sidebar() {
       show: !canViewAdminModules,
     },
     {
+      path: "/escalation",
+      label: "Escalation Desk",
+      icon: ActivityIcon,
+      show: true,
+    },
+    {
       path: "/troubleshoot",
       label: "Troubleshoot",
       icon: MessagesIcon,

@@ -21,6 +21,7 @@ import ServiceCallResponse from "./pages/serviceCallResponse";
 import { usePageTitle } from "./components/PageTitleNav";
 import MasterPage from "./pages/MasterPage";
 import CallAssignment from "./pages/Call Assignments/serviceCallAssignment"
+import EscalationPage from "./pages/esculation";
 import { NotificationProvider } from "./components/NotificationContext";
 import { SocketProvider } from "./contexts/SocketContext";
 import ServiceMaterialReports from "./pages/ServiceMaterialReports.jsx";
@@ -67,6 +68,7 @@ function MainLayout() {
           />
           <Route path="productionMaterial/reports" element={<ProductionMaterialReports />} />
           <Route path="troubleshoot" element={<Troubleshoot />} />
+          <Route path="escalation" element={<EscalationPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

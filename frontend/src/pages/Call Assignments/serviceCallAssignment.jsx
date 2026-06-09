@@ -73,7 +73,14 @@ const buildSegmentGroups = (calls) => {
       });
     });
   });
-  return groups;
+
+  // Show latest records first (descending by call timestamp/date)
+  // Fallback order: `timestamp` -> `dateTime` -> `createdAt` -> 0
+  return groups.sort((a, b) => {
+    const at = new Date(a.timestamp || a.dateTime || a.createdAt || 0).getTime();
+    const bt = new Date(b.timestamp || b.dateTime || b.createdAt || 0).getTime();
+    return bt - at;
+  });
 };
 
 export default function ServiceCallAssignment() {
@@ -206,6 +213,8 @@ export default function ServiceCallAssignment() {
   // Fetch SLA config whenever a new group is selected
   useEffect(() => {
     if (!selectedGroup) { setSlaConfig(null); return; }
+    // Reset config so we don't briefly show previous group's filtered employees
+    setSlaConfig(null);
     setSlaLoading(true);
     const custDb  = lsLoad(CUSTOMER_DB_KEY, []);
     const custRow = custDb.find(r => r.partyCode === selectedGroup.partyCode);
@@ -239,24 +248,39 @@ export default function ServiceCallAssignment() {
         if (assignedId && p.status !== "Rectified") workloadMap[assignedId] = (workloadMap[assignedId] || 0) + 1;
       });
     });
-    // Determine eligible set: prefer SLA API response, fall back to local flow
+    // Determine eligible set: prefer SLA API response (level 0), fall back to local flow
     let eligibleIds  = new Set();
     let useEligible  = false;
-    if (slaConfig?.configured && slaConfig.level0?.engineers?.length > 0) {
-      slaConfig.level0.engineers.forEach(e => eligibleIds.add(e.userId));
-      useEligible = true;
+    const eligibleDept = slaConfig?.configured ? (slaConfig.level0?.dept || "") : "";
+
+    if (slaConfig?.configured) {
+      // 1) If SLA configured with explicit engineer list → only those engineers
+      if (slaConfig.level0?.engineers?.length > 0) {
+        slaConfig.level0.engineers.forEach(e => eligibleIds.add(e.userId));
+        useEligible = true;
+      }
+      // 2) If SLA configured but no engineers selected, only dept is set → all users in that dept
+      else if (eligibleDept) {
+        useEligible = true;
+      }
+      // 3) If SLA configured but neither engineers nor dept provided → show all (no restriction)
     } else if (!slaConfig && selectedFlow) {
+      // SLA API not loaded yet: don't restrict here; UI will show loading until slaConfig is ready
       const ids = selectedFlow[0]?.engineerIds || [];
       if (ids.length) { ids.forEach(id => eligibleIds.add(id)); useEligible = true; }
     }
+
     return employees.map(e => {
       const activeTasks = workloadMap[e.userId] || 0;
-      const isEligible  = useEligible ? eligibleIds.has(e.userId) : true;
+      const isEligible  = useEligible
+        ? (eligibleIds.size > 0 ? eligibleIds.has(e.userId) : (eligibleDept ? e.department === eligibleDept : true))
+        : true;
       return { ...e, isEligible, isRecommended: isEligible && activeTasks < 3, activeTasks };
     });
   }, [selectedGroup, selectedFlow, employees, slaConfig]);
 
   const slaIsConfigured = slaConfig?.configured === true;
+  const employeeListLoading = slaLoading || (!!selectedGroup && slaConfig === null);
 
   const filteredEmployees = useMemo(() => {
     const s    = engSearch.toLowerCase();
@@ -362,7 +386,7 @@ export default function ServiceCallAssignment() {
       </div>
 
       {/* ── TABLE (ServiceCall.jsx Style) ────────────────────────── */}
-      <div className="flex-1 overflow-auto px-[1.5vw] py-[1vw]">
+      <div className="flex-1 overflow-auto px-[1.5vw] py-[1vw] max-h-[80vh]">
         <div className="bg-white rounded-[0.6vw] border border-blue-200 flex flex-col w-full overflow-hidden">
           <table className="w-full text-left border-collapse">
             <thead className="bg-blue-50 sticky top-0 z-10">
@@ -575,23 +599,33 @@ export default function ServiceCallAssignment() {
                     </div>
                   </div>
                   <div className="flex-1 overflow-y-auto p-[1vw] space-y-[0.6vw]">
-                    {filteredEmployees.map(emp => (
-                      <div key={emp.userId} onClick={() => setSelectedEngineer(emp)} 
-                        className={`flex items-center gap-[0.8vw] p-[0.8vw] rounded-lg border transition-all cursor-pointer ${
-                          selectedEngineer?.userId === emp.userId ? 'bg-blue-600 border-blue-700 text-white' : 'bg-white border-blue-100 hover:border-blue-300 hover:bg-blue-50/50'
-                        }`}>
-                        <div className={`w-[2.5vw] h-[2.5vw] rounded-lg flex items-center justify-center font-bold text-[1vw] bg-gradient-to-br ${
-                          selectedEngineer?.userId === emp.userId ? 'from-white/20 to-white/5' : avatarColor(emp.name)
-                        } text-white border border-white/20`}>{initials(emp.name)}</div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-[0.9vw]">{emp.name}</div>
-                          <div className={`text-[0.7vw] font-normal ${selectedEngineer?.userId === emp.userId ? 'text-blue-100' : 'text-blue-600'}`}>
-                            {emp.department} • {emp.activeTasks} Tasks
-                          </div>
+                    {employeeListLoading ? (
+                      <div className="h-full flex flex-col items-center justify-center gap-[0.8vw] text-center py-[6vh]">
+                        <Loader2 className="w-[2vw] h-[2vw] animate-spin text-blue-600" />
+                        <div className="text-[0.85vw] font-semibold text-blue-700">Loading eligible engineers...</div>
+                        <div className="text-[0.7vw] text-gray-500 font-normal">
+                          Applying SLA (Level 1) rules for this customer &amp; segment
                         </div>
-                        {selectedEngineer?.userId === emp.userId && <CheckCircle className="w-[1.2vw] h-[1.2vw]" />}
                       </div>
-                    ))}
+                    ) : (
+                      filteredEmployees.map(emp => (
+                        <div key={emp.userId} onClick={() => setSelectedEngineer(emp)} 
+                          className={`flex items-center gap-[0.8vw] p-[0.8vw] rounded-lg border transition-all cursor-pointer ${
+                            selectedEngineer?.userId === emp.userId ? 'bg-blue-600 border-blue-700 text-white' : 'bg-white border-blue-100 hover:border-blue-300 hover:bg-blue-50/50'
+                          }`}>
+                          <div className={`w-[2.5vw] h-[2.5vw] rounded-lg flex items-center justify-center font-bold text-[1vw] bg-gradient-to-br ${
+                            selectedEngineer?.userId === emp.userId ? 'from-white/20 to-white/5' : avatarColor(emp.name)
+                          } text-white border border-white/20`}>{initials(emp.name)}</div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-semibold text-[0.9vw]">{emp.name}</div>
+                            <div className={`text-[0.7vw] font-normal ${selectedEngineer?.userId === emp.userId ? 'text-blue-100' : 'text-blue-600'}`}>
+                              {emp.department} • {emp.activeTasks} Tasks
+                            </div>
+                          </div>
+                          {selectedEngineer?.userId === emp.userId && <CheckCircle className="w-[1.2vw] h-[1.2vw]" />}
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
 

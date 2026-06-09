@@ -68,7 +68,7 @@ exports.getPendingAssignments = async (req, res) => {
         { 'products._assigned': { $exists: false } },
         { 'products': { $elemMatch: { _assigned: { $ne: true } } } }
       ]
-    });
+    }).sort({ createdAt: -1 });
     res.json(calls);
   } catch (err) {
     res.status(500).json({ message: err.message });
