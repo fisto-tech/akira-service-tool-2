@@ -123,3 +123,37 @@ exports.updateProductReport = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// ── PATCH /api/service-material/:id/product/:productId/final-status ───────────
+exports.updateFinalStatus = async (req, res) => {
+  try {
+    const { id, productId } = req.params;
+    const {
+      finalStatus,
+      finalStatusRemarks,
+      finalStatusDate,
+      finalStatusHistory,
+      expectedDeliveryDate,
+      report
+    } = req.body;
+
+    const inward = await ServiceMaterial.findById(id);
+    if (!inward) return res.status(404).json({ message: 'Inward not found' });
+
+    const product = inward.products.find(p => p._pid === productId);
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+
+    if (finalStatus !== undefined) product.finalStatus = finalStatus;
+    if (finalStatusRemarks !== undefined) product.finalStatusRemarks = finalStatusRemarks;
+    if (finalStatusDate !== undefined) product.finalStatusDate = finalStatusDate;
+    if (finalStatusHistory !== undefined) product.finalStatusHistory = finalStatusHistory;
+    if (expectedDeliveryDate !== undefined) product.expectedDeliveryDate = expectedDeliveryDate;
+    if (report !== undefined) product.report = report;
+
+    inward.markModified('products');
+    await inward.save();
+    res.json(inward);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

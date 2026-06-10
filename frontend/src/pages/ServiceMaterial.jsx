@@ -16,6 +16,8 @@ import {
   User,
   Package,
   AlertCircle,
+  CheckCircle2,
+  AlertTriangle,
   ChevronDown,
   ChevronUp,
   Copy,
@@ -49,6 +51,18 @@ const FINAL_STATUS_COLORS = {
   Delivered: "bg-green-100 text-green-700 border-green-300",
   Hold: "bg-red-100 text-red-700 border-red-300",
   "Not Repairable": "bg-gray-200 text-gray-700 border-gray-400",
+};
+
+// Employee-side status display (from `prod.report.status` / `prod.status`)
+// NOTE: This is separate from the supervisor "Final Status" flow.
+const STATUS_CONFIG = {
+  Open: { icon: AlertCircle, bg: "bg-gray-100", border: "border-gray-400", text: "text-gray-700" },
+  Assigned: { icon: User, bg: "bg-purple-100", border: "border-purple-300", text: "text-purple-800" },
+  "Under Testing": { icon: Wrench, bg: "bg-blue-100", border: "border-blue-300", text: "text-blue-800" },
+  "Repair in Progress": { icon: Wrench, bg: "bg-orange-100", border: "border-orange-300", text: "text-orange-800" },
+  Pending: { icon: Clock, bg: "bg-slate-100", border: "border-slate-300", text: "text-slate-800" },
+  Completed: { icon: CheckCircle2, bg: "bg-green-100", border: "border-green-300", text: "text-green-800" },
+  "Not Repairable": { icon: AlertTriangle, bg: "bg-red-100", border: "border-red-300", text: "text-red-800" },
 };
 
 // Helpers
@@ -1796,9 +1810,13 @@ const AdminTableView = ({
             >
               Products
             </th>
-            {["Edit", "Reports", "Final Status", "Remarks", "Delay"].map((h, idx) => {
+            {["Edit", "Reports", "Emp Status", "Final Status", "Remarks", "Delay"].map((h, idx) => {
               if (isSupervisor && h === "Edit") return null;
-              const minW = h === "Remarks" ? "180px" : (h === "Final Status" ? "140px" : "100px");
+              const minW =
+                h === "Remarks" ? "180px" :
+                h === "Final Status" ? "140px" :
+                h === "Emp Status" ? "140px" :
+                "100px";
               return (
                 <th
                   key={h}
@@ -1858,7 +1876,12 @@ const AdminTableView = ({
               const span = prods.length;
               const bgCls = isSelected ? "bg-blue-50" : "";
 
-              return prods.map((prod, pi) => (
+              return prods.map((prod, pi) => {
+                const employeeStatus = prod.report?.status || prod.status || "Open";
+                const employeeStatusCfg = STATUS_CONFIG[employeeStatus] || STATUS_CONFIG["Open"];
+                const EmployeeStatusIcon = employeeStatusCfg.icon;
+
+                return (
                 <tr
                   key={`${row.id}-${pi}`}
                   className={`transition-colors hover:bg-gray-50/60 ${bgCls} ${
@@ -2033,6 +2056,13 @@ const AdminTableView = ({
                   )}
 
                   <td className="px-[0.65vw] py-[0.6vw] border-r border-gray-300 align-middle text-center">
+                    <span className={`inline-flex items-center gap-[0.3vw] px-[0.6vw] py-[0.25vw] rounded-full border text-[0.68vw] font-semibold ${employeeStatusCfg.bg} ${employeeStatusCfg.border} ${employeeStatusCfg.text}`}>
+                      <EmployeeStatusIcon className="w-[0.8vw] h-[0.8vw]" />
+                      {employeeStatus === "Completed" ? "Completed by emp" : employeeStatus}
+                    </span>
+                  </td>
+
+                  <td className="px-[0.65vw] py-[0.6vw] border-r border-gray-300 align-middle text-center">
                     <FinalStatusCell row={row} prod={prod} onUpdateProduct={onUpdateProduct} />
                   </td>
 
@@ -2056,12 +2086,12 @@ const AdminTableView = ({
                     {getProductDelay(row, prod)}
                   </td>
                 </tr>
-              ));
+              )});
             })
           ) : (
             <tr>
               <td
-                colSpan={5 + PRODUCT_SUB_COLS.length + 5}
+                colSpan={5 + PRODUCT_SUB_COLS.length + 6}
                 className="py-[4vw] text-center text-black/50 text-[0.85vw]"
               >
                 No records found.
@@ -2275,17 +2305,14 @@ export default function App() {
   };
 
   const handleUpdateProduct = async (id, productId, updates) => {
-    const entry = entries.find(r => r.id === id);
-    if (!entry) return;
-
-    const updatedProducts = (entry.products || []).map((p) =>
-      p._pid === productId ? { ...p, ...updates } : p
-    );
-
     try {
-      const res = await axios.put(`${API_URL}/service-material/${id}`, { products: updatedProducts });
+      const res = await axios.patch(`${API_URL}/service-material/${id}/product/${productId}/final-status`, updates);
       const updatedRow = { ...res.data, id: res.data._id };
-      setEntries(entries.map((r) => (r.id === id ? updatedRow : r)));
+      setEntries(prev => prev.map((r) => (r.id === id ? updatedRow : r)));
+      // Toast on success (especially for final status updates)
+      if (updates?.finalStatus !== undefined) toast("Final status updated", "success");
+      else if (updates?.expectedDeliveryDate !== undefined) toast("Expected delivery updated", "success");
+      else toast("Updated successfully", "success");
     } catch (err) {
       toast("Failed to update product", "error");
     }
@@ -2336,7 +2363,9 @@ export default function App() {
 
     // Apply status filter
     if (activeFilter !== "All") {
-      data = data.filter((row) => (row.finalStatus || "Pending") === activeFilter);
+      data = data.filter((row) =>
+        (row.products || []).some((p) => (p.finalStatus || "Pending") === activeFilter)
+      );
     }
 
     // Apply search filter
@@ -2419,7 +2448,9 @@ export default function App() {
   const counts = useMemo(() => {
     const c = { All: entries.length };
     FINAL_STATUS_OPTIONS.forEach((s) => {
-      c[s] = entries.filter((e) => (e.finalStatus || "Pending") === s).length;
+      c[s] = entries.filter((e) =>
+        (e.products || []).some((p) => (p.finalStatus || "Pending") === s)
+      ).length;
     });
     return c;
   }, [entries]);

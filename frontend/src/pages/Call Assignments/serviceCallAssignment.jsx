@@ -567,23 +567,23 @@ export default function ServiceCallAssignment() {
               {/* 1. TOP SPLIT (Width Fully) - Contact Related Details */}
               <div className="p-[1.5vw] bg-slate-50 border-b border-blue-50 grid grid-cols-5 gap-[1.5vw]">
                 <div className="flex flex-col gap-[0.2vw]">
-                  <span className="text-[0.55vw] font-bold text-blue-600 uppercase tracking-widest flex items-center gap-[0.3vw]"><MapPin className="w-[0.7vw] h-[0.7vw]" /> Location</span>
+                  <span className="text-[0.85vw] font-bold text-blue-600 flex items-center gap-[0.3vw]"><MapPin className="w-[0.7vw] h-[0.7vw]" /> Location</span>
                   <span className="text-[0.85vw] text-black font-semibold leading-tight">{selectedGroup.location}</span>
                 </div>
                 <div className="flex flex-col gap-[0.2vw]">
-                  <span className="text-[0.55vw] font-bold text-blue-600 uppercase tracking-widest flex items-center gap-[0.3vw]"><User className="w-[0.7vw] h-[0.7vw]" /> Contact Person</span>
+                  <span className="text-[0.85vw] font-bold text-blue-600 flex items-center gap-[0.3vw]"><User className="w-[0.7vw] h-[0.7vw]" /> Contact Person</span>
                   <span className="text-[0.85vw] text-black font-semibold">{selectedGroup.contactPerson || "—"}</span>
                 </div>
                 <div className="flex flex-col gap-[0.2vw]">
-                  <span className="text-[0.55vw] font-bold text-blue-600 uppercase tracking-widest flex items-center gap-[0.3vw]"><Phone className="w-[0.7vw] h-[0.7vw]" /> Phone</span>
+                  <span className="text-[0.85vw] font-bold text-blue-600 flex items-center gap-[0.3vw]"><Phone className="w-[0.7vw] h-[0.7vw]" /> Phone</span>
                   <span className="text-[0.85vw] text-black font-semibold">{selectedGroup.contactNumber || "—"}</span>
                 </div>
                 <div className="flex flex-col gap-[0.2vw]">
-                  <span className="text-[0.55vw] font-bold text-blue-600 uppercase tracking-widest flex items-center gap-[0.3vw]"><Hash className="w-[0.7vw] h-[0.7vw]" /> Reference</span>
+                  <span className="text-[0.85vw] font-bold text-blue-600 flex items-center gap-[0.3vw]"><Hash className="w-[0.7vw] h-[0.7vw]" /> Reference</span>
                   <span className="text-[0.85vw] text-black font-semibold">{selectedGroup.callNumber}</span>
                 </div>
                 <div className="flex flex-col gap-[0.2vw]">
-                  <span className="text-[0.55vw] font-bold text-blue-600 uppercase tracking-widest flex items-center gap-[0.3vw]"><Tag className="w-[0.7vw] h-[0.7vw]" /> Segment</span>
+                  <span className="text-[0.85vw] font-bold text-blue-600 flex items-center gap-[0.3vw]"><Tag className="w-[0.7vw] h-[0.7vw]" /> Segment</span>
                   <span className="text-[0.85vw] text-black font-semibold">{selectedGroup.segment}</span>
                 </div>
               </div>
@@ -632,8 +632,8 @@ export default function ServiceCallAssignment() {
                 {/* Right Side: Assignment View */}
                 <div className="flex-1 bg-blue-50/10 flex flex-col overflow-hidden">
                   {selectedEngineer ? (
-                    <div className="p-[2vw] flex flex-col h-full">
-                      <div className="flex-1 flex flex-col gap-[2vw]">
+                    <div className="py-[.5vw] px-[2vw] flex flex-col h-full">
+                      <div className="flex-1 flex flex-col gap-[2vw] overflow-y-auto">
                         {/* Selected Engineer Card */}
                         <div className="bg-white p-[1.2vw] rounded-xl border border-blue-200 flex items-center gap-[1.2vw]">
                           <div className={`w-[2.8vw] h-[2.8vw] rounded-lg flex items-center justify-center text-[1vw] font-bold text-white bg-gradient-to-br ${avatarColor(selectedEngineer.name)} border border-blue-200 shadow-none`}>
@@ -699,7 +699,7 @@ export default function ServiceCallAssignment() {
                       <button 
                         onClick={handleAssign}
                         disabled={isAssigning}
-                        className="w-full py-[1.2vw] bg-blue-600 text-white rounded-xl font-bold text-[1.1vw] hover:bg-blue-700 active:scale-[0.98] transition-all flex items-center justify-center gap-[1vw] border border-blue-500"
+                        className="w-fit px-[1vw] ml-auto mt-[1.5vw] py-[.85vw] bg-blue-600 text-white rounded-xl font-bold text-[1vw] hover:bg-blue-700 active:scale-[0.98] transition-all flex items-center justify-center gap-[1vw] border border-blue-500 cursor-pointer"
                       >
                         {isAssigning ? "Processing Allocation..." : <>Confirm Assignment to {selectedEngineer.name.split(" ")[0]} <ArrowRight className="w-[1.2vw] h-[1.2vw]" /></>}
                       </button>

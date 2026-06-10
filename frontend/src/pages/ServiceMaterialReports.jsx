@@ -181,6 +181,7 @@ const STATUS_COLORS = {
   Hold: "bg-red-100 text-black border-red-300",
   "Not Repairable": "bg-slate-200 text-black border-slate-400",
   Completed: "bg-green-100 text-black border-green-300",
+  "Under Testing": "bg-blue-100 text-black border-blue-300",
   "Repair in Progress": "bg-blue-100 text-black border-blue-300",
   Open: "bg-slate-100 text-black border-slate-300",
   Assigned: "bg-purple-100 text-black border-purple-300",
@@ -469,24 +470,58 @@ const DeliveryReport = ({ entries, fromDate, setFromDate, toDate, setToDate }) =
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
 
-  const rows = useMemo(() => entries.map((row) => {
-    const prods = row.products || [];
-    const allDelays = prods.map((p) => diffDays(p.expectedDeliveryDate, row.finalStatusDate)).filter((d) => d !== null);
-    const avgDelay = allDelays.length ? Math.round(allDelays.reduce((a, b) => a + b, 0) / allDelays.length) : null;
-    const inwardDate = row.date;
-    const deliveredDate = row.finalStatusDate;
-    const tat = diffDays(inwardDate, deliveredDate);
-    return { row, prods, avgDelay, tat };
-  }), [entries]);
+  const rows = useMemo(() => {
+    const flat = [];
+    entries.forEach((row) => {
+      (row.products || []).forEach((p) => {
+        const finalStatus = p.finalStatus || row.finalStatus || "Pending";
+        const finalStatusDate = p.finalStatusDate || row.finalStatusDate || null;
+        const finalStatusRemarks = p.finalStatusRemarks || row.finalStatusRemarks || "";
+        const employeeStatus = p.report?.status || p.status || "Open";
+        const tat = diffDays(row.date, finalStatusDate);
+        const delay = diffDays(p.expectedDeliveryDate, finalStatusDate);
+
+        flat.push({
+          row,
+          p,
+          finalStatus,
+          finalStatusDate,
+          finalStatusRemarks,
+          employeeStatus,
+          tat,
+          delay,
+        });
+      });
+    });
+    // Put Delivered items up top in "All", then sort by delivered date (desc), then inward date (desc)
+    flat.sort((a, b) => {
+      const aDelivered = a.finalStatus === "Delivered";
+      const bDelivered = b.finalStatus === "Delivered";
+      if (aDelivered !== bDelivered) return aDelivered ? -1 : 1;
+
+      const ad = a.finalStatusDate ? new Date(a.finalStatusDate).getTime() : 0;
+      const bd = b.finalStatusDate ? new Date(b.finalStatusDate).getTime() : 0;
+      if (ad !== bd) return bd - ad;
+
+      const ai = a.row?.date ? new Date(a.row.date).getTime() : 0;
+      const bi = b.row?.date ? new Date(b.row.date).getTime() : 0;
+      return bi - ai;
+    });
+    return flat;
+  }, [entries]);
 
   const filtered = useMemo(() => {
     let data = rows;
-    if (filterStatus !== "All") data = data.filter(({ row }) => (row.finalStatus || "Pending") === filterStatus);
+    if (filterStatus !== "All") data = data.filter(({ finalStatus }) => finalStatus === filterStatus);
     if (search) {
       const s = search.toLowerCase();
-      data = data.filter(({ row }) =>
+      data = data.filter(({ row, p, employeeStatus, finalStatusRemarks }) =>
         row.customerName?.toLowerCase().includes(s) ||
-        row.refNoCustomer?.toLowerCase().includes(s)
+        row.refNoCustomer?.toLowerCase().includes(s) ||
+        p.productDescription?.toLowerCase().includes(s) ||
+        p.serialNumber?.toLowerCase().includes(s) ||
+        employeeStatus?.toLowerCase().includes(s) ||
+        finalStatusRemarks?.toLowerCase().includes(s)
       );
     }
     return data;
@@ -509,27 +544,29 @@ const DeliveryReport = ({ entries, fromDate, setFromDate, toDate, setToDate }) =
   };
 
   const exportCsv = () => {
-    const data = filtered.map(({ row, prods, tat, avgDelay }, i) => ({
+    const data = filtered.map(({ row, p, employeeStatus, finalStatus, finalStatusDate, finalStatusRemarks, tat, delay }, i) => ({
       "S.No": i + 1,
       "Inward Date": fmtDate(row.date),
       "Customer": row.customerName,
       "Ref No": row.refNoCustomer,
       "Category": row.category,
-      "# Products": prods.length,
-      "Final Status": row.finalStatus,
-      "Delivered Date": fmtDate(row.finalStatusDate),
+      "Product": p.productDescription,
+      "Serial No": p.serialNumber,
+      "Employee Status": employeeStatus,
+      "Final Status": finalStatus,
+      "Delivered Date": fmtDate(finalStatusDate),
       "TAT (Days)": tat !== null ? `${tat}d` : "—",
-      "Avg Delay": avgDelay !== null ? (avgDelay > 0 ? `+${avgDelay}d` : "On time") : "—",
-      "Remarks": row.finalStatusRemarks
+      "Delay": delay !== null ? (delay > 0 ? `+${delay}d` : delay === 0 ? "On time" : `${delay}d early`) : "—",
+      "Remarks": finalStatusRemarks
     }));
     exportToExcel({ data, filename: `Delivery_Report_${filterStatus}` });
   };
 
   const statuses = ["All", "Pending", "Delivered", "Hold", "Not Repairable"];
-  const deliveredCount = rows.filter(({ row }) => row.finalStatus === "Delivered").length;
+  const deliveredCount = rows.filter(({ finalStatus }) => finalStatus === "Delivered").length;
   const tats = rows.filter(({ tat }) => tat !== null).map(({ tat }) => tat);
   const avgTat = tats.length ? Math.round(tats.reduce((a, b) => a + b, 0) / tats.length) : "—";
-  const delayedCount = rows.filter(({ avgDelay }) => avgDelay !== null && avgDelay > 0).length;
+  const delayedCount = rows.filter(({ delay }) => delay !== null && delay > 0).length;
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -560,30 +597,32 @@ const DeliveryReport = ({ entries, fromDate, setFromDate, toDate, setToDate }) =
           <thead className="sticky top-0 z-20 bg-emerald-50">
             <tr>
               <Th>S.No</Th><Th>Inward Date</Th><Th>Customer</Th>
-              <Th>Ref No.</Th><Th>Category</Th><Th># Products</Th>
-              <Th>Final Status</Th><Th>Delivered Date</Th>
-              <Th>TAT (Days)</Th><Th>Avg Delay (Days)</Th><Th>Remarks</Th>
+              <Th>Ref No.</Th><Th>Category</Th><Th>Product</Th><Th>Serial No.</Th>
+              <Th>Emp Status</Th><Th>Final Status</Th><Th>Delivered Date</Th>
+              <Th>TAT (Days)</Th><Th>Delay (Days)</Th><Th>Remarks</Th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? <EmptyState message="No delivery records found." /> :
-              paginated.map(({ row, prods, tat, avgDelay }, i) => (
-                <tr key={row.id} className="hover:bg-emerald-50/20 transition-colors">
+              paginated.map(({ row, p, employeeStatus, finalStatus, finalStatusDate, finalStatusRemarks, tat, delay }, i) => (
+                <tr key={`${row.id}-${p._pid || i}`} className="hover:bg-emerald-50/20 transition-colors">
                   <Td cls="text-center font-semibold">{(currentPage - 1) * rowsPerPage + i + 1}</Td>
                   <Td cls="min-w-[6vw]">{fmtDate(row.date)}</Td>
                   <Td cls="font-semibold"><div className="break-words whitespace-normal min-w-[9vw]" title={row.customerName}>{row.customerName || "—"}</div></Td>
                   <Td>{row.refNoCustomer || "—"}</Td>
                   <Td cls="font-semibold text-slate-700">{row.category || "—"}</Td>
-                  <Td cls="text-center font-bold text-blue-700">{prods.length}</Td>
-                  <Td><StatusBadge status={row.finalStatus} /></Td>
-                  <Td cls="min-w-[6vw] font-semibold">{fmtDate(row.finalStatusDate)}</Td>
+                  <Td><div className="break-words whitespace-normal min-w-[10vw]" title={p.productDescription}>{p.productDescription || "—"}</div></Td>
+                  <Td className="font-mono">{p.serialNumber || "—"}</Td>
+                  <Td><StatusBadge status={employeeStatus === "Completed" ? "Completed" : employeeStatus} /></Td>
+                  <Td><StatusBadge status={finalStatus} /></Td>
+                  <Td cls="min-w-[6vw] font-semibold">{fmtDate(finalStatusDate)}</Td>
                   <Td cls={`font-bold ${tat === null ? "text-black/30" : tat <= 7 ? "text-green-700" : tat <= 14 ? "text-amber-600" : "text-red-600"}`}>
                     {tat !== null ? `${tat}d` : "—"}
                   </Td>
-                  <Td cls={`font-bold ${avgDelay === null ? "text-black/30" : avgDelay <= 0 ? "text-green-700" : avgDelay <= 3 ? "text-amber-600" : "text-red-600"}`}>
-                    {avgDelay !== null ? (avgDelay > 0 ? `+${avgDelay}d` : avgDelay === 0 ? "On time" : `${avgDelay}d early`) : "—"}
+                  <Td cls={`font-bold ${delay === null ? "text-black/30" : delay <= 0 ? "text-green-700" : delay <= 3 ? "text-amber-600" : "text-red-600"}`}>
+                    {delay !== null ? (delay > 0 ? `+${delay}d` : delay === 0 ? "On time" : `${delay}d early`) : "—"}
                   </Td>
-                  <Td><div className="break-words whitespace-normal text-[0.68vw] min-w-[10vw] text-slate-900" title={row.finalStatusRemarks}>{row.finalStatusRemarks || "—"}</div></Td>
+                  <Td><div className="break-words whitespace-normal text-[0.68vw] min-w-[10vw] text-slate-900" title={finalStatusRemarks}>{finalStatusRemarks || "—"}</div></Td>
                 </tr>
               ))
             }
@@ -598,7 +637,7 @@ const DeliveryReport = ({ entries, fromDate, setFromDate, toDate, setToDate }) =
           onPageChange={setCurrentPage}
         />
         <SummaryBar items={[
-          { label: "Total Entries", value: rows.length, color: "text-black" },
+          { label: "Total Products", value: rows.length, color: "text-black" },
           { label: "Delivered", value: deliveredCount, color: "text-emerald-800" },
           { label: "Avg TAT", value: avgTat !== "—" ? `${avgTat} days` : "—", color: "text-slate-800" },
           { label: "Delayed", value: delayedCount, color: "text-red-700" },

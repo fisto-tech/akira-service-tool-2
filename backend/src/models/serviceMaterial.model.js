@@ -33,7 +33,11 @@ const productSchema = new mongoose.Schema({
   assignedDepartment: String,
   escalationLevel: { type: Number, default: 0 },
   escalationHistory: [mongoose.Schema.Types.Mixed],
-  report: reportSchema
+  report: reportSchema,
+  finalStatus: { type: String, default: 'Pending' },
+  finalStatusRemarks: String,
+  finalStatusDate: Date,
+  finalStatusHistory: [mongoose.Schema.Types.Mixed]
 });
 
 const serviceMaterialSchema = new mongoose.Schema({
