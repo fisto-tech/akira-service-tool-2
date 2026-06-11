@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import {
   Package, Clock, User, CheckCircle, AlertCircle, X, Eye, Send,
   Phone, Mail, MapPin, FileText, Calendar, Hash, Tag, Wrench,
-  AlertTriangle, Info, ChevronRight, ChevronLeft, Shield, Plus, Edit3,
+  AlertTriangle, Info, ChevronRight, ChevronLeft, Shield, Plus, Edit3, Loader2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
@@ -661,6 +661,7 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
   const [entries, setEntries] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [fourMCategories, setFourMCategories] = useState([]);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(propUser || null);
   const [selected, setSelected] = useState(null);
   const [infoSelected, setInfoSelected] = useState(null);
@@ -708,6 +709,8 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
       setFourMCategories(fourMRes.data);
     } catch (err) {
       console.error("Failed to fetch data:", err);
+    } finally {
+      setInitialLoading(false);
     }
   };
 
@@ -800,6 +803,17 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
     { key: "info", label: "Info", width: "w-[4vw]", align: "text-center" },
     { key: "action", label: "Action", width: "w-[7vw]", align: "text-center" },
   ];
+
+  if (initialLoading) {
+    return (
+      <div className="w-full min-h-[60vh] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-[0.9vw]">
+          <Loader2 className="w-[2.2vw] h-[2.2vw] text-blue-600 animate-spin" />
+          <div className="text-[0.9vw] font-semibold text-gray-700">Loading service material data...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full font-sans">

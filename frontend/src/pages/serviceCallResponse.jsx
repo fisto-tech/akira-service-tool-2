@@ -1006,7 +1006,7 @@ const ServiceCallResponse = () => {
   };
 
   const tabs = [
-    { id: "escalation", label: "Escalation", icon: Shield,    count: liveCounts.escalation, color: "bg-blue-600" },
+    { id: "escalation", label: "Escalation/ Assignments", icon: Shield,    count: liveCounts.escalation, color: "bg-blue-600" },
     { id: "pending",    label: "Pending",    icon: AlertCircle,count: liveCounts.pending,    color: "bg-yellow-500" },
     { id: "support",    label: "Support",    icon: HelpCircle, count: liveCounts.support,    color: "bg-orange-500" },
     { id: "fieldvisit", label: "Field Visit",icon: MapPin,     count: liveCounts.fieldVisit, color: "bg-blue-700" },
