@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
+import { useNotification } from "../components/NotificationContext";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -70,434 +71,9 @@ const RefInput = ({ label, value, icon: Icon, span = 1 }) => (
   </div>
 );
 
-// ── Service Response Modal ────────────────────────────────────────────────────
-const ServiceResponseModal = ({ entry, product, employees, fourMCategories, onSave, onClose, errorCodeHistory, problemDescHistory }) => {
-  const [formData, setFormData] = useState({
-    testedBy: product.report?.testedBy || "",
-    disposition: product.report?.disposition || "",
-    fourMCategory: product.report?.fourMCategory || "",
-    errorCode: product.report?.errorCode || "",
-    problemDescription: product.report?.problemDescription || "",
-    rootCause: product.report?.rootCause || "",
-    partsReplacement: product.report?.partsReplacement || "",
-    correctiveAction: product.report?.correctiveAction || "",
-    completedDate: product.report?.completedDate || "",
-    status: product.report?.status || "Under Testing",
-    currentRemark: "",
-    designators: product.report?.designators || "",
-    image: product.report?.image || ""
-  });
 
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(product.report?.image ? `${API_URL}${product.report.image}` : null);
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const STATUS_OPTIONS = ["Under Testing", "Repair in Progress", "Pending", "Completed", "Not Repairable"];
-  const DISPOSITION_OPTIONS = ["Repaired", "Replaced", "Scrap", "Return As Is"];
-
-  const sp = (k, v) => setFormData(p => ({ ...p, [k]: v }));
-
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [activeSuggestion, setActiveSuggestion] = useState(-1);
-
-  const [showErrorCodeSuggestions, setShowErrorCodeSuggestions] = useState(false);
-  const [activeErrorCodeSuggestion, setActiveErrorCodeSuggestion] = useState(-1);
-
-  const filteredErrorCodeSuggestions = useMemo(() => {
-    const query = formData.errorCode?.toLowerCase() || "";
-    if (!query) return errorCodeHistory || [];
-    return (errorCodeHistory || []).filter(opt => opt.toLowerCase().includes(query));
-  }, [formData.errorCode, errorCodeHistory]);
-
-  const handleErrorCodeKeyDown = (e) => {
-    if (!showErrorCodeSuggestions) return;
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setActiveErrorCodeSuggestion(prev => (prev < filteredErrorCodeSuggestions.length - 1 ? prev + 1 : prev));
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setActiveErrorCodeSuggestion(prev => (prev > 0 ? prev - 1 : prev));
-    } else if (e.key === "Enter" && activeErrorCodeSuggestion >= 0) {
-      e.preventDefault();
-      sp("errorCode", filteredErrorCodeSuggestions[activeErrorCodeSuggestion]);
-      setShowErrorCodeSuggestions(false);
-    } else if (e.key === "Escape") {
-      setShowErrorCodeSuggestions(false);
-    }
-  };
-
-  const filteredSuggestions = useMemo(() => {
-    const query = formData.problemDescription?.toLowerCase() || "";
-    if (!query) return problemDescHistory || [];
-    return (problemDescHistory || []).filter(opt => opt.toLowerCase().includes(query));
-  }, [formData.problemDescription, problemDescHistory]);
-
-  const handleKeyDown = (e) => {
-    if (!showSuggestions) return;
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setActiveSuggestion(prev => (prev < filteredSuggestions.length - 1 ? prev + 1 : prev));
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setActiveSuggestion(prev => (prev > 0 ? prev - 1 : prev));
-    } else if (e.key === "Enter" && activeSuggestion >= 0) {
-      e.preventDefault();
-      sp("problemDescription", filteredSuggestions[activeSuggestion]);
-      setShowSuggestions(false);
-    } else if (e.key === "Escape") {
-      setShowSuggestions(false);
-    }
-  };
-
-  const handleSave = () => {
-    if (!formData.fourMCategory.trim()) return alert("4M Category is mandatory.");
-    if (!formData.problemDescription.trim()) return alert("Problem Identification is mandatory.");
-    if (!formData.rootCause.trim()) return alert("Root Cause Analysis is mandatory.");
-    if (!formData.correctiveAction.trim()) return alert("Corrective Action is mandatory.");
-    if (formData.status === "Completed" && !formData.completedDate) return alert("Completed Date is mandatory for 'Completed' status.");
-
-    const historyEntry = {
-      status: formData.status,
-      disposition: formData.disposition,
-      remark: formData.currentRemark,
-      timestamp: new Date().toISOString()
-    };
-
-    const updatedReport = {
-      ...formData,
-      lastUpdated: new Date().toISOString(),
-      history: [...(product.report?.history || []), historyEntry]
-    };
-
-    onSave(updatedReport, imageFile);
-  };
-
-  const currentStatus = STATUS_CONFIG[formData.status] || STATUS_CONFIG["Open"];
-
-  return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-[2vw]">
-      <motion.div
-        initial={{ scale: 0.95, opacity: 0, y: 10 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.95, opacity: 0 }}
-        transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="bg-white w-[52vw] max-h-[90vh] rounded-[0.8vw] shadow-2xl overflow-hidden flex flex-col border border-gray-400"
-      >
-        {/* Header */}
-        <div className="bg-gradient-to-r from-blue-700 to-blue-600 px-[1.5vw] py-[1vw] flex justify-between items-center">
-          <div className="flex items-center gap-[0.8vw]">
-            <div className="w-[2.2vw] h-[2.2vw] rounded-[0.5vw] bg-white/20 backdrop-blur flex items-center justify-center">
-              <FileText className="w-[1.1vw] h-[1.1vw] text-white" />
-            </div>
-            <div>
-              <h3 className="text-[1vw] font-bold text-white uppercase tracking-tight">Service Report</h3>
-              <p className="text-[0.75vw] text-blue-50 font-medium">{product.productDescription} · {entry.customerName}</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="w-[1.8vw] h-[1.8vw] rounded-full bg-white/10 hover:bg-white/30 flex items-center justify-center text-white cursor-pointer transition-all">
-            <X className="w-[1vw] h-[1vw]" />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-[1.5vw] space-y-[1.5vw] text-black bg-gray-50/20">
-
-          {/* Reference Information Section */}
-          <div className="bg-white rounded-[0.6vw] border border-gray-300 shadow-sm overflow-hidden">
-            <div className="bg-blue-50 px-[1vw] py-[0.6vw] border-b border-blue-100 flex items-center gap-[0.5vw]">
-              <Info className="w-[0.9vw] h-[0.9vw] text-blue-600" />
-              <span className="text-[0.75vw] font-bold text-blue-700 uppercase tracking-wider">Reference Information</span>
-            </div>
-            <div className="p-[1vw] space-y-[1vw]">
-              {/* Date, Ref Customer, Ref Internal, Customer Name */}
-              <div className="grid grid-cols-4 gap-[2.5vw]">
-                <RefInput label="Date" value={fmtDate(entry.date)} icon={Calendar} />
-                <RefInput label="Reference No (Customer)" value={entry.refNoCustomer || entry.refNo} icon={Hash} />
-                <RefInput label="Reference No (Internal)" value={entry.refNo || entry.refNoInternal} icon={Hash} />
-                <RefInput label="Customer Name" value={entry.customerName} icon={User} />
-              </div>
-
-              {/* Customer Code, Category, Product Code, Product Description */}
-              <div className="grid grid-cols-4 gap-[2.5vw]">
-                <RefInput label="Customer Code" value={entry.customerCode} icon={Hash} />
-                <RefInput label="Category" value={entry.category || "—"} icon={Tag} />
-                <RefInput label="Product Code" value={product.productCode} icon={Tag} />
-                <div className="col-span-1">
-                  <RefInput label="Product Description" value={product.productDescription} icon={Package} />
-                </div>
-              </div>
-
-              {/* Qty, Board Type, Serial Number, Type(W/PW) */}
-              <div className="grid grid-cols-4 gap-[2.5vw]">
-                <RefInput label="Qty" value={product.qty || "1"} icon={Hash} />
-                <RefInput label="Board Type" value={product.boardType} icon={Tag} />
-                <RefInput label="Serial Number" value={product.serialNumber} icon={Hash} />
-                <RefInput label="Type (W/PW)" value={product.type === "W" ? "Warranty" : "Paid"} icon={Shield} />
-              </div>
-            </div>
-          </div>
-
-          {/* Service Report Section */}
-          <div className="bg-white rounded-[0.6vw] border border-gray-300 shadow-sm overflow-hidden">
-            <div className="bg-blue-50 px-[1vw] py-[0.6vw] border-b border-blue-100 flex items-center gap-[0.5vw]">
-              <Wrench className="w-[0.9vw] h-[0.9vw] text-blue-600" />
-              <span className="text-[0.75vw] font-bold text-blue-700 uppercase tracking-wider">Service Report Details</span>
-            </div>
-            <div className="p-[1vw] space-y-[1.2vw]">
-              {/* Tested by & Problem Description */}
-              <div className="grid grid-cols-4 gap-[1vw]">
-                <div className="col-span-2 flex flex-col gap-[0.3vw]">
-                  <label className="text-[0.8vw] font-semibold text-black flex items-center gap-[0.3vw]">
-                    <User className="w-[0.8vw] h-[0.8vw] text-blue-600" />
-                    Tested by
-                  </label>
-                  <select value={formData.testedBy} onChange={e => sp("testedBy", e.target.value)}
-                    className="border border-gray-300 bg-white rounded-[0.4vw] py-[0.5vw] px-[0.6vw] text-[0.78vw] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
-                    <option value="">Select Employee</option>
-                    {employees.map(e => <option key={e.userId} value={e.name}>{e.name}</option>)}
-                  </select>
-                </div>
-                <div className="flex flex-col gap-[0.3vw]">
-                  <label className="text-[0.8vw] font-semibold text-black">
-                    4M Category <span className="text-red-500">*</span>
-                  </label>
-                  <select value={formData.fourMCategory} onChange={e => sp("fourMCategory", e.target.value)}
-                    className="border border-gray-300 bg-white rounded-[0.4vw] py-[0.5vw] px-[0.6vw] text-[0.78vw] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm cursor-pointer">
-                    <option value="">Select 4M Category</option>
-                    {fourMCategories?.map(opt => <option key={opt._id || opt.id} value={opt.name}>{opt.name}</option>)}
-                  </select>
-                </div>
-                <div className="flex flex-col gap-[0.3vw] relative">
-                  <label className="text-[0.8vw] font-semibold text-black">
-                    Error Code
-                  </label>
-                  <input
-                    value={formData.errorCode}
-                    onChange={e => {
-                      sp("errorCode", e.target.value);
-                      setShowErrorCodeSuggestions(true);
-                      setActiveErrorCodeSuggestion(-1);
-                    }}
-                    onFocus={() => setShowErrorCodeSuggestions(true)}
-                    onBlur={() => setTimeout(() => setShowErrorCodeSuggestions(false), 200)}
-                    onKeyDown={handleErrorCodeKeyDown}
-                    placeholder="Enter error code..."
-                    className="border border-gray-300 rounded-[0.4vw] py-[0.5vw] px-[0.6vw] text-[0.78vw] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm w-full"
-                  />
-                  {showErrorCodeSuggestions && filteredErrorCodeSuggestions.length > 0 && (
-                    <ul className="absolute z-50 w-full bg-white border border-gray-300 rounded-[0.4vw] shadow-xl max-h-[12vw] overflow-y-auto top-[100%] mt-[0.2vw]">
-                      {filteredErrorCodeSuggestions.map((opt, i) => (
-                        <li
-                          key={i}
-                          onClick={() => {
-                            sp("errorCode", opt);
-                            setShowErrorCodeSuggestions(false);
-                          }}
-                          className={`px-[0.6vw] py-[0.4vw] text-[0.78vw] cursor-pointer transition-colors ${i === activeErrorCodeSuggestion ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-50 text-gray-800'}`}
-                        >
-                          {opt}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-                <div className="col-span-4 flex flex-col gap-[0.3vw] relative">
-                  <label className="text-[0.8vw] font-semibold text-black">
-                    Problem Description <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    value={formData.problemDescription}
-                    onChange={e => {
-                      sp("problemDescription", e.target.value);
-                      setShowSuggestions(true);
-                      setActiveSuggestion(-1);
-                    }}
-                    onFocus={() => setShowSuggestions(true)}
-                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Enter problem identification..."
-                    className="border border-gray-300 rounded-[0.4vw] py-[0.5vw] px-[0.6vw] text-[0.78vw] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm w-full"
-                  />
-                  {showSuggestions && filteredSuggestions.length > 0 && (
-                    <ul className="absolute z-50 w-full bg-white border border-gray-300 rounded-[0.4vw] shadow-xl max-h-[12vw] overflow-y-auto top-[100%] mt-[0.2vw]">
-                      {filteredSuggestions.map((opt, i) => (
-                        <li
-                          key={i}
-                          onClick={() => {
-                            sp("problemDescription", opt);
-                            setShowSuggestions(false);
-                          }}
-                          className={`px-[0.6vw] py-[0.4vw] text-[0.78vw] cursor-pointer transition-colors ${i === activeSuggestion ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-50 text-gray-800'}`}
-                        >
-                          {opt}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-
-                {/* New Fields: Designators & Image */}
-                <div className="col-span-2 flex flex-col gap-[0.3vw]">
-                  <label className="text-[0.8vw] font-semibold text-black flex items-center gap-[0.3vw]">
-                    <User className="w-[0.8vw] h-[0.8vw] text-blue-600" />
-                    Designators
-                  </label>
-                  <select value={formData.designators} onChange={e => sp("designators", e.target.value)}
-                    className="border border-gray-300 bg-white rounded-[0.4vw] py-[0.5vw] px-[0.6vw] text-[0.78vw] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all cursor-pointer shadow-sm">
-                    <option value="">Select Designator</option>
-                    {employees.map(e => <option key={e.userId} value={e.name}>{e.name}</option>)}
-                  </select>
-                </div>
-                <div className="col-span-2 flex flex-col gap-[0.3vw]">
-                   <label className="text-[0.8vw] font-semibold text-black flex items-center gap-[0.3vw]">
-                    <Package className="w-[0.8vw] h-[0.8vw] text-blue-600" />
-                    Image Upload
-                  </label>
-                  <div className="flex items-center gap-[1vw]">
-                    <input type="file" accept="image/*" onChange={handleImageChange}
-                      className="border border-gray-300 rounded-[0.4vw] py-[0.4vw] px-[0.6vw] text-[0.7vw] outline-none focus:border-blue-500 w-full" />
-                    {imagePreview && (
-                      <div className="w-[3vw] h-[3vw] rounded-[0.4vw] border border-gray-200 overflow-hidden flex-shrink-0 relative group">
-                        <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
-                             onClick={() => window.open(imagePreview, '_blank')}>
-                          <Eye className="w-[1vw] h-[1vw] text-white" />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Possible Root Cause(s) & Parts replacement details */}
-              <div className="grid grid-cols-2 gap-[1vw]">
-                <div className="flex flex-col gap-[0.3vw]">
-                  <label className="text-[0.8vw] font-semibold text-black">
-                    Possible Root Cause(s) <span className="text-red-500">*</span>
-                  </label>
-                  <textarea rows="2" value={formData.rootCause} onChange={e => sp("rootCause", e.target.value)}
-                    placeholder="Enter root cause analysis..."
-                    className="border border-gray-300 rounded-[0.4vw] py-[0.5vw] px-[0.6vw] text-[0.78vw] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none transition-all shadow-sm" />
-                </div>
-                <div className="flex flex-col gap-[0.3vw]">
-                  <label className="text-[0.8vw] font-semibold text-black">
-                    Parts replacement details
-                  </label>
-                  <textarea rows="2" value={formData.partsReplacement} onChange={e => sp("partsReplacement", e.target.value)}
-                    placeholder="Enter parts replaced..."
-                    className="border border-gray-300 rounded-[0.4vw] py-[0.5vw] px-[0.6vw] text-[0.78vw] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none transition-all shadow-sm" />
-                </div>
-              </div>
-
-              {/* Corrective Action */}
-              <div className="flex flex-col gap-[0.3vw]">
-                <label className="text-[0.8vw] font-semibold text-black">
-                  Corrective Action <span className="text-red-500">*</span>
-                </label>
-                <textarea rows="2" value={formData.correctiveAction} onChange={e => sp("correctiveAction", e.target.value)}
-                  placeholder="Describe corrective action taken..."
-                  className="border border-gray-300 rounded-[0.4vw] py-[0.5vw] px-[0.6vw] text-[0.78vw] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none transition-all shadow-sm w-full" />
-              </div>
-
-              {/* Disposition, Completion date, Status, Remark */}
-              <div className="grid grid-cols-2 gap-x-[4vw] gap-y-[1.5vw]">
-                <div className="flex flex-col gap-[0.3vw]">
-                  <label className="text-[0.8vw] font-semibold text-black flex items-center gap-[0.3vw]">
-                    <Tag className="w-[0.8vw] h-[0.8vw] text-blue-600" />
-                    Disposition
-                  </label>
-                  <select value={formData.disposition} onChange={e => sp("disposition", e.target.value)}
-                    className="border border-gray-300 bg-white rounded-[0.4vw] py-[0.5vw] px-[0.6vw] text-[0.78vw] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all cursor-pointer shadow-sm font-medium">
-                    <option value="">Select Disposition</option>
-                    {DISPOSITION_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                  </select>
-                </div>
-                <div className="flex flex-col gap-[0.3vw]">
-                  <label className="text-[0.8vw] font-semibold text-black flex items-center gap-[0.3vw]">
-                    <Calendar className="w-[0.8vw] h-[0.8vw] text-blue-600" />
-                    Completion date {formData.status === "Completed" && <span className="text-red-500">*</span>}
-                  </label>
-                  <input type="date" value={formData.completedDate} onChange={e => sp("completedDate", e.target.value)}
-                    className="border border-gray-300 bg-white rounded-[0.4vw] py-[0.5vw] px-[0.6vw] text-[0.78vw] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm" />
-                </div>
-                <div className="flex flex-col gap-[0.3vw]">
-                  <label className="text-[0.8vw] font-semibold text-black flex items-center gap-[0.3vw]">
-                    {React.createElement(currentStatus.icon, { className: "w-[0.8vw] h-[0.8vw] text-blue-600" })}
-                    Status
-                  </label>
-                  <select value={formData.status} onChange={e => sp("status", e.target.value)}
-                    className={`border-2 rounded-[0.4vw] py-[0.5vw] px-[0.6vw] text-[0.78vw] outline-none transition-all cursor-pointer shadow-sm ${currentStatus.bg} ${currentStatus.border} focus:border-blue-500 focus:ring-1 focus:ring-blue-500`}>
-                    {STATUS_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                  </select>
-                </div>
-                <div className="flex flex-col gap-[0.3vw]">
-                  <label className="text-[0.8vw] font-semibold text-blue-600 flex items-center gap-[0.3vw]">
-                    <FileText className="w-[0.8vw] h-[0.8vw]" />
-                    Action Remark
-                  </label>
-                  <input value={formData.currentRemark} onChange={e => sp("currentRemark", e.target.value)}
-                    placeholder="Brief remark..."
-                    className="border border-blue-300 bg-blue-50/30 rounded-[0.4vw] py-[0.5vw] px-[0.6vw] text-[0.78vw] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* History Preview */}
-          {product.report?.history?.length > 0 && (
-            <div className="bg-white rounded-[0.6vw] border border-gray-300 p-[0.8vw] shadow-sm overflow-hidden">
-              <div className="flex items-center gap-[0.3vw] mb-[0.6vw] pb-[0.4vw] border-b border-gray-100">
-                <Clock className="w-[0.9vw] h-[0.9vw] text-blue-600" />
-                <span className="text-[0.7vw] font-bold text-gray-700 uppercase tracking-widest">Recent Activity Log</span>
-              </div>
-              <div className="space-y-[0.4vw]">
-                {product.report.history.slice(-3).reverse().map((h, i) => {
-                  const cfg = STATUS_CONFIG[h.status] || STATUS_CONFIG["Open"];
-                  return (
-                    <div key={i} className={`flex items-center justify-between border ${cfg.border} p-[0.5vw] rounded-[0.4vw] transition-all hover:bg-opacity-80`}>
-                      <div className="flex items-center gap-[0.6vw]">
-                        <Badge label={h.status} color={cfg.color} size="xs" />
-                        <span className="text-[0.72vw] font-medium text-gray-700 truncate max-w-[25vw]">{h.remark || "Status updated"}</span>
-                      </div>
-                      <span className="text-[0.6vw] text-gray-400 font-medium">{new Date(h.timestamp).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="px-[1.5vw] py-[1vw] border-t border-gray-200 bg-gray-50 flex justify-between items-center">
-          <p className="text-[0.68vw] text-gray-800">
-            <span className="text-red-500">*</span> Required fields
-          </p>
-          <div className="flex gap-[0.6vw]">
-            <button onClick={onClose} className="px-[1.2vw] py-[0.5vw] border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-[0.4vw] text-[0.78vw] cursor-pointer transition-all">
-              Cancel
-            </button>
-            <button onClick={handleSave} className="px-[1.5vw] py-[0.5vw] bg-blue-600 hover:bg-blue-700 text-white rounded-[0.4vw] text-[0.78vw] font-bold cursor-pointer shadow-lg shadow-blue-900/20 flex items-center gap-[0.5vw] transition-all">
-              <Send className="w-[0.9vw] h-[0.9vw]" />
-              Save Report
-            </button>
-          </div>
-        </div>
-      </motion.div>
-    </div>
-  );
-};
+const STATUS_OPTIONS = ["Under Testing", "Repair in Progress", "Pending", "Completed", "Not Repairable"];
+const DISPOSITION_OPTIONS = ["Repaired", "Replaced", "Scrap", "Return As Is"];
 
 // ── Status Chips Configuration ─────────────────────────────────────────────
 const STATUS_CHIPS = [
@@ -659,16 +235,154 @@ const ServiceInfoModal = ({ entry, product, onClose }) => {
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function ServiceMaterialInwardResponse({ currentUser: propUser }) {
   const [entries, setEntries] = useState([]);
+  const { toast } = useNotification();
   const [employees, setEmployees] = useState([]);
   const [fourMCategories, setFourMCategories] = useState([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(propUser || null);
-  const [selected, setSelected] = useState(null);
   const [infoSelected, setInfoSelected] = useState(null);
   const [hoveredRow, setHoveredRow] = useState(null);
   const [filterStatus, setFilterStatus] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [drafts, setDrafts] = useState({});
+  const [savingStates, setSavingStates] = useState({});
+  const [isBulkSaving, setIsBulkSaving] = useState(false);
+
+  const getDraft = (productId, product) => {
+    if (drafts[productId]) return drafts[productId];
+    return {
+      testedBy: product.report?.testedBy || "",
+      disposition: product.report?.disposition || "",
+      fourMCategory: product.report?.fourMCategory || "",
+      errorCode: product.report?.errorCode || "",
+      problemDescription: product.report?.problemDescription || "",
+      rootCause: product.report?.rootCause || "",
+      partsReplacement: product.report?.partsReplacement || "",
+      correctiveAction: product.report?.correctiveAction || "",
+      completedDate: product.report?.completedDate || "",
+      status: product.report?.status || "Under Testing",
+      currentRemark: "",
+      designators: product.report?.designators || "",
+      image: product.report?.image || ""
+    };
+  };
+
+  const handleDraftChange = (productId, product, field, value) => {
+    setDrafts(prev => {
+      const existing = prev[productId] || getDraft(productId, product);
+      return {
+        ...prev,
+        [productId]: { ...existing, [field]: value, hasChanges: true }
+      };
+    });
+  };
+
+  const handleImageChange = (productId, product, e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setDrafts(prev => {
+          const existing = prev[productId] || getDraft(productId, product);
+          return {
+            ...prev,
+            [productId]: {
+              ...existing,
+              imageFile: file,
+              imagePreview: reader.result,
+              hasChanges: true
+            }
+          };
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const saveRow = async (entry, product, draft, showToastMsg = true) => {
+    if (!draft || !draft.hasChanges) return true;
+
+    if (!draft.fourMCategory?.trim()) { toast(`4M Category is mandatory for ${product.productDescription}`, "error"); return false; }
+    if (!draft.problemDescription?.trim()) { toast(`Problem Description is mandatory for ${product.productDescription}`, "error"); return false; }
+    if (!draft.rootCause?.trim()) { toast(`Root Cause is mandatory for ${product.productDescription}`, "error"); return false; }
+    if (!draft.correctiveAction?.trim()) { toast(`Corrective Action is mandatory for ${product.productDescription}`, "error"); return false; }
+    if (draft.status === "Completed" && !draft.completedDate) { toast(`Completed Date is mandatory for ${product.productDescription}`, "error"); return false; }
+
+    const historyEntry = {
+      status: draft.status,
+      disposition: draft.disposition,
+      remark: draft.currentRemark,
+      timestamp: new Date().toISOString()
+    };
+
+    const updatedReport = {
+      testedBy: draft.testedBy,
+      disposition: draft.disposition,
+      fourMCategory: draft.fourMCategory,
+      errorCode: draft.errorCode,
+      problemDescription: draft.problemDescription,
+      rootCause: draft.rootCause,
+      partsReplacement: draft.partsReplacement,
+      correctiveAction: draft.correctiveAction,
+      completedDate: draft.completedDate,
+      status: draft.status,
+      currentRemark: draft.currentRemark,
+      designators: draft.designators,
+      image: product.report?.image || "",
+      lastUpdated: new Date().toISOString(),
+      history: [...(product.report?.history || []), historyEntry]
+    };
+
+    setSavingStates(prev => ({ ...prev, [product._pid]: true }));
+    try {
+      await updateEntry(entry.id, product._pid, updatedReport, draft.imageFile);
+      
+      setDrafts(prev => {
+        const next = { ...prev };
+        if (next[product._pid]) {
+          next[product._pid] = { ...next[product._pid], hasChanges: false, currentRemark: "" };
+        }
+        return next;
+      });
+      if (showToastMsg) toast("Report saved successfully!");
+      return true;
+    } catch (err) {
+      if (showToastMsg) toast("Failed to save report.", "error");
+      return false;
+    } finally {
+      setSavingStates(prev => ({ ...prev, [product._pid]: false }));
+    }
+  };
+
+  const handleBulkSave = async () => {
+    const productsToSave = [];
+    for (const { entry, product } of myItems) {
+      const draft = drafts[product._pid];
+      if (draft && draft.hasChanges) {
+        productsToSave.push({ entry, product, draft });
+      }
+    }
+
+    if (productsToSave.length === 0) {
+      return toast("No changes to save.", "warning");
+    }
+
+    setIsBulkSaving(true);
+    try {
+      const results = await Promise.all(productsToSave.map(({ entry, product, draft }) => saveRow(entry, product, draft, false)));
+      const allSuccess = results.every(res => res);
+      if (allSuccess) {
+        toast(`Bulk save completed! ${productsToSave.length} items updated.`);
+      } else {
+        toast("Some items failed validation or saving.", "error");
+      }
+    } catch (err) {
+      toast("An error occurred during bulk save.", "error");
+    } finally {
+      setIsBulkSaving(false);
+    }
+  };
 
   // Reset pagination when filter changes
   useEffect(() => {
@@ -791,17 +505,28 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
 
   // Table columns configuration
   const columns = [
-    { key: "sno", label: "S.No", width: "w-[3vw]", align: "text-center" },
-    { key: "date", label: "Date", width: "w-[7vw]", align: "text-left" },
-    { key: "ref", label: "Ref No", width: "w-[7vw]", align: "text-left" },
-    { key: "customer", label: "Customer", width: "w-[12vw]", align: "text-left" },
-    { key: "product", label: "Product", width: "w-[12vw]", align: "text-left" },
-    { key: "board", label: "Board Type", width: "w-[8vw]", align: "text-left" },
-    { key: "serial", label: "Serial No", width: "w-[8vw]", align: "text-left" },
-    { key: "status", label: "Status", width: "w-[10vw]", align: "text-center" },
-    { key: "remarks", label: "Remarks", width: "w-[10vw]", align: "text-center" },
-    { key: "info", label: "Info", width: "w-[4vw]", align: "text-center" },
-    { key: "action", label: "Action", width: "w-[7vw]", align: "text-center" },
+    { key: "sno", label: "S.No", align: "text-center" },
+    { key: "date", label: "Date", align: "text-left", minW: "min-w-[7vw]" },
+    { key: "ref", label: "Ref No", align: "text-left", minW: "min-w-[7vw]" },
+    { key: "customer", label: "Customer", align: "text-left", minW: "min-w-[12vw]" },
+    { key: "product", label: "Product", align: "text-left", minW: "min-w-[12vw]" },
+    { key: "board", label: "Board Type", align: "text-left", minW: "min-w-[8vw]" },
+    { key: "serial", label: "Serial No", align: "text-left", minW: "min-w-[8vw]" },
+    { key: "testedBy", label: "Tested By", align: "text-left", minW: "min-w-[10vw]" },
+    { key: "fourM", label: "4M Category", align: "text-left", minW: "min-w-[10vw]" },
+    { key: "errorCode", label: "Error Code", align: "text-left", minW: "min-w-[8vw]" },
+    { key: "problemDesc", label: "Problem Desc", align: "text-left", minW: "min-w-[12vw]" },
+    { key: "designators", label: "Designators", align: "text-left", minW: "min-w-[10vw]" },
+    { key: "rootCause", label: "Root Cause", align: "text-left", minW: "min-w-[12vw]" },
+    { key: "partsReplaced", label: "Parts Replaced", align: "text-left", minW: "min-w-[12vw]" },
+    { key: "correctiveAction", label: "Corrective Action", align: "text-left", minW: "min-w-[12vw]" },
+    { key: "disposition", label: "Disposition", align: "text-left", minW: "min-w-[10vw]" },
+    { key: "completionDate", label: "Completion Date", align: "text-left", minW: "min-w-[10vw]" },
+    { key: "status", label: "Status", align: "text-center", minW: "min-w-[10vw]" },
+    { key: "remarks", label: "Action Remark", align: "text-center", minW: "min-w-[10vw]" },
+    { key: "image", label: "Image", align: "text-center", minW: "min-w-[6vw]" },
+    { key: "info", label: "Info", align: "text-center" },
+    { key: "action", label: "Action", align: "text-center", minW: "min-w-[8vw]" },
   ];
 
   if (initialLoading) {
@@ -816,7 +541,13 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
   }
 
   return (
-    <div className="w-full font-sans">
+        <div className="w-full font-sans">
+      <datalist id="errorCodeList">
+        {errorCodeHistory?.map((opt, i) => <option key={i} value={opt} />)}
+      </datalist>
+      <datalist id="problemDescList">
+        {problemDescHistory?.map((opt, i) => <option key={i} value={opt} />)}
+      </datalist>
       {/* Header */}
       <div className="flex items-center justify-between mb-[1vw] bg-white p-[0.8vw] rounded-[0.8vw] border border-gray-200 shadow-sm">
         <div className="flex items-center gap-[0.6vw]">
@@ -902,6 +633,9 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
                     const statusCfg = STATUS_CONFIG[pStatus] || STATUS_CONFIG["Open"];
                     const StatusIcon = statusCfg.icon;
                     const isHovered = hoveredRow === idx;
+                    const isClaimedByMe = product.assignedTo === (currentUser?.userId || currentUser?.id);
+                    const draft = isClaimedByMe ? getDraft(product._pid, product) : null;
+                    const hc = (field, val) => handleDraftChange(product._pid, product, field, val);
 
                     return (
                       <React.Fragment key={`${entry.id}-${product._pid}`}>
@@ -928,8 +662,9 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
                           onMouseLeave={() => setHoveredRow(null)}
                           className={`transition-all duration-150 ${isHovered ? "bg-blue-50/30" : "bg-white"}`}
                         >
+
                           {/* S.No */}
-                          <td className="px-[0.8vw] py-[0.7vw] text-center border border-gray-300">
+                          <td className="px-[0.8vw] py-[0.7vw] text-center border border-gray-300 bg-white sticky left-0 z-10 shadow-[4px_0_6px_-1px_rgba(0,0,0,0.05)]">
                             <span className="inline-flex items-center justify-center w-[1.5vw] h-[1.5vw] rounded-full bg-gray-100 text-[0.68vw] font-bold text-gray-600">
                               {((currentPage - 1) * itemsPerPage) + idx + 1}
                             </span>
@@ -939,7 +674,7 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
                           <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
                             <div className="flex items-center gap-[0.3vw]">
                               <Calendar className="w-[0.75vw] h-[0.75vw] text-blue-600" />
-                              <span className="text-[0.75vw] text-gray-700 font-medium">
+                              <span className="text-[0.75vw] text-gray-700 font-medium whitespace-nowrap">
                                 {entry.date ? fmtDate(entry.date) : "—"}
                               </span>
                             </div>
@@ -947,7 +682,7 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
 
                           {/* Ref No */}
                           <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
-                            <span className="text-[0.75vw] font-semibold text-gray-800 ">
+                            <span className="text-[0.75vw] font-semibold text-gray-800 whitespace-nowrap">
                               {entry.refNoCustomer || entry.refNo || "—"}
                             </span>
                           </td>
@@ -958,7 +693,7 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
                               <div className="w-[1.6vw] h-[1.6vw] rounded-full bg-gradient-to-br from-blue-700 to-blue-600 flex items-center justify-center text-white text-[0.55vw] font-bold flex-shrink-0">
                                 {entry.customerName?.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase() || "?"}
                               </div>
-                              <div className="min-w-0">
+                              <div className="min-w-[10vw]">
                                 <div className="text-[0.75vw] font-semibold text-gray-800 break-words whitespace-normal">{entry.customerName}</div>
                                 <div className="text-[0.65vw] text-gray-600 mt-[.2vw]">CUS: {entry.customerCode || "—"}</div>
                               </div>
@@ -967,7 +702,7 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
 
                           {/* Product */}
                           <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
-                            <div className="min-w-0">
+                            <div className="min-w-[10vw]">
                               <div className="text-[0.75vw] font-semibold text-gray-800 break-words whitespace-normal" title={product.productDescription}>
                                 {product.productDescription}
                               </div>
@@ -977,29 +712,170 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
 
                           {/* Board Type */}
                           <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
-                            <span className="text-[0.75vw] font-semibold text-gray-700">
+                            <span className="text-[0.75vw] font-semibold text-gray-700 whitespace-nowrap">
                               {product.boardType || "—"}
                             </span>
                           </td>
 
                           {/* Serial No */}
                           <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
-                            <span className="text-[0.75vw]  font-semibold text-gray-700">
+                            <span className="text-[0.75vw] font-semibold text-gray-700 whitespace-nowrap">
                               {product.serialNumber || "—"}
                             </span>
                           </td>
 
+                          {/* Tested By */}
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                            {isClaimedByMe ? (
+                              <select value={draft.testedBy} onChange={e => hc("testedBy", e.target.value)} className="w-full text-[0.75vw] border border-gray-300 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[8vw]">
+                                <option value="">Select</option>
+                                {employees.map(e => <option key={e.userId} value={e.name}>{e.name}</option>)}
+                              </select>
+                            ) : (
+                              <span className="text-[0.75vw] whitespace-nowrap">{product.report?.testedBy || "—"}</span>
+                            )}
+                          </td>
+
+                          {/* 4M Category */}
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                            {isClaimedByMe ? (
+                              <select value={draft.fourMCategory} onChange={e => hc("fourMCategory", e.target.value)} className="w-full text-[0.75vw] border border-gray-300 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[8vw]">
+                                <option value="">Select</option>
+                                {fourMCategories?.map(opt => <option key={opt._id || opt.id} value={opt.name}>{opt.name}</option>)}
+                              </select>
+                            ) : (
+                              <span className="text-[0.75vw] whitespace-nowrap">{product.report?.fourMCategory || "—"}</span>
+                            )}
+                          </td>
+
+                          {/* Error Code */}
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                            {isClaimedByMe ? (
+                              <input type="text" list="errorCodeList" value={draft.errorCode} onChange={e => hc("errorCode", e.target.value)} className="w-full text-[0.75vw] border border-gray-300 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[6vw]" placeholder="Code..." />
+                            ) : (
+                              <span className="text-[0.75vw] whitespace-nowrap">{product.report?.errorCode || "—"}</span>
+                            )}
+                          </td>
+
+                          {/* Problem Description */}
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                            {isClaimedByMe ? (
+                              <input type="text" list="problemDescList" value={draft.problemDescription} onChange={e => hc("problemDescription", e.target.value)} className="w-full text-[0.75vw] border border-gray-300 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[10vw]" placeholder="Problem..." />
+                            ) : (
+                              <span className="text-[0.75vw]">{product.report?.problemDescription || "—"}</span>
+                            )}
+                          </td>
+
+                          {/* Designators */}
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                            {isClaimedByMe ? (
+                              <select value={draft.designators} onChange={e => hc("designators", e.target.value)} className="w-full text-[0.75vw] border border-gray-300 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[8vw]">
+                                <option value="">Select</option>
+                                {employees.map(e => <option key={e.userId} value={e.name}>{e.name}</option>)}
+                              </select>
+                            ) : (
+                              <span className="text-[0.75vw]">{product.report?.designators || "—"}</span>
+                            )}
+                          </td>
+
+                          {/* Root Cause */}
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                            {isClaimedByMe ? (
+                              <textarea value={draft.rootCause} onChange={e => hc("rootCause", e.target.value)} rows={1} className="w-full text-[0.75vw] border border-gray-300 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[10vw] resize-y min-h-[1.5vw]" placeholder="Root Cause..." />
+                            ) : (
+                              <span className="text-[0.75vw]">{product.report?.rootCause || "—"}</span>
+                            )}
+                          </td>
+
+                          {/* Parts Replaced */}
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                            {isClaimedByMe ? (
+                              <textarea value={draft.partsReplacement} onChange={e => hc("partsReplacement", e.target.value)} rows={1} className="w-full text-[0.75vw] border border-gray-300 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[10vw] resize-y min-h-[1.5vw]" placeholder="Parts..." />
+                            ) : (
+                              <span className="text-[0.75vw]">{product.report?.partsReplacement || "—"}</span>
+                            )}
+                          </td>
+
+                          {/* Corrective Action */}
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                            {isClaimedByMe ? (
+                              <textarea value={draft.correctiveAction} onChange={e => hc("correctiveAction", e.target.value)} rows={1} className="w-full text-[0.75vw] border border-gray-300 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[10vw] resize-y min-h-[1.5vw]" placeholder="Action..." />
+                            ) : (
+                              <span className="text-[0.75vw]">{product.report?.correctiveAction || "—"}</span>
+                            )}
+                          </td>
+
+                          {/* Disposition */}
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                            {isClaimedByMe ? (
+                              <select value={draft.disposition} onChange={e => hc("disposition", e.target.value)} className="w-full text-[0.75vw] border border-gray-300 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[8vw]">
+                                <option value="">Select</option>
+                                {DISPOSITION_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                              </select>
+                            ) : (
+                              <span className="text-[0.75vw]">{product.report?.disposition || "—"}</span>
+                            )}
+                          </td>
+
+                          {/* Completion Date */}
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                            {isClaimedByMe ? (
+                              <input type="date" value={draft.completedDate} onChange={e => hc("completedDate", e.target.value)} className="w-full text-[0.75vw] border border-gray-300 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[8vw]" />
+                            ) : (
+                              <span className="text-[0.75vw] whitespace-nowrap">{product.report?.completedDate ? fmtDate(product.report.completedDate) : "—"}</span>
+                            )}
+                          </td>
+
                           {/* Status */}
                           <td className="px-[0.8vw] py-[0.7vw] text-center border border-gray-300">
-                            <span className={`inline-flex items-center gap-[0.3vw] px-[0.6vw] py-[0.25vw] rounded-full border text-[0.68vw] font-semibold ${statusCfg.bg} ${statusCfg.border} ${statusCfg.text}`}>
-                              <StatusIcon className="w-[0.8vw] h-[0.8vw]" />
-                              {pStatus}
-                            </span>
+                            {isClaimedByMe ? (
+                              <select value={draft.status} onChange={e => hc("status", e.target.value)} className="w-full text-[0.75vw] border border-gray-300 rounded p-[0.3vw] outline-none focus:border-blue-500 font-semibold min-w-[9vw]">
+                                {STATUS_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                              </select>
+                            ) : (
+                              <span className={`inline-flex items-center gap-[0.3vw] px-[0.6vw] py-[0.25vw] rounded-full border text-[0.68vw] font-semibold whitespace-nowrap ${statusCfg.bg} ${statusCfg.border} ${statusCfg.text}`}>
+                                <StatusIcon className="w-[0.8vw] h-[0.8vw]" />
+                                {pStatus}
+                              </span>
+                            )}
                           </td>
 
                           {/* Remarks */}
-                          <td className="px-[0.8vw] py-[0.7vw] text-center border border-gray-300 text-[0.75vw] text-gray-700 font-semibold">
-                            {pRemark}
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                            {isClaimedByMe ? (
+                              <input type="text" value={draft.currentRemark} onChange={e => hc("currentRemark", e.target.value)} className="w-full text-[0.75vw] border border-gray-300 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[8vw]" placeholder="Remark..." />
+                            ) : (
+                              <span className="text-[0.75vw] text-gray-700 font-semibold">{pRemark}</span>
+                            )}
+                          </td>
+
+                          {/* Image Upload */}
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300 text-center min-w-[8vw]">
+                            {isClaimedByMe ? (
+                              <div className="flex items-center justify-center gap-[0.5vw]">
+                                <input type="file" id={`file-${product._pid}`} accept="image/*" onChange={(e) => handleImageChange(product._pid, product, e)} className="hidden" />
+                                <label htmlFor={`file-${product._pid}`} className="flex items-center justify-center w-[2vw] h-[2vw] bg-blue-50 border border-blue-200 text-blue-600 rounded-[0.4vw] cursor-pointer hover:bg-blue-600 hover:text-white transition-all shadow-sm" title="Upload Image">
+                                  <svg className="w-[1vw] h-[1vw]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                                </label>
+                                {(draft.imagePreview || draft.image) && (
+                                  <div className="w-[2.2vw] h-[2.2vw] rounded-[0.4vw] border border-gray-200 overflow-hidden flex-shrink-0 relative group shadow-sm">
+                                    <img src={draft.imagePreview || (draft.image.startsWith('http') ? draft.image : `${API_URL?.replace(/\/$/, '') || ''}${draft.image.startsWith('/') ? '' : '/'}${draft.image}`)} alt="preview" className="w-full h-full object-cover" />
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer" onClick={() => window.open(draft.imagePreview || (draft.image.startsWith('http') ? draft.image : `${API_URL?.replace(/\/$/, '') || ''}${draft.image.startsWith('/') ? '' : '/'}${draft.image}`), '_blank')}>
+                                      <Eye className="w-[1vw] h-[1vw] text-white" />
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              product.report?.image ? (
+                                <div className="w-[2.2vw] h-[2.2vw] rounded-[0.4vw] border border-gray-200 overflow-hidden relative group shadow-sm mx-auto">
+                                  <img src={product.report.image.startsWith('http') ? product.report.image : `${API_URL?.replace(/\/$/, '') || ''}${product.report.image.startsWith('/') ? '' : '/'}${product.report.image}`} alt="preview" className="w-full h-full object-cover" />
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer" onClick={() => window.open(product.report.image.startsWith('http') ? product.report.image : `${API_URL?.replace(/\/$/, '') || ''}${product.report.image.startsWith('/') ? '' : '/'}${product.report.image}`, '_blank')}>
+                                    <Eye className="w-[1vw] h-[1vw] text-white" />
+                                  </div>
+                                </div>
+                              ) : <span className="text-[0.75vw] text-gray-400">—</span>
+                            )}
                           </td>
 
                           {/* Info */}
@@ -1014,23 +890,30 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
                           </td>
 
                           {/* Action */}
-                          <td className="px-[0.8vw] py-[0.7vw] text-center border border-gray-300">
+                          <td className="px-[0.8vw] py-[0.7vw] text-center border border-gray-300 bg-white sticky right-0 z-10 shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.05)]">
                             {product.assignedTo ? (
-                              product.assignedTo === (currentUser?.userId || currentUser?.id) ? (
+                              isClaimedByMe ? (
                                 <button
-                                  onClick={() => setSelected({ entry, product })}
-                                  className={`inline-flex items-center gap-[0.25vw] px-[0.7vw] py-[0.35vw] rounded-[0.35vw] text-[0.85vw] font-semibold cursor-pointer transition-all ${isHovered
-                                      ? "bg-blue-600 text-white shadow-md shadow-blue-900/10 scale-105"
-                                      : "bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-100"
-                                    }`}
+                                  onClick={() => saveRow(entry, product, draft)}
+                                  disabled={!draft?.hasChanges || savingStates[product._pid]}
+                                  className={`inline-flex items-center gap-[0.25vw] px-[0.7vw] py-[0.35vw] rounded-[0.35vw] text-[0.85vw] font-semibold transition-all ${savingStates[product._pid] ? "bg-blue-400 text-white cursor-not-allowed" : draft?.hasChanges ? "bg-blue-600 text-white hover:bg-blue-700 cursor-pointer shadow-md" : "bg-gray-200 text-gray-500 cursor-not-allowed"}`}
                                 >
-                                  <Edit3 className="w-[0.75vw] h-[0.75vw]" />
-                                  Report
+                                  {savingStates[product._pid] ? (
+                                    <>
+                                      <Loader2 className="w-[0.75vw] h-[0.75vw] animate-spin" />
+                                      Saving...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Send className="w-[0.75vw] h-[0.75vw]" />
+                                      Save
+                                    </>
+                                  )}
                                 </button>
                               ) : (
                                 <div className="flex flex-col items-center gap-[0.2vw]">
                                   <Badge label="Claimed" color="slate" size="xs" />
-                                  <span className="text-[0.6vw] text-gray-800 font-bold">{product.assignedToName}</span>
+                                  <span className="text-[0.6vw] text-gray-800 font-bold whitespace-nowrap">{product.assignedToName}</span>
                                 </div>
                               )
                             ) : (
@@ -1101,28 +984,23 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
               <div className="w-[0.4vw] h-[0.4vw] rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-[0.65vw] font-bold text-emerald-700 uppercase tracking-widest">Live Sync Enabled</span>
             </div>
+            <button onClick={handleBulkSave} disabled={isBulkSaving} className={`flex items-center gap-[0.5vw] px-[1vw] py-[0.4vw] text-white rounded-[0.4vw] text-[0.75vw] font-bold shadow-md shadow-emerald-900/20 transition-all ml-[1vw] ${isBulkSaving ? "bg-emerald-400 cursor-not-allowed" : "bg-emerald-600 hover:bg-emerald-700"}`}>
+              {isBulkSaving ? (
+                <>
+                  <Loader2 className="w-[0.9vw] h-[0.9vw] animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Send className="w-[0.9vw] h-[0.9vw]" />
+                  Bulk Save
+                </>
+              )}
+            </button>
           </div>
         </div>
       )}
 
-      {/* Modal */}
-      <AnimatePresence>
-        {selected && (
-          <ServiceResponseModal
-            entry={selected.entry}
-            product={selected.product}
-            employees={employees}
-            onSave={(report, imageFile) => {
-              updateEntry(selected.entry.id, selected.product._pid, report, imageFile);
-              setSelected(null);
-            }}
-            onClose={() => setSelected(null)}
-            fourMCategories={fourMCategories}
-            errorCodeHistory={errorCodeHistory}
-            problemDescHistory={problemDescHistory}
-          />
-        )}
-      </AnimatePresence>
       <AnimatePresence>
         {infoSelected && (
           <ServiceInfoModal
