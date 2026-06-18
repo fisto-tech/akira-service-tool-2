@@ -386,8 +386,8 @@ export default function ServiceCallAssignment() {
       </div>
 
       {/* ── TABLE (ServiceCall.jsx Style) ────────────────────────── */}
-      <div className="flex-1 overflow-auto px-[1.5vw] py-[1vw] max-h-[80vh]">
-        <div className="bg-white rounded-[0.6vw] border border-blue-200 flex flex-col w-full overflow-hidden">
+      <div className="flex-1 overflow-auto px-[1.5vw] py-[1vw]">
+        <div className="bg-white rounded-[0.6vw] border border-blue-200 flex flex-col w-full overflow-y-auto overflow-x-hidden max-h-[70.5vh]">
           <table className="w-full text-left border-collapse">
             <thead className="bg-blue-50 sticky top-0 z-10">
               <tr>
