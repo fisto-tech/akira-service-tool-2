@@ -244,6 +244,80 @@ const DuplicateModal = ({ onConfirm, onClose }) => {
   );
 };
 
+// Add Rows Modal
+const AddRowsModal = ({ onConfirm, onClose }) => {
+  const [count, setCount] = useState(1);
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-[2px]">
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="bg-white rounded-[0.8vw] shadow-2xl border border-gray-300 p-[1.8vw] w-[22vw]"
+      >
+        <div className="flex items-center gap-[0.6vw] mb-[1.2vw]">
+          <div className="w-[2.2vw] h-[2.2vw] rounded-full bg-blue-100 flex items-center justify-center">
+            <Plus className="w-[1.1vw] h-[1.1vw] text-blue-600" />
+          </div>
+          <div>
+            <div className="text-[0.9vw] font-bold text-black">Add Product Rows</div>
+            <div className="text-[0.72vw] text-gray-800">How many rows do you want to add?</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-[0.8vw] mb-[1.4vw]">
+          <button
+            type="button"
+            onClick={() => setCount((c) => Math.max(1, c - 1))}
+            className="w-[2.4vw] h-[2.4vw] rounded-[0.4vw] border border-gray-400 text-gray-800 hover:bg-gray-100 font-bold text-[1.1vw] flex items-center justify-center cursor-pointer"
+          >
+            −
+          </button>
+          <input
+            type="number"
+            min="1"
+            max="50"
+            value={count}
+            onChange={(e) =>
+              setCount(Math.max(1, Math.min(50, parseInt(e.target.value) || 1)))
+            }
+            className="flex-1 border border-gray-400 rounded-[0.4vw] p-[0.5vw] text-center text-[1vw] font-bold outline-none focus:border-blue-500 shadow-none"
+          />
+          <button
+            type="button"
+            onClick={() => setCount((c) => Math.min(50, c + 1))}
+            className="w-[2.4vw] h-[2.4vw] rounded-[0.4vw] border border-gray-400 text-gray-800 hover:bg-gray-100 font-bold text-[1.1vw] flex items-center justify-center cursor-pointer"
+          >
+            +
+          </button>
+        </div>
+        <div className="text-[0.72vw] text-gray-700 mb-[1.2vw] bg-blue-50 rounded-[0.4vw] p-[0.6vw] border border-blue-200">
+          This will add <strong>{count}</strong> new empty product row{count > 1 ? "s" : ""}.
+        </div>
+        <div className="flex gap-[0.6vw] justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-[1.2vw] py-[0.55vw] border border-gray-300 rounded-[0.4vw] text-[0.78vw] text-black/80 hover:bg-gray-50 cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              onConfirm(count);
+              onClose();
+            }}
+            className="px-[1.4vw] py-[0.55vw] bg-blue-600 hover:bg-blue-700 text-white rounded-[0.4vw] text-[0.78vw] font-semibold cursor-pointer flex items-center gap-[0.4vw]"
+          >
+            <Plus className="w-[0.85vw] h-[0.85vw]" />Add {count}{" "}
+            Row{count > 1 ? "s" : ""}
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
 // Unsaved Changes Confirmation Modal
 const UnsavedChangesModal = ({ onConfirm, onClose }) => {
   return (
@@ -752,6 +826,7 @@ const InwardForm = ({ initialData, customerDb, employees, boardTypes, onSave, on
   const [dupeTarget, setDupeTarget] = useState(null);
   const [isDirty, setIsDirty] = useState(false);
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
+  const [showAddRowsModal, setShowAddRowsModal] = useState(false);
   const custRef = useRef(null);
 
   // Browser refresh/close prevention
@@ -832,8 +907,11 @@ const InwardForm = ({ initialData, customerDb, employees, boardTypes, onSave, on
     setProducts((prev) => prev.filter((p) => p._pid !== pid));
     setIsDirty(true);
   };
-  const addProduct = () => {
-    setProducts((prev) => [...prev, emptyProduct()]);
+  const confirmAddRows = (count) => {
+    setProducts((prev) => {
+      const newRows = Array.from({ length: count }, () => emptyProduct());
+      return [...prev, ...newRows];
+    });
     setIsDirty(true);
   };
 
@@ -983,6 +1061,12 @@ const InwardForm = ({ initialData, customerDb, employees, boardTypes, onSave, on
               onBack();
             }}
             onClose={() => setShowUnsavedModal(false)}
+          />
+        )}
+        {showAddRowsModal && (
+          <AddRowsModal
+            onConfirm={confirmAddRows}
+            onClose={() => setShowAddRowsModal(false)}
           />
         )}
       </AnimatePresence>
@@ -1164,7 +1248,7 @@ const InwardForm = ({ initialData, customerDb, employees, boardTypes, onSave, on
             {!isReadOnly && (
               <button
                 type="button"
-                onClick={addProduct}
+                onClick={() => setShowAddRowsModal(true)}
                 className="flex items-center gap-[0.4vw] text-[0.75vw] font-semibold text-blue-600 border border-blue-200 hover:bg-blue-50 px-[0.8vw] py-[0.4vw] rounded-[0.4vw] cursor-pointer"
               >
                 <Plus className="w-[0.85vw] h-[0.85vw]" />Add Product Row
