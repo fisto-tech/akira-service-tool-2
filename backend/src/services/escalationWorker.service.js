@@ -87,6 +87,7 @@ async function runEscalationCheck() {
         if (prod._deadline > now)      continue;
         if (prod._productClosure?.status === 'Closed') continue;
         if (prod._supportRequested)    continue;
+        if (prod._attended)            continue;
 
         // Find SLA steps for this product
         const steps = resolveSteps(

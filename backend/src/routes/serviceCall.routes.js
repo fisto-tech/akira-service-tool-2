@@ -16,6 +16,7 @@ router.get('/field-visit/:userId', serviceCallController.getFieldVisits);
 router.patch('/field-visit/:id/close', serviceCallController.closeFieldVisit);
 
 router.patch('/:id/product/:pIdx/close', serviceCallController.closeProduct);
+router.patch('/:id/product/:pIdx/attend', serviceCallController.attendProduct);
 
 router.get('/',                  serviceCallController.getAllCalls);
 router.post('/',                 serviceCallController.createCall);

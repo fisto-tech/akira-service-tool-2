@@ -224,6 +224,26 @@ exports.closeProduct = async (req, res) => {
   }
 };
 
+// ── PATCH /api/service-calls/:id/product/:pIdx/attend ────────────────────────
+exports.attendProduct = async (req, res) => {
+  try {
+    const { id, pIdx } = req.params;
+    
+    const call = await ServiceCall.findById(id);
+    if (!call) return res.status(404).json({ message: 'Call not found' });
+    if (!call.products[pIdx]) return res.status(404).json({ message: 'Product not found' });
+
+    call.products[pIdx]._attended = true;
+    call.products[pIdx]._attendedAt = new Date();
+    
+    call.markModified('products');
+    await call.save();
+    res.json(call);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // ── POST /api/service-calls/support ──────────────────────────────────────────
 exports.createSupportRequest = async (req, res) => {
   try {

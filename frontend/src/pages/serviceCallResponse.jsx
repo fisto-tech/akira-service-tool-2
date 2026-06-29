@@ -4,7 +4,7 @@ import {
   History, Shield, ChevronDown, ChevronUp,
   RefreshCw, HelpCircle, Send, X, MapPin, Bell,
   CheckSquare, Wrench, BarChart2, Eye,
-  AlertCircle, ChevronRight, Layers, Phone, Mail, Share2,
+  AlertCircle, ChevronRight, Layers, Phone, Mail, Share2, Play
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
@@ -29,23 +29,25 @@ const getProductStatus = (prod) => {
   if (prod._productClosure?.status === "Resolved" || prod._productClosure?.status === "Closed")  return "closed";
   if (prod._productClosure?.status === "Pending") return "pending";
   if (prod._supportRequested)                     return "support";
+  if (prod._attended)                             return "attended";
   return "open";
 };
 
 const PROD_STATUS_CFG = {
-  resolved: { dot: "bg-green-500",  label: "Resolved",    cls: "bg-green-50 border-green-300 text-green-700"    },
-  closed:   { dot: "bg-green-500",  label: "Resolved",    cls: "bg-green-50 border-green-300 text-green-700"    },
-  pending:  { dot: "bg-gray-500",   label: "Pending",     cls: "bg-gray-50 border-gray-300 text-gray-700"       },
-  support:  { dot: "bg-blue-400",   label: "Support Req", cls: "bg-blue-50 border-blue-300 text-blue-700"       },
-  open:     { dot: "bg-blue-400",   label: "Open",        cls: "bg-blue-50 border-blue-300 text-blue-700"       },
+  resolved: { dot: "bg-emerald-500",  label: "Resolved",    cls: "bg-emerald-50/70 border-emerald-200 text-emerald-700" },
+  closed:   { dot: "bg-emerald-500",  label: "Resolved",    cls: "bg-emerald-50/70 border-emerald-200 text-emerald-700" },
+  pending:  { dot: "bg-amber-500",    label: "Pending",     cls: "bg-amber-50/70 border-amber-200 text-amber-700"       },
+  support:  { dot: "bg-blue-400",   label: "Support Req", cls: "bg-blue-50/70 border-blue-200 text-blue-700"       },
+  attended: { dot: "bg-indigo-500",  label: "Attended",    cls: "bg-indigo-50/70 border-indigo-200 text-indigo-700"   },
+  open:     { dot: "bg-rose-400",     label: "Open",        cls: "bg-rose-50/70 border-rose-200 text-rose-700"         },
 };
 
 // ── Contact Info Container ─────────────────────────────────────────────────────
 const ContactInfoBar = ({ entry }) => {
   if (!entry?.contactPerson && !entry?.contactNumber && !entry?.emailId && !entry?.location) return null;
   return (
-    <div className="mx-[0.9vw] mb-[0.6vw] bg-slate-50 border border-slate-200 rounded-[0.45vw] px-[0.8vw] py-[0.5vw] flex items-center gap-[1.4vw] flex-wrap">
-      <span className="text-[0.62vw] font-bold text-slate-400 uppercase tracking-wider flex-shrink-0">Contact</span>
+    <div className="mx-[0.9vw] mb-[0.6vw] bg-slate-50/60 border border-slate-200/80 rounded-[0.45vw] px-[0.8vw] py-[0.5vw] flex items-center gap-[1.4vw] flex-wrap">
+      <span className="text-[0.62vw] font-bold text-slate-400 uppercase tracking-wider flex-shrink-0">Contact Info</span>
       {entry.contactPerson && (
         <div className="flex items-center gap-[0.3vw] text-[0.75vw] text-slate-700">
           <User className="w-[0.8vw] h-[0.8vw] text-slate-400 flex-shrink-0" />
@@ -55,13 +57,13 @@ const ContactInfoBar = ({ entry }) => {
       {entry.contactNumber && (
         <div className="flex items-center gap-[0.3vw] text-[0.75vw] text-slate-700">
           <Phone className="w-[0.75vw] h-[0.75vw] text-slate-400 flex-shrink-0" />
-          <span>{entry.contactNumber}</span>
+          <span className="font-mono">{entry.contactNumber}</span>
         </div>
       )}
       {entry.emailId && (
         <div className="flex items-center gap-[0.3vw] text-[0.75vw] text-slate-700">
           <Mail className="w-[0.75vw] h-[0.75vw] text-slate-400 flex-shrink-0" />
-          <span>{entry.emailId}</span>
+          <span className="font-mono">{entry.emailId}</span>
         </div>
       )}
       {entry.location && (
@@ -80,6 +82,10 @@ const ProductSLATimer = ({ product, globalTimer }) => {
   const [timeLeft, setTimeLeft] = useState("");
 
   useEffect(() => {
+    if (product._attended) {
+      setTimeLeft("attended");
+      return;
+    }
     if (!lastEsc?.assignedAt) return;
     const flows = load(ESCALATION_FLOWS_KEY, {});
     const allFlows = Object.values(flows).find(f => Array.isArray(f)) || [];
@@ -98,12 +104,21 @@ const ProductSLATimer = ({ product, globalTimer }) => {
     update();
     const t = setInterval(update, 1000);
     return () => clearInterval(t);
-  }, [lastEsc]);
+  }, [lastEsc, product._attended]);
+
+  if (product._attended) {
+    return (
+      <div className="flex items-center gap-[0.25vw] px-[0.45vw] py-[0.2vw] rounded-[0.3vw] bg-emerald-50 text-emerald-600 border border-emerald-200/60 font-bold text-[0.68vw]">
+        <CheckSquare className="w-[0.7vw] h-[0.7vw]" />
+        Attended
+      </div>
+    );
+  }
 
   if (!lastEsc && !globalTimer) return null;
   if (!lastEsc && globalTimer) {
     return (
-      <div className={`flex items-center gap-[0.25vw] px-[0.45vw] py-[0.2vw] rounded-[0.3vw] font-mono text-[0.68vw] font-bold ${globalTimer.isExpired ? "bg-red-100 text-red-600" : globalTimer.isUrgent ? "bg-gray-100 text-gray-700" : "bg-blue-50 text-blue-600"}`}>
+      <div className={`flex items-center gap-[0.25vw] px-[0.45vw] py-[0.2vw] rounded-[0.3vw] font-mono text-[0.68vw] font-bold ${globalTimer.isExpired ? "bg-red-50 text-red-600 border border-red-200/50" : globalTimer.isUrgent ? "bg-amber-50 text-amber-700 border border-amber-200/50" : "bg-blue-50 text-blue-600 border border-blue-200/50"}`}>
         <Clock className="w-[0.7vw] h-[0.7vw]" />
         {globalTimer.isExpired ? "Escalating" : globalTimer.remainingFormatted}
       </div>
@@ -112,7 +127,7 @@ const ProductSLATimer = ({ product, globalTimer }) => {
   if (!timeLeft) return null;
   const isOverdue = timeLeft === "overdue";
   return (
-    <div className={`flex items-center gap-[0.25vw] px-[0.45vw] py-[0.2vw] rounded-[0.3vw] font-mono text-[0.68vw] font-bold ${isOverdue ? "bg-red-100 text-red-600 animate-pulse" : "bg-blue-50 text-blue-600"}`}>
+    <div className={`flex items-center gap-[0.25vw] px-[0.45vw] py-[0.2vw] rounded-[0.3vw] font-mono text-[0.68vw] font-bold ${isOverdue ? "bg-red-50 text-red-600 border border-red-200/50 animate-pulse" : "bg-blue-50 text-blue-600 border border-blue-200/50"}`}>
       <Clock className="w-[0.7vw] h-[0.7vw]" />
       {isOverdue ? "SLA Breached" : timeLeft}
     </div>
@@ -149,45 +164,45 @@ const SupportEscalationModal = ({ product, entry, currentUser, employees: propsE
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-      <div className="bg-white w-[34vw] rounded-[0.8vw] shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
-        <div className="bg-gray-900 px-[1.2vw] py-[0.8vw] flex justify-between items-center">
+      <div className="bg-white w-[34vw] rounded-[0.8vw] shadow-2xl overflow-hidden max-h-[85vh] flex flex-col border border-slate-100">
+        <div className="bg-gradient-to-r from-slate-900 to-slate-800 px-[1.2vw] py-[0.8vw] flex justify-between items-center">
           <div className="flex items-center gap-[0.6vw]">
             <Share2 className="w-[1.1vw] h-[1.1vw] text-white/80" />
             <h3 className="text-[0.95vw] font-bold text-white">
               {showAll ? "Reassign Support Request" : "Request Support — This Product"}
             </h3>
           </div>
-          <button onClick={onClose} className="text-white/60 hover:text-white cursor-pointer transition-colors">
+          <button onClick={onClose} className="text-white/60 hover:text-white cursor-pointer transition-colors p-[0.2vw] hover:bg-white/10 rounded">
             <X className="w-[1.1vw] h-[1.1vw]" />
           </button>
         </div>
 
         <div className="p-[1.2vw] flex flex-col gap-[0.9vw] overflow-y-auto flex-1">
-          <div className="bg-blue-50 border border-blue-200 rounded-[0.4vw] p-[0.6vw] text-[0.72vw] text-blue-700">
+          <div className="bg-blue-50/80 border border-blue-200/60 rounded-[0.4vw] p-[0.6vw] text-[0.72vw] text-blue-700">
             <strong>Note:</strong>{" "}
             {showAll
               ? "Reassign this support request to any available person."
               : "Only this product will be reassigned. Others remain with you."}
           </div>
 
-          <div className="bg-gray-50 border border-gray-200 rounded-[0.5vw] p-[0.7vw]">
-            <div className="text-[0.8vw] font-bold text-gray-800">
+          <div className="bg-slate-50 border border-slate-200/80 rounded-[0.5vw] p-[0.7vw]">
+            <div className="text-[0.8vw] font-bold text-slate-800">
               {product.productModel || product.itemCode}
             </div>
             {product.serialNumber && (
-              <div className="text-[0.7vw] text-gray-400 font-mono mt-[0.15vw]">
+              <div className="text-[0.7vw] text-slate-400 font-mono mt-[0.15vw]">
                 SN: {product.serialNumber}
               </div>
             )}
             {product.callDescription && (
-              <div className="text-[0.7vw] text-gray-600 mt-[0.25vw]">
+              <div className="text-[0.7vw] text-slate-600 mt-[0.25vw] leading-relaxed">
                 <strong>Issue:</strong> {product.callDescription}
               </div>
             )}
           </div>
 
           <div className="flex flex-col gap-[0.4vw]">
-            <label className="text-[0.78vw] font-semibold text-gray-700">
+            <label className="text-[0.78vw] font-semibold text-slate-700">
               Select Support Person <span className="text-blue-500">*</span>
             </label>
             <input
@@ -195,11 +210,11 @@ const SupportEscalationModal = ({ product, entry, currentUser, employees: propsE
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name or department…"
-              className="w-full border border-gray-300 rounded-[0.4vw] px-[0.8vw] py-[0.45vw] text-[0.8vw] outline-none focus:border-blue-400 transition-colors"
+              className="w-full border border-slate-300 rounded-[0.4vw] px-[0.8vw] py-[0.45vw] text-[0.8vw] outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
             />
-            <div className="border border-gray-200 rounded-[0.4vw] max-h-[12vw] overflow-y-auto divide-y divide-gray-100">
+            <div className="border border-slate-200 rounded-[0.4vw] max-h-[12vw] overflow-y-auto divide-y divide-slate-100 bg-white">
               {candidates.length === 0 ? (
-                <div className="p-[1vw] text-center text-gray-400 text-[0.75vw]">
+                <div className="p-[1vw] text-center text-slate-400 text-[0.75vw]">
                   No eligible support personnel found
                 </div>
               ) : (
@@ -209,18 +224,18 @@ const SupportEscalationModal = ({ product, entry, currentUser, employees: propsE
                     onClick={() => setSelectedPerson(emp)}
                     className={`flex items-center gap-[0.7vw] px-[0.8vw] py-[0.55vw] cursor-pointer transition-all
                       ${selectedPerson?.userId === emp.userId
-                        ? "bg-blue-50 border-l-[0.15vw] border-blue-500"
-                        : "hover:bg-gray-50 border-l-[0.15vw] border-transparent"
+                        ? "bg-blue-50/70 border-l-[0.15vw] border-blue-500"
+                        : "hover:bg-slate-50 border-l-[0.15vw] border-transparent"
                       }`}
                   >
-                    <div className="w-[1.7vw] h-[1.7vw] rounded-full bg-gray-900 flex items-center justify-center flex-shrink-0">
+                    <div className="w-[1.7vw] h-[1.7vw] rounded-full bg-slate-900 flex items-center justify-center flex-shrink-0">
                       <span className="text-white text-[0.58vw] font-bold">
                         {emp.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-[0.8vw] font-semibold text-gray-800">{emp.name}</div>
-                      <div className="text-[0.68vw] text-gray-400">{emp.department} · {emp.userId}</div>
+                      <div className="text-[0.8vw] font-semibold text-slate-800">{emp.name}</div>
+                      <div className="text-[0.68vw] text-slate-400">{emp.department} · {emp.userId}</div>
                     </div>
                     {selectedPerson?.userId === emp.userId && (
                       <CheckCircle className="w-[0.9vw] h-[0.9vw] text-blue-500 flex-shrink-0" />
@@ -232,7 +247,7 @@ const SupportEscalationModal = ({ product, entry, currentUser, employees: propsE
           </div>
 
           <div className="flex flex-col gap-[0.3vw]">
-            <label className="text-[0.78vw] font-semibold text-gray-700">
+            <label className="text-[0.78vw] font-semibold text-slate-700">
               Handover Notes <span className="text-blue-500">*</span>
             </label>
             <textarea
@@ -240,15 +255,15 @@ const SupportEscalationModal = ({ product, entry, currentUser, employees: propsE
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Describe the issue, what you've tried, what they need to know…"
-              className="border border-gray-300 rounded-[0.4vw] p-[0.6vw] text-[0.8vw] outline-none resize-none focus:border-blue-400 transition-colors"
+              className="border border-slate-300 rounded-[0.4vw] p-[0.6vw] text-[0.8vw] outline-none resize-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
             />
           </div>
         </div>
 
-        <div className="px-[1.2vw] py-[0.7vw] border-t border-gray-200 bg-gray-50 flex justify-end gap-[0.6vw]">
+        <div className="px-[1.2vw] py-[0.7vw] border-t border-slate-200 bg-slate-50 flex justify-end gap-[0.6vw]">
           <button
             onClick={onClose}
-            className="px-[1.1vw] py-[0.45vw] border border-gray-300 bg-white rounded-[0.4vw] text-[0.8vw] font-medium cursor-pointer hover:bg-gray-100 text-gray-600 transition-colors"
+            className="px-[1.1vw] py-[0.45vw] border border-slate-300 bg-white rounded-[0.4vw] text-[0.8vw] font-medium cursor-pointer hover:bg-slate-100 text-slate-600 transition-colors"
           >
             Cancel
           </button>
@@ -258,7 +273,7 @@ const SupportEscalationModal = ({ product, entry, currentUser, employees: propsE
               if (!notes.trim()) { alert("Please add handover notes."); return; }
               onConfirm({ supportPerson: selectedPerson, notes });
             }}
-            className="px-[1.1vw] py-[0.45vw] bg-gray-900 hover:bg-gray-800 text-white rounded-[0.4vw] text-[0.8vw] font-semibold cursor-pointer flex items-center gap-[0.35vw] transition-colors"
+            className="px-[1.1vw] py-[0.45vw] bg-slate-900 hover:bg-slate-800 text-white rounded-[0.4vw] text-[0.8vw] font-semibold cursor-pointer flex items-center gap-[0.35vw] transition-colors"
           >
             <Send className="w-[0.85vw] h-[0.85vw]" />
             Reassign Product
@@ -295,47 +310,47 @@ const AssignVisitModal = ({ type, entry, product, currentUser, employees: propsE
         </div>
       )}
       <div className="flex flex-col gap-[0.25vw]">
-        <label className="text-[0.78vw] font-semibold text-gray-600">Assign To *</label>
+        <label className="text-[0.78vw] font-semibold text-slate-600">Assign To *</label>
         <select value={form.assignedTo} onChange={e => {
           const emp = techEngs.find(en => en.userId === e.target.value);
           sf("assignedTo", e.target.value); sf("assignedToName", emp?.name || "");
-        }} className="border border-gray-300 rounded-[0.4vw] p-[0.55vw] text-[0.8vw] bg-white outline-none">
+        }} className="border border-slate-300 rounded-[0.4vw] p-[0.55vw] text-[0.8vw] bg-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
           <option value="">-- Select person --</option>
           {techEngs.map(e => <option key={e.userId} value={e.userId}>{e.name} ({e.department})</option>)}
         </select>
       </div>
       <div className="grid grid-cols-2 gap-[0.7vw]">
         <div className="flex flex-col gap-[0.25vw]">
-          <label className="text-[0.78vw] font-semibold text-gray-600">Assignment Date</label>
+          <label className="text-[0.78vw] font-semibold text-slate-600">Assignment Date</label>
           <input type="datetime-local" value={form.assignmentDate} onChange={e => sf("assignmentDate", e.target.value)}
-            className="border border-gray-300 rounded-[0.4vw] p-[0.55vw] text-[0.78vw] outline-none" />
+            className="border border-slate-300 rounded-[0.4vw] p-[0.55vw] text-[0.78vw] outline-none focus:border-blue-500 transition-all" />
         </div>
         <div className="flex flex-col gap-[0.25vw]">
-          <label className="text-[0.78vw] font-semibold text-gray-600">{isFV ? "Visit Date" : "Received Date"}</label>
+          <label className="text-[0.78vw] font-semibold text-slate-600">{isFV ? "Visit Date" : "Received Date"}</label>
           <input type="date" value={form.visitDate} onChange={e => sf("visitDate", e.target.value)}
-            className="border border-gray-300 rounded-[0.4vw] p-[0.55vw] text-[0.78vw] outline-none" />
+            className="border border-slate-300 rounded-[0.4vw] p-[0.55vw] text-[0.78vw] outline-none focus:border-blue-500 transition-all" />
         </div>
       </div>
       <div className="flex flex-col gap-[0.25vw]">
-        <label className="text-[0.78vw] font-semibold text-gray-600">Diagnosis Summary</label>
+        <label className="text-[0.78vw] font-semibold text-slate-600">Diagnosis Summary</label>
         <textarea rows="2" value={form.diagnosisSummary} onChange={e => sf("diagnosisSummary", e.target.value)}
           placeholder="Initial findings…"
-          className="border border-gray-300 rounded-[0.4vw] p-[0.55vw] text-[0.78vw] outline-none resize-none" />
+          className="border border-slate-300 rounded-[0.4vw] p-[0.55vw] text-[0.78vw] outline-none resize-none focus:border-blue-500 transition-all" />
       </div>
     </div>
   );
 
   const saveBtn = (
     <button onClick={() => { if (!form.assignedTo) { alert("Please select a person."); return; } onSave(form); }}
-      className="px-[1.1vw] py-[0.45vw] bg-gray-900 hover:bg-gray-800 text-white rounded-[0.4vw] text-[0.8vw] font-semibold cursor-pointer flex items-center gap-[0.35vw]">
+      className="px-[1.1vw] py-[0.45vw] bg-slate-900 hover:bg-slate-800 text-white rounded-[0.4vw] text-[0.8vw] font-semibold cursor-pointer flex items-center gap-[0.35vw] transition-colors shadow-sm">
       <CheckCircle className="w-[0.85vw] h-[0.85vw]" />Save Assignment
     </button>
   );
 
   if (inlineMode) return (
-    <div className="border border-gray-200 rounded-[0.5vw] overflow-hidden bg-white mt-[0.5vw]">
-      <div className="bg-gray-50 border-b border-gray-200 px-[0.7vw] py-[0.45vw] flex justify-between items-center">
-        <span className="text-[0.78vw] font-bold text-gray-700">Assign {type}</span>
+    <div className="border border-slate-200 rounded-[0.5vw] overflow-hidden bg-white mt-[0.5vw]">
+      <div className="bg-slate-50 border-b border-slate-200 px-[0.7vw] py-[0.45vw] flex justify-between items-center">
+        <span className="text-[0.78vw] font-bold text-slate-700">Assign {type}</span>
       </div>
       <div className="p-[0.75vw]">{formBody}<div className="flex justify-end mt-[0.7vw]">{saveBtn}</div></div>
     </div>
@@ -343,14 +358,14 @@ const AssignVisitModal = ({ type, entry, product, currentUser, employees: propsE
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-      <div className="bg-white w-[38vw] rounded-[0.8vw] shadow-2xl overflow-hidden">
-        <div className="border-b px-[1.2vw] py-[0.8vw] flex justify-between items-center bg-gray-50">
-          <h3 className="text-[0.95vw] font-bold text-gray-800">Assign {type}</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-700"><X className="w-[1.1vw] h-[1.1vw]" /></button>
+      <div className="bg-white w-[38vw] rounded-[0.8vw] shadow-2xl overflow-hidden border border-slate-100">
+        <div className="border-b px-[1.2vw] py-[0.8vw] flex justify-between items-center bg-slate-50">
+          <h3 className="text-[0.95vw] font-bold text-slate-800">Assign {type}</h3>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 p-[0.2vw] hover:bg-slate-100 rounded transition-all"><X className="w-[1.1vw] h-[1.1vw]" /></button>
         </div>
         <div className="p-[1.2vw]">{formBody}</div>
-        <div className="px-[1.2vw] py-[0.7vw] border-t border-gray-200 flex justify-end gap-[0.6vw]">
-          <button onClick={onClose} className="px-[1.1vw] py-[0.45vw] border rounded-[0.4vw] text-[0.8vw] font-medium">Cancel</button>
+        <div className="px-[1.2vw] py-[0.7vw] border-t border-slate-200 flex justify-end gap-[0.6vw] bg-slate-50">
+          <button onClick={onClose} className="px-[1.1vw] py-[0.45vw] border rounded-[0.4vw] text-[0.8vw] font-medium bg-white hover:bg-slate-100 transition-colors">Cancel</button>
           {saveBtn}
         </div>
       </div>
@@ -361,9 +376,9 @@ const AssignVisitModal = ({ type, entry, product, currentUser, employees: propsE
 // ── Generic Issue Details Container ───────────────────────────────────────────
 const IssueDetailsContainer = ({ product }) => {
   return (
-    <div className="mt-[0.6vw] bg-slate-50 border border-slate-200 rounded-[0.4vw] px-[0.7vw] py-[0.5vw]">
+    <div className="mt-[0.6vw] bg-slate-50/70 border border-slate-150 rounded-[0.4vw] px-[0.7vw] py-[0.5vw]">
       <div className="text-[0.65vw] font-bold text-slate-400 uppercase tracking-widest mb-[0.25vw]">Reported Issue</div>
-      <div className="text-[0.78vw] text-slate-700 leading-relaxed font-medium bg-white border border-slate-100 rounded-[0.3vw] p-[0.4vw]">
+      <div className="text-[0.78vw] text-slate-700 leading-relaxed font-medium bg-white border border-slate-200/50 rounded-[0.3vw] p-[0.45vw] shadow-inner">
         {product.callDescription || "No description provided"}
       </div>
     </div>
@@ -373,22 +388,23 @@ const IssueDetailsContainer = ({ product }) => {
 // ── Badge ─────────────────────────────────────────────────────────────────────
 const Badge = ({ label, color = "gray" }) => {
   const map = {
-    green:  "bg-green-100 text-green-700 border-green-300",
-    blue:   "bg-blue-100 text-blue-700 border-blue-300",
-    slate:  "bg-slate-100 text-slate-600 border-slate-300",
-    gray:   "bg-gray-100 text-gray-600 border-gray-300",
-    orange: "bg-orange-100 text-orange-700 border-orange-300",
-    red:    "bg-red-100 text-red-700 border-red-300",
+    green:  "bg-emerald-50 text-emerald-700 border-emerald-200/60",
+    blue:   "bg-blue-50 text-blue-700 border-blue-200/60",
+    slate:  "bg-slate-50 text-slate-600 border-slate-200/60",
+    gray:   "bg-slate-100 text-slate-600 border-slate-200",
+    orange: "bg-amber-50 text-amber-700 border-amber-200/60",
+    red:    "bg-rose-50 text-rose-700 border-rose-200/60",
+    indigo: "bg-indigo-50 text-indigo-700 border-indigo-200/60",
   };
   return (
-    <span className={`text-[0.68vw] px-[0.5vw] py-[0.15vw] rounded-full border font-semibold whitespace-nowrap ${map[color] || map.gray}`}>
+    <span className={`text-[0.68vw] px-[0.5vw] py-[0.15vw] rounded-full border font-semibold whitespace-nowrap tracking-wide ${map[color] || map.gray}`}>
       {label}
     </span>
   );
 };
 
 // ── Product Closure Panel ─────────────────────────────────────────────────────
-const ProductClosurePanel = ({ prod, prodIdx, entry, currentUser, employees: propsEmployees, onAssignFieldVisit, onProductClose, onSupportRequest }) => {
+const ProductClosurePanel = ({ prod, prodIdx, entry, currentUser, employees: propsEmployees, onAssignFieldVisit, onProductClose, onSupportRequest, onProductAttend }) => {
   const existing = prod._productClosure || {};
   const saved    = existing.status;
   const [selected, setSelected]             = useState("");
@@ -411,10 +427,10 @@ const ProductClosurePanel = ({ prod, prodIdx, entry, currentUser, employees: pro
   }, []);
 
   if (saved === "Closed") return (
-    <div className="mt-[0.5vw] bg-green-50 border border-green-200 rounded-[0.4vw] px-[0.7vw] py-[0.4vw] flex items-center gap-[0.5vw]">
-      <CheckCircle className="w-[0.85vw] h-[0.85vw] text-green-600 flex-shrink-0" />
-      <span className="text-[0.72vw] font-bold text-green-700">Resolved & Closed</span>
-      {existing.remarks && <span className="text-[0.68vw] text-green-600 truncate opacity-70 italic">· {existing.remarks}</span>}
+    <div className="mt-[0.5vw] bg-emerald-50/80 border border-emerald-200 rounded-[0.4vw] px-[0.7vw] py-[0.4vw] flex items-center gap-[0.5vw]">
+      <CheckCircle className="w-[0.85vw] h-[0.85vw] text-emerald-600 flex-shrink-0" />
+      <span className="text-[0.72vw] font-bold text-emerald-700">Resolved & Closed</span>
+      {existing.remarks && <span className="text-[0.68vw] text-emerald-600 truncate opacity-80 italic">· {existing.remarks}</span>}
     </div>
   );
 
@@ -443,7 +459,6 @@ const ProductClosurePanel = ({ prod, prodIdx, entry, currentUser, employees: pro
   const candidates = useMemo(() => {
     const emps = propsEmployees || load(EMPLOYEES_KEY, []);
     const q = search.toLowerCase();
-    // Allow showing all if search is empty, but filter out current user
     return emps.filter(e => 
       e.userId !== currentUser?.userId && 
       (!q || e.name.toLowerCase().includes(q) || e.department.toLowerCase().includes(q))
@@ -451,99 +466,117 @@ const ProductClosurePanel = ({ prod, prodIdx, entry, currentUser, employees: pro
   }, [currentUser, search, propsEmployees]);
 
   const tabs = [
-    { k: "Open",       l: "Open",        e: "🔄", c: "bg-blue-400" },
-    { k: "Resolved",   l: "Resolved",    e: "✓", c: "bg-green-600" },
-    { k: "Pending",    l: "Pending",     e: "⏸", c: "bg-yellow-500" },
-    { k: "FVRequired", l: "Field Visit", e: "📍", c: "bg-blue-600" },
+    { k: "Open",       l: "Support",     e: "🔄", c: "bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md shadow-blue-500/10" },
+    { k: "Resolved",   l: "Resolve",     e: "✓", c: "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/10" },
+    { k: "Pending",    l: "Pending",     e: "⏸", c: "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-amber-500/10" },
+    { k: "FVRequired", l: "Field Visit", e: "📍", c: "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/10" },
   ];
 
   return (
     <div className="mt-[0.6vw] flex flex-col gap-[0.5vw]">
-      <div className="grid grid-cols-4 gap-[0.3vw]">
-        {tabs.map(t => (
-          <button key={t.k} onClick={() => setSelected(selected === t.k ? "" : t.k)}
-            className={`py-[0.5vw] text-[0.68vw] font-bold rounded-[0.4vw] border transition-all cursor-pointer flex items-center justify-center gap-[0.25vw] ${selected === t.k ? `${t.c} text-white shadow-sm` : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"}`}>
-            <span className="text-[0.75vw]">{t.e}</span><span>{t.l}</span>
+      {/* Attendance Guard */}
+      {!prod._attended ? (
+        <div className="bg-gradient-to-br from-indigo-50/70 via-blue-50/40 to-slate-50 border border-indigo-100 rounded-[0.5vw] p-[1.1vw] flex flex-col items-center justify-center text-center gap-[0.5vw] shadow-sm">
+          <div className="w-[2vw] h-[2vw] rounded-full bg-indigo-100/80 flex items-center justify-center text-indigo-600">
+            <Play className="w-[1vw] h-[1vw] fill-indigo-600 animate-pulse ml-[0.1vw]" />
+          </div>
+          <div>
+            <div className="text-[0.82vw] font-bold text-slate-800 tracking-tight">Attend this Service Call</div>
+            <p className="text-[0.68vw] text-slate-500 mt-[0.15vw]">You must acknowledge and attend the call first to halt auto-escalation.</p>
+          </div>
+          <button 
+            onClick={() => onProductAttend(prodIdx)} 
+            className="w-full py-[0.5vw] bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-[0.4vw] font-bold text-[0.72vw] transition-all duration-200 transform active:scale-95 shadow shadow-indigo-600/15 cursor-pointer flex items-center justify-center gap-[0.35vw]">
+            <CheckSquare className="w-[0.8vw] h-[0.8vw]" />
+            Attend Call
           </button>
-        ))}
-      </div>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-4 gap-[0.3vw]">
+            {tabs.map(t => (
+              <button key={t.k} onClick={() => setSelected(selected === t.k ? "" : t.k)}
+                className={`py-[0.45vw] text-[0.68vw] font-bold rounded-[0.4vw] border transition-all cursor-pointer flex items-center justify-center gap-[0.25vw] ${selected === t.k ? `${t.c}` : "bg-white border-slate-200 text-slate-500 hover:bg-slate-50"}`}>
+                <span className="text-[0.75vw]">{t.e}</span><span>{t.l}</span>
+              </button>
+            ))}
+          </div>
 
-      <AnimatePresence>
-        {selected === "Open" && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="bg-blue-50 border border-blue-200 rounded-[0.5vw] p-[0.7vw] space-y-[0.6vw] overflow-hidden">
-            <div className="text-[0.65vw] font-bold text-blue-700 uppercase tracking-tight">Request Support / Escalate</div>
-            <div className="flex flex-col gap-[0.4vw]">
-              <div className="relative" ref={dropdownRef}>
-                <input 
-                  type="text" 
-                  value={search} 
-                  onFocus={() => setShowDropdown(true)}
-                  onChange={e => { setSearch(e.target.value); setSelectedPerson(null); setShowDropdown(true); }} 
-                  placeholder="Search person/department..." 
-                  className="w-full border border-gray-200 rounded-[0.4vw] px-[0.6vw] py-[0.5vw] text-[0.75vw] outline-none bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all shadow-sm" 
-                />
-                {showDropdown && candidates.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 z-20 border border-gray-200 bg-white rounded-b-[0.4vw] max-h-[10vw] overflow-y-auto divide-y divide-gray-50 shadow-lg mt-[-0.1vw]">
-                    {candidates.map(emp => (
-                      <div key={emp.userId} onClick={() => { setSelectedPerson(emp); setSearch(emp.name); setShowDropdown(false); }} className={`px-[0.6vw] py-[0.5vw] text-[0.72vw] cursor-pointer hover:bg-blue-50 flex justify-between items-center transition-colors ${selectedPerson?.userId === emp.userId ? "bg-blue-100 font-bold" : ""}`}>
-                        <span>{emp.name} ({emp.department})</span>
-                        {selectedPerson?.userId === emp.userId && <CheckCircle className="w-[0.75vw] h-[0.75vw] text-blue-600" />}
+          <AnimatePresence>
+            {selected === "Open" && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="bg-blue-50/80 border border-blue-200/60 rounded-[0.5vw] p-[0.7vw] space-y-[0.6vw] overflow-hidden">
+                <div className="text-[0.65vw] font-bold text-blue-700 uppercase tracking-tight">Request Support / Escalate</div>
+                <div className="flex flex-col gap-[0.4vw]">
+                  <div className="relative" ref={dropdownRef}>
+                    <input 
+                      type="text" 
+                      value={search} 
+                      onFocus={() => setShowDropdown(true)}
+                      onChange={e => { setSearch(e.target.value); setSelectedPerson(null); setShowDropdown(true); }} 
+                      placeholder="Search person/department..." 
+                      className="w-full border border-slate-200 rounded-[0.4vw] px-[0.6vw] py-[0.5vw] text-[0.75vw] outline-none bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all shadow-sm" 
+                    />
+                    {showDropdown && candidates.length > 0 && (
+                      <div className="absolute top-full left-0 right-0 z-20 border border-slate-200 bg-white rounded-b-[0.4vw] max-h-[10vw] overflow-y-auto divide-y divide-slate-50 shadow-lg mt-[-0.1vw]">
+                        {candidates.map(emp => (
+                          <div key={emp.userId} onClick={() => { setSelectedPerson(emp); setSearch(emp.name); setShowDropdown(false); }} className={`px-[0.6vw] py-[0.5vw] text-[0.72vw] cursor-pointer hover:bg-blue-50/60 flex justify-between items-center transition-colors ${selectedPerson?.userId === emp.userId ? "bg-blue-50 font-bold" : ""}`}>
+                            <span>{emp.name} ({emp.department})</span>
+                            {selectedPerson?.userId === emp.userId && <CheckCircle className="w-[0.75vw] h-[0.75vw] text-blue-600" />}
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    )}
                   </div>
-                )}
-              </div>
-              <textarea rows="2" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Provide handover notes..." className="w-full border border-gray-200 rounded-[0.4vw] p-[0.6vw] text-[0.75vw] outline-none bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all shadow-sm resize-none" />
-            </div>
-            <button onClick={handleSupport} className="w-full py-[0.55vw] bg-blue-600 text-white rounded-[0.4vw] font-bold text-[0.75vw] hover:bg-blue-700 transition-all shadow-sm">Assign Support Person</button>
-          </motion.div>
-        )}
+                  <textarea rows="2" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Provide handover notes..." className="w-full border border-slate-200 rounded-[0.4vw] p-[0.6vw] text-[0.75vw] outline-none bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all shadow-sm resize-none" />
+                </div>
+                <button onClick={handleSupport} className="w-full py-[0.55vw] bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-[0.4vw] font-bold text-[0.75vw] hover:from-blue-700 hover:to-indigo-700 transition-all shadow-sm cursor-pointer">Assign Support Person</button>
+              </motion.div>
+            )}
 
-        {selected === "Resolved" && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="bg-green-50 border border-green-200 rounded-[0.5vw] p-[0.7vw] space-y-[0.6vw] overflow-hidden">
-            <div className="text-[0.65vw] font-bold text-green-700 uppercase tracking-tight">Resolution Details</div>
-            <textarea rows="3" value={remarks} onChange={e => setRemarks(e.target.value)} placeholder="Enter details of fixed parts, logic adjustments, or final outcome..." className="w-full border border-gray-200 rounded-[0.4vw] p-[0.7vw] text-[0.78vw] outline-none bg-white focus:border-green-400 focus:ring-2 focus:ring-green-100 transition-all shadow-sm resize-none" />
-            <button onClick={() => handleUpdate("Resolved")} className="w-full py-[0.55vw] bg-green-600 text-white rounded-[0.4vw] font-bold text-[0.75vw] hover:bg-green-700 transition-all shadow-sm">Confirm Resolution</button>
-          </motion.div>
-        )}
+            {selected === "Resolved" && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="bg-emerald-50/80 border border-emerald-200/60 rounded-[0.5vw] p-[0.7vw] space-y-[0.6vw] overflow-hidden">
+                <div className="text-[0.65vw] font-bold text-emerald-700 uppercase tracking-tight">Resolution Details</div>
+                <textarea rows="3" value={remarks} onChange={e => setRemarks(e.target.value)} placeholder="Enter details of fixed parts, logic adjustments, or final outcome..." className="w-full border border-slate-200 rounded-[0.4vw] p-[0.7vw] text-[0.78vw] outline-none bg-white focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all shadow-sm resize-none" />
+                <button onClick={() => handleUpdate("Resolved")} className="w-full py-[0.55vw] bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-[0.4vw] font-bold text-[0.75vw] hover:from-emerald-700 hover:to-teal-700 transition-all shadow-sm cursor-pointer">Confirm Resolution</button>
+              </motion.div>
+            )}
 
-        {selected === "Pending" && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="bg-yellow-50 border border-yellow-200 rounded-[0.5vw] p-[0.7vw] space-y-[0.6vw] overflow-hidden">
-            <div className="text-[0.65vw] font-bold text-yellow-700 uppercase tracking-tight">Pending Reason</div>
-            <textarea rows="2" value={remarks} onChange={e => setRemarks(e.target.value)} placeholder="Why is this call pending? (e.g., waiting for parts, customer unavailable)" className="w-full border border-gray-200 rounded-[0.4vw] p-[0.6vw] text-[0.75vw] outline-none bg-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-100 transition-all shadow-sm resize-none" />
-            <button onClick={() => handleUpdate("Pending")} className="w-full py-[0.55vw] bg-yellow-500 text-white rounded-[0.4vw] font-bold text-[0.75vw] hover:bg-yellow-600 transition-all shadow-sm">Mark Pending</button>
-          </motion.div>
-        )}
+            {selected === "Pending" && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="bg-amber-50/80 border border-amber-200/60 rounded-[0.5vw] p-[0.7vw] space-y-[0.6vw] overflow-hidden">
+                <div className="text-[0.65vw] font-bold text-amber-700 uppercase tracking-tight">Pending Reason</div>
+                <textarea rows="2" value={remarks} onChange={e => setRemarks(e.target.value)} placeholder="Why is this call pending? (e.g., waiting for parts, customer unavailable)" className="w-full border border-slate-200 rounded-[0.4vw] p-[0.6vw] text-[0.75vw] outline-none bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all shadow-sm resize-none" />
+                <button onClick={() => handleUpdate("Pending")} className="w-full py-[0.55vw] bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-[0.4vw] font-bold text-[0.75vw] hover:from-amber-600 hover:to-orange-600 transition-all shadow-sm cursor-pointer">Mark Pending</button>
+              </motion.div>
+            )}
 
-        {selected === "FVRequired" && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="p-[0.1vw] overflow-hidden">
-             <AssignVisitModal type="Field Visit" entry={entry} product={prod} currentUser={currentUser} employees={propsEmployees} inlineMode onClose={() => setSelected("")} onSave={f => { onAssignFieldVisit(f, prodIdx); handleUpdate("Field Visit Required", { visitDate: f.visitDate, assignedTo: f.assignedToName }); }} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+            {selected === "FVRequired" && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="p-[0.1vw] overflow-hidden">
+                 <AssignVisitModal type="Field Visit" entry={entry} product={prod} currentUser={currentUser} employees={propsEmployees} inlineMode onClose={() => setSelected("")} onSave={f => { onAssignFieldVisit(f, prodIdx); handleUpdate("Field Visit Required", { visitDate: f.visitDate, assignedTo: f.assignedToName }); }} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </>
+      )}
     </div>
   );
 };
 
 // ── Escalation Card ───────────────────────────────────────────────────────────
-const EscalationCard = ({ entry, currentUser, employees, timer, isExpanded, onToggle, onSupportRequest, onAssignFieldVisit, onProductClose, isPendingTab }) => {
+const EscalationCard = ({ entry, currentUser, employees, timer, isExpanded, onToggle, onSupportRequest, onAssignFieldVisit, onProductClose, onProductAttend, isPendingTab }) => {
   const [activeProductIdx, setActiveProductIdx] = useState(0);
 
   const isProductHandled = (p) => {
     if (isPendingTab) return p._productClosure?.status !== "Pending";
     return p._supportRequested || p._productClosure?.status === "Pending" || p._productClosure?.status === "Closed" || p._resolved;
   };
-  // Filter to show only products assigned to the current user
+
   const openProducts = useMemo(() => {
     const isAdmin = currentUser?.department === "Admin";
     return (entry.products || [])
       .map((p, i) => ({ p, i }))
       .filter(({ p }) => {
-        // First check if product is handled
         if (isProductHandled(p)) return false;
-        // Show all products to admin, but only assigned products to regular engineers
         if (isAdmin) return true;
-        // For regular engineers, only show products assigned to them
         return p._assignedEngineerId === currentUser?.userId;
       });
   }, [entry.products, currentUser]);
@@ -554,23 +587,26 @@ const EscalationCard = ({ entry, currentUser, employees, timer, isExpanded, onTo
   const safeActiveIdx = activeProdObj?.i ?? 0;
 
   return (
-    <div className={`bg-white rounded-[0.6vw] border overflow-hidden transition-all ${entry.status === "Resolved" ? "border-green-300" : "border-gray-200 shadow-sm"}`}>
+    <div className={`bg-white rounded-[0.6vw] border overflow-hidden transition-all duration-200 ${entry.status === "Resolved" ? "border-emerald-300 shadow-sm shadow-emerald-500/5" : "border-slate-200/90 shadow-sm hover:shadow-md hover:border-slate-300"}`}>
       <div className="px-[0.9vw] pt-[0.8vw] pb-[0.6vw] cursor-pointer" onClick={onToggle}>
         <div className="flex justify-between items-start">
-          <div>
+          <div className="space-y-[0.2vw]">
             <div className="flex items-center gap-[0.4vw] flex-wrap">
-              <span className="font-mono text-[0.88vw] font-bold text-gray-800">{entry.callNumber}</span>
+              <span className="font-mono text-[0.88vw] font-bold text-slate-800 tracking-tight">{entry.callNumber}</span>
               <Badge label={entry.priority} color={entry.priority === "Critical" ? "red" : "slate"} />
             </div>
-            <div className="text-[0.72vw] text-gray-600 mt-[0.15vw] font-medium"><User className="w-[0.72vw] h-[0.72vw] inline mr-[0.2vw] text-gray-400" />{entry.customerName}</div>
+            <div className="text-[0.72vw] text-slate-600 font-semibold flex items-center gap-[0.2vw]">
+              <User className="w-[0.72vw] h-[0.72vw] text-slate-400" />
+              {entry.customerName}
+            </div>
           </div>
           <div className="flex items-center gap-[0.5vw]">
             {timer && entry.status !== "Resolved" && (
-              <div className={`flex items-center gap-[0.25vw] px-[0.5vw] py-[0.28vw] rounded-[0.4vw] font-mono text-[0.72vw] font-bold ${timer.isExpired ? "bg-red-100 text-red-600" : "bg-blue-50 text-blue-600"}`}>
+              <div className={`flex items-center gap-[0.25vw] px-[0.5vw] py-[0.28vw] rounded-[0.4vw] font-mono text-[0.72vw] font-bold border ${timer.isExpired ? "bg-rose-50 text-rose-600 border-rose-200" : "bg-blue-50 text-blue-600 border-blue-200"}`}>
                 <Clock className="w-[0.78vw] h-[0.78vw]" />{timer.remainingFormatted}
               </div>
             )}
-            {isExpanded ? <ChevronUp className="w-[1vw] h-[1vw] text-gray-400" /> : <ChevronDown className="w-[1vw] h-[1vw] text-gray-400" />}
+            {isExpanded ? <ChevronUp className="w-[1vw] h-[1vw] text-slate-400" /> : <ChevronDown className="w-[1vw] h-[1vw] text-slate-400" />}
           </div>
         </div>
       </div>
@@ -578,43 +614,53 @@ const EscalationCard = ({ entry, currentUser, employees, timer, isExpanded, onTo
       {isExpanded && <ContactInfoBar entry={entry} />}
 
       {isExpanded && (
-        <div className="border-t border-gray-100 bg-gray-50/60">
+        <div className="border-t border-slate-100 bg-slate-50/40">
           {openProducts.length > 1 && (
-            <div className="flex border-b border-gray-200 bg-white px-[0.8vw] pt-[0.5vw] gap-[0.25vw] overflow-x-auto">
+            <div className="flex border-b border-slate-200 bg-white px-[0.8vw] pt-[0.5vw] gap-[0.25vw] overflow-x-auto">
               {openProducts.map(({ i: realIdx, p }, tabIdx) => (
-                <button key={realIdx} onClick={() => setActiveProductIdx(tabIdx)} className={`flex items-center gap-[0.3vw] px-[0.75vw] py-[0.45vw] rounded-t-[0.4vw] border-b-2 text-[0.72vw] font-semibold transition-all flex-wrap ${clampedIdx === tabIdx ? "border-gray-900 text-gray-900 bg-white" : "border-transparent text-gray-400 hover:text-gray-700 hover:bg-gray-50"}`}>
+                <button key={realIdx} onClick={() => setActiveProductIdx(tabIdx)} className={`flex items-center gap-[0.3vw] px-[0.75vw] py-[0.45vw] rounded-t-[0.4vw] border-b-2 text-[0.72vw] font-semibold transition-all flex-wrap ${clampedIdx === tabIdx ? "border-slate-800 text-slate-900 bg-slate-50/30" : "border-transparent text-slate-400 hover:text-slate-600"}`}>
                   <span>P{realIdx + 1}</span>
-                  {(p._assignedSegment || p.productSegment) && <span className="text-[0.6vw] bg-blue-100 text-blue-700 px-[0.25vw] py-[0.05vw] rounded">{p._assignedSegment || p.productSegment}</span>}
+                  {(p._assignedSegment || p.productSegment) && <span className="text-[0.6vw] bg-indigo-50 text-indigo-700 border border-indigo-200/50 px-[0.25vw] py-[0.05vw] rounded font-bold">{p._assignedSegment || p.productSegment}</span>}
                 </button>
               ))}
             </div>
           )}
 
           {openProducts.length === 0 ? (
-            <div className="p-[1vw] text-center text-[0.8vw] text-gray-400">All products handled in this view.</div>
+            <div className="p-[1vw] text-center text-[0.8vw] text-slate-400">All products handled in this view.</div>
           ) : activeProd ? (
             <div className="p-[0.8vw] space-y-[0.5vw]">
-              <div className="rounded-[0.5vw] border p-[0.7vw] bg-white border-gray-200">
+              <div className="rounded-[0.5vw] border p-[0.7vw] bg-white border-slate-200/80 shadow-sm">
                 <div className="flex items-start justify-between mb-[0.4vw]">
-                   <div className="text-[0.82vw] font-bold text-gray-800">{activeProd.productModel || activeProd.itemCode}</div>
+                   <div className="text-[0.82vw] font-bold text-slate-800 tracking-tight">{activeProd.productModel || activeProd.itemCode}</div>
                 </div>
                 <div className="grid grid-cols-2 gap-[0.5vw] mb-[0.5vw] text-[0.72vw]">
                   {(activeProd._assignedSegment || activeProd.productSegment) && (
                     <div className="flex items-center gap-[0.3vw]">
-                      <span className="font-semibold text-gray-600">Segment:</span>
-                      <span className="bg-blue-100 text-blue-700 px-[0.4vw] py-[0.15vw] rounded-full font-semibold text-[0.65vw]">{activeProd._assignedSegment || activeProd.productSegment}</span>
+                      <span className="font-semibold text-slate-500">Segment:</span>
+                      <span className="bg-indigo-50 text-indigo-700 px-[0.4vw] py-[0.15vw] rounded-full border border-indigo-200/50 font-bold text-[0.65vw]">{activeProd._assignedSegment || activeProd.productSegment}</span>
                     </div>
                   )}
                   {activeProd.errorCode && (
                     <div className="flex items-center gap-[0.3vw]">
-                      <span className="font-semibold text-gray-600">Error Code:</span>
-                      <span className="bg-red-100 text-red-700 px-[0.4vw] py-[0.15vw] rounded-full font-mono font-semibold text-[0.65vw]">{activeProd.errorCode}</span>
+                      <span className="font-semibold text-slate-500">Error Code:</span>
+                      <span className="bg-rose-50 text-rose-700 px-[0.4vw] py-[0.15vw] rounded-full border border-rose-200/50 font-mono font-bold text-[0.65vw]">{activeProd.errorCode}</span>
                     </div>
                   )}
                 </div>
                 <IssueDetailsContainer product={activeProd} />
               </div>
-              <ProductClosurePanel prod={activeProd} prodIdx={safeActiveIdx} entry={entry} currentUser={currentUser} employees={employees} onAssignFieldVisit={onAssignFieldVisit} onProductClose={onProductClose} onSupportRequest={onSupportRequest} />
+              <ProductClosurePanel 
+                prod={activeProd} 
+                prodIdx={safeActiveIdx} 
+                entry={entry} 
+                currentUser={currentUser} 
+                employees={employees} 
+                onAssignFieldVisit={onAssignFieldVisit} 
+                onProductClose={onProductClose} 
+                onSupportRequest={onSupportRequest} 
+                onProductAttend={onProductAttend}
+              />
             </div>
           ) : null}
         </div>
@@ -624,8 +670,7 @@ const EscalationCard = ({ entry, currentUser, employees, timer, isExpanded, onTo
 };
 
 // ── Tab Components ────────────────────────────────────────────────────────────
-const PendingTab = ({ queue, currentUser, employees, onProductClose, onAssignFieldVisit, expandedCall, setExpanded, onSupportRequest }) => {
-  // Filter to show only entries where currentUser has products pending closure
+const PendingTab = ({ queue, currentUser, employees, onProductClose, onAssignFieldVisit, expandedCall, setExpanded, onSupportRequest, onProductAttend }) => {
   const items = queue.filter(e => {
     const hasUserProducts = (e.products || []).some(p => 
       p._assignedEngineerId === currentUser?.userId && 
@@ -634,10 +679,10 @@ const PendingTab = ({ queue, currentUser, employees, onProductClose, onAssignFie
     return hasUserProducts;
   });
   
-  if (items.length === 0) return <div className="bg-white rounded-[0.5vw] p-[3vw] text-center border border-gray-200 text-gray-400">No pending products.</div>;
+  if (items.length === 0) return <div className="bg-white rounded-[0.5vw] p-[3vw] text-center border border-slate-200 text-slate-400">No pending products.</div>;
   return (
     <div className="space-y-[0.8vw]">
-      {items.map(e => <EscalationCard key={e.callId} entry={e} currentUser={currentUser} employees={employees} isPendingTab isExpanded={expandedCall === e.callId} onToggle={() => setExpanded(expandedCall === e.callId ? null : e.callId)} onProductClose={(pIdx, d) => onProductClose(e.callId, pIdx, d)} onAssignFieldVisit={(f, p) => onAssignFieldVisit(e.callId, f, p)} onSupportRequest={(p, d) => onSupportRequest(e.callId, p, d)} />)}
+      {items.map(e => <EscalationCard key={e.callId} entry={e} currentUser={currentUser} employees={employees} isPendingTab isExpanded={expandedCall === e.callId} onToggle={() => setExpanded(expandedCall === e.callId ? null : e.callId)} onProductClose={(pIdx, d) => onProductClose(e.callId, pIdx, d)} onAssignFieldVisit={(f, p) => onAssignFieldVisit(e.callId, f, p)} onSupportRequest={(p, d) => onSupportRequest(e.callId, p, d)} onProductAttend={(pIdx) => onProductAttend(e.callId, pIdx)} />)}
     </div>
   );
 };
@@ -663,16 +708,16 @@ const SupportReqActionPanel = ({ req, currentUser, onDone }) => {
   };
 
   return (action === "close" ? (
-    <div className="p-[0.6vw] border border-green-200 rounded-[0.4vw] bg-green-50/60 mt-[0.4vw] space-y-[0.5vw]">
-       <div className="text-[0.68vw] font-bold text-green-800 tracking-tight uppercase">Resolution Action</div>
+    <div className="p-[0.6vw] border border-emerald-200 rounded-[0.4vw] bg-emerald-50/40 mt-[0.4vw] space-y-[0.5vw]">
+       <div className="text-[0.68vw] font-bold text-emerald-800 tracking-tight uppercase">Resolution Action</div>
        <div className="grid grid-cols-2 gap-[0.3vw]">
-         {RESOLUTION_TYPES.map(t => <button key={t} onClick={() => setResType(t)} className={`py-[0.3vw] rounded-[0.3vw] border text-[0.65vw] transition-all font-medium ${resolutionType === t ? "bg-green-600 border-green-600 text-white shadow-sm" : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"}`}>{t}</button>)}
+         {RESOLUTION_TYPES.map(t => <button key={t} onClick={() => setResType(t)} className={`py-[0.3vw] rounded-[0.3vw] border text-[0.65vw] transition-all font-semibold ${resolutionType === t ? "bg-emerald-600 border-emerald-600 text-white shadow-sm" : "bg-white border-slate-200 text-slate-500 hover:bg-slate-50"}`}>{t}</button>)}
        </div>
-       <textarea rows="2" value={remarks} onChange={e => setRemarks(e.target.value)} placeholder="Final notes (what was done?)..." className="w-full border border-gray-300 rounded-[0.3vw] p-[0.45vw] text-[0.75vw] outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 resize-none transition-all" />
-       <button onClick={handleClose} className="w-full py-[0.45vw] bg-green-600 hover:bg-green-700 text-white rounded-[0.3vw] text-[0.75vw] font-bold transition-all shadow-sm">Confirm & Close Task</button>
+       <textarea rows="2" value={remarks} onChange={e => setRemarks(e.target.value)} placeholder="Final notes (what was done?)..." className="w-full border border-slate-350 rounded-[0.3vw] p-[0.45vw] text-[0.75vw] outline-none bg-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 resize-none transition-all" />
+       <button onClick={handleClose} className="w-full py-[0.45vw] bg-emerald-600 hover:bg-emerald-700 text-white rounded-[0.3vw] text-[0.75vw] font-bold transition-all shadow-sm cursor-pointer">Confirm & Close Task</button>
     </div>
   ) : (
-    <button onClick={() => setAction("close")} className="self-start px-[0.85vw] py-[0.45vw] bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-[0.4vw] text-[0.72vw] font-bold flex items-center gap-[0.3vw] transition-all mt-[0.4vw]">
+    <button onClick={() => setAction("close")} className="self-start px-[0.85vw] py-[0.45vw] bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-250/60 rounded-[0.4vw] text-[0.72vw] font-bold flex items-center gap-[0.3vw] transition-all mt-[0.4vw] cursor-pointer">
       <CheckCircle className="w-[0.8vw] h-[0.8vw]" /> Resolve Request
     </button>
   ));
@@ -683,25 +728,25 @@ const SupportRequestsTab = ({ currentUser, reqs, onRefresh }) => {
 
   return (
     <div className="space-y-[0.8vw]">
-      <div className="bg-white rounded-[0.6vw] p-[1vw] border border-gray-200 flex items-center justify-between">
-        <div className="flex items-center gap-[0.5vw]"><HelpCircle className="w-[1.2vw] h-[1.2vw] text-orange-500" /><h2 className="text-[1.1vw] font-bold text-gray-800">Support Requests</h2></div>
+      <div className="bg-white rounded-[0.6vw] p-[1vw] border border-slate-200/80 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-[0.5vw]"><HelpCircle className="w-[1.2vw] h-[1.2vw] text-amber-500" /><h2 className="text-[1.1vw] font-bold text-slate-800">Support Requests</h2></div>
         <Badge label={`${activeReqs.length} Active`} color="orange" />
       </div>
-      {activeReqs.length === 0 ? <div className="bg-white rounded-[0.5vw] p-[3vw] text-center border border-gray-100 text-gray-400">No open support requests at this time.</div> : (
+      {activeReqs.length === 0 ? <div className="bg-white rounded-[0.5vw] p-[3vw] text-center border border-slate-200 text-slate-400">No open support requests at this time.</div> : (
         <div className="grid gap-[0.8vw]">
           {activeReqs.map(r => (
-            <div key={r._id} className="bg-white rounded-[0.5vw] border border-gray-200 p-[0.8vw] shadow-sm flex flex-col gap-[0.5vw] transition-all hover:border-blue-300">
+            <div key={r._id} className="bg-white rounded-[0.5vw] border border-slate-200 p-[0.8vw] shadow-sm flex flex-col gap-[0.5vw] transition-all hover:border-blue-300">
                <div className="flex justify-between items-start">
                  <div>
                    <div className="flex items-center gap-[0.4vw]">
-                     <span className="text-[0.9vw] font-bold text-gray-800">{r.callNumber}</span>
-                     {r.product && <span className="bg-gray-100 text-gray-700 px-[0.4vw] py-[0.1vw] rounded m-[0] text-[0.65vw] border border-gray-200 font-mono font-medium">{r.product.productModel || r.product.itemCode}</span>}
+                     <span className="text-[0.9vw] font-bold text-slate-800">{r.callNumber}</span>
+                     {r.product && <span className="bg-slate-100 text-slate-700 px-[0.4vw] py-[0.1vw] rounded m-[0] text-[0.65vw] border border-slate-200 font-mono font-bold">{r.product.productModel || r.product.itemCode}</span>}
                    </div>
                  </div>
                  <Badge label={r.status} color="blue" />
                </div>
-               <div className="bg-orange-50/50 border border-orange-100 rounded-[0.4vw] p-[0.6vw] text-[0.75vw] text-gray-700">
-                 <strong className="text-orange-800">Support Notes:</strong> {r.notes}
+               <div className="bg-amber-50/40 border border-amber-100 rounded-[0.4vw] p-[0.6vw] text-[0.75vw] text-slate-700">
+                 <strong className="text-amber-800">Support Notes:</strong> {r.notes}
                </div>
                <SupportReqActionPanel req={r} currentUser={currentUser} onDone={onRefresh} />
             </div>
@@ -726,24 +771,24 @@ const VisitsTab = ({ type, visits, onRefresh }) => {
 
   return (
     <div className="space-y-[0.8vw]">
-      <div className="bg-white rounded-[0.6vw] p-[1vw] border border-gray-200 flex items-center justify-between">
-        <div className="flex items-center gap-[0.5vw]"><MapPin className="w-[1.2vw] h-[1.2vw] text-blue-600" /><h2 className="text-[1.1vw] font-bold text-gray-800">{type} Schedule</h2></div>
+      <div className="bg-white rounded-[0.6vw] p-[1vw] border border-slate-200/80 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-[0.5vw]"><MapPin className="w-[1.2vw] h-[1.2vw] text-blue-600" /><h2 className="text-[1.1vw] font-bold text-slate-800">{type} Schedule</h2></div>
         <Badge label={`${activeVisits.length} Scheduled`} color="blue" />
       </div>
-      {activeVisits.length === 0 ? <div className="bg-white rounded-[0.5vw] p-[3vw] text-center border border-gray-100 text-gray-500">No upcoming field visits.</div> : (
+      {activeVisits.length === 0 ? <div className="bg-white rounded-[0.5vw] p-[3vw] text-center border border-slate-200 text-slate-400">No upcoming field visits.</div> : (
         <div className="grid gap-[0.8vw]">
           {activeVisits.map(v => (
-            <div key={v._id} className="bg-white rounded-[0.5vw] border border-gray-200 p-[0.8vw] shadow-sm flex flex-col gap-[0.6vw] hover:border-blue-300 transition-all">
+            <div key={v._id} className="bg-white rounded-[0.5vw] border border-slate-200 p-[0.8vw] shadow-sm flex flex-col gap-[0.6vw] hover:border-blue-300 transition-all">
               <div className="flex justify-between items-start">
-                <span className="text-[0.95vw] font-bold text-gray-800">{v.callNumber}</span>
+                <span className="text-[0.95vw] font-bold text-slate-800">{v.callNumber}</span>
                 <Badge label={`Scheduled: ${new Date(v.visitDate).toLocaleDateString()}`} color="blue" />
               </div>
-              <div className="text-[0.75vw] text-gray-700 bg-blue-50/50 border border-blue-100 p-[0.6vw] rounded-[0.4vw]">
+              <div className="text-[0.75vw] text-gray-700 bg-blue-50/40 border border-blue-100 p-[0.6vw] rounded-[0.4vw]">
                 <strong className="text-blue-800">Diagnosis Summary:</strong> {v.diagnosisSummary || "No summary provided."}
               </div>
               <button 
                 onClick={() => handleCloseVisit(v._id)} 
-                className="self-start px-[0.85vw] py-[0.45vw] bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 rounded-[0.4vw] text-[0.72vw] font-bold flex items-center gap-[0.3vw] transition-all">
+                className="self-start px-[0.85vw] py-[0.45vw] bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 rounded-[0.4vw] text-[0.72vw] font-bold flex items-center gap-[0.3vw] transition-all cursor-pointer">
                 <CheckSquare className="w-[0.8vw] h-[0.8vw]" /> Mark Completed
               </button>
             </div>
@@ -773,7 +818,7 @@ const ReportsTab = ({ currentUser, queue, supportReqs, fieldVisits }) => {
              date: p._productClosure.updatedAt,
              details: p._productClosure.remarks,
              status: p._productClosure.status,
-             color: p._productClosure.status === "Closed" ? "green" : (p._productClosure.status === "Pending" ? "yellow" : "blue")
+             color: p._productClosure.status === "Closed" ? "green" : (p._productClosure.status === "orange" ? "orange" : "blue")
            });
         }
       });
@@ -783,19 +828,19 @@ const ReportsTab = ({ currentUser, queue, supportReqs, fieldVisits }) => {
     const resolvedReqs = supportReqs.filter(r => r.status === "Resolved");
     resolvedReqs.forEach(r => {
       acts.push({
-        id: `sup_${r._id}`,
-        type: "Support Resolved",
-        title: `Call ${r.callNumber} • ${r.product?.productModel || 'Product'}`,
-        date: r.resolvedAt,
-        details: r.resolutionNotes ? `Resolution: ${r.resolutionNotes} (${r.resolutionType})` : `Resolved via ${r.resolutionType}`,
+        id: `supp_${r._id}`,
+        type: "Support Request Resolved",
+        title: `Call ${r.callNumber} • Support Resolved`,
+        date: r.resolvedAt || r.updatedAt,
+        details: r.resolutionNotes,
         status: "Resolved",
         color: "green"
       });
     });
 
-    // 3. Completed Field Visits
-    const completedVisits = fieldVisits.filter(v => v.visitStatus === "Closed");
-    completedVisits.forEach(v => {
+    // 3. Closed Field Visits
+    const closedVisits = fieldVisits.filter(v => v.visitStatus === "Closed");
+    closedVisits.forEach(v => {
       acts.push({
         id: `vis_${v._id}`,
         type: "Field Visit Completed",
@@ -815,58 +860,58 @@ const ReportsTab = ({ currentUser, queue, supportReqs, fieldVisits }) => {
   const stats = {
     total: activities.length,
     resolved: activities.filter(a => a.color === "green").length,
-    pending: activities.filter(a => a.color === "yellow").length,
+    pending: activities.filter(a => a.color === "orange" || a.color === "yellow").length,
   };
 
   return (
     <div className="space-y-[0.8vw]">
-      <div className="bg-white rounded-[0.6vw] border border-gray-200 p-[1vw] flex items-center justify-between shadow-sm">
+      <div className="bg-white rounded-[0.6vw] border border-slate-200/80 p-[1vw] flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-[0.5vw]">
-          <BarChart2 className="w-[1.2vw] h-[1.2vw] text-purple-600" />
-          <h2 className="text-[1.1vw] font-bold text-gray-800">My Activity Report</h2>
+          <BarChart2 className="w-[1.2vw] h-[1.2vw] text-indigo-600" />
+          <h2 className="text-[1.1vw] font-bold text-slate-800">My Activity Report</h2>
         </div>
         <div className="flex gap-[0.5vw]">
-           <div className="bg-blue-50 text-blue-700 border border-blue-200 px-[0.7vw] py-[0.3vw] rounded-[0.4vw] font-bold text-[0.75vw]">Total: {stats.total}</div>
-           <div className="bg-green-50 text-green-700 border border-green-200 px-[0.7vw] py-[0.3vw] rounded-[0.4vw] font-bold text-[0.75vw]">Resolved: {stats.resolved}</div>
-           <div className="bg-yellow-50 text-yellow-700 border border-yellow-200 px-[0.7vw] py-[0.3vw] rounded-[0.4vw] font-bold text-[0.75vw]">Pending: {stats.pending}</div>
+           <div className="bg-blue-50 text-blue-700 border border-blue-200/60 px-[0.7vw] py-[0.3vw] rounded-[0.4vw] font-bold text-[0.75vw]">Total: {stats.total}</div>
+           <div className="bg-emerald-50 text-emerald-700 border border-emerald-200/60 px-[0.7vw] py-[0.3vw] rounded-[0.4vw] font-bold text-[0.75vw]">Resolved: {stats.resolved}</div>
+           <div className="bg-amber-50 text-amber-700 border border-amber-200/60 px-[0.7vw] py-[0.3vw] rounded-[0.4vw] font-bold text-[0.75vw]">Pending: {stats.pending}</div>
         </div>
       </div>
 
-      <div className="bg-white rounded-[0.6vw] border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-[0.6vw] border border-slate-200/80 shadow-sm overflow-hidden">
         {activities.length === 0 ? (
-           <div className="p-[4vw] text-center text-gray-400">
+           <div className="p-[4vw] text-center text-slate-400">
               <History className="w-[3vw] h-[3vw] mx-auto mb-[0.6vw] opacity-20" />
-              <div className="text-[0.9vw] font-medium">There is no recent activity logged.</div>
+              <div className="text-[0.9vw] font-semibold">There is no recent activity logged.</div>
            </div>
         ) : (
-           <div className="divide-y divide-gray-100 max-h-[60vh] overflow-y-auto pr-[0.2vw]">
-             {activities.map((act) => (
-               <div key={act.id} className="p-[1vw] hover:bg-gray-50 transition-colors flex items-start gap-[0.8vw]">
-                  <div className={`mt-[0.2vw] w-[2.2vw] h-[2.2vw] rounded-[0.5vw] flex items-center justify-center flex-shrink-0
-                     ${act.type.includes("Visit") ? "bg-blue-100 text-blue-600 border border-blue-200" :
-                       act.type.includes("Support") ? "bg-orange-100 text-orange-600 border border-orange-200" : "bg-purple-100 text-purple-600 border border-purple-200"}`}>
-                     {act.type.includes("Visit") ? <MapPin className="w-[1.1vw] h-[1.1vw]" /> :
-                      act.type.includes("Support") ? <HelpCircle className="w-[1.1vw] h-[1.1vw]" /> : <CheckCircle className="w-[1.1vw] h-[1.1vw]" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                     <div className="flex justify-between items-start mb-[0.2vw]">
-                        <div className="font-bold text-[0.85vw] text-gray-800 tracking-tight">{act.title}</div>
-                        <span className="text-[0.68vw] text-gray-400 font-medium bg-gray-50 border border-gray-100 px-[0.4vw] py-[0.1vw] rounded">
-                           {act.date ? new Date(act.date).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : 'Unknown'}
-                        </span>
-                     </div>
-                     <div className="flex items-center gap-[0.5vw] mb-[0.4vw]">
-                        <span className="text-[0.65vw] font-bold text-gray-500 uppercase tracking-widest">{act.type}</span>
-                        <Badge label={act.status} color={act.color} />
-                     </div>
-                     {act.details && (
-                        <div className="text-[0.75vw] text-gray-600 bg-gray-50/80 p-[0.5vw] rounded-[0.4vw] mt-[0.3vw] border border-gray-100 italic">
-                          "{act.details}"
-                        </div>
-                     )}
-                  </div>
-               </div>
-             ))}
+           <div className="divide-y divide-slate-100 max-h-[60vh] overflow-y-auto pr-[0.2vw]">
+              {activities.map((act) => (
+                <div key={act.id} className="p-[1vw] hover:bg-slate-50/55 transition-colors flex items-start gap-[0.8vw]">
+                   <div className={`mt-[0.2vw] w-[2.2vw] h-[2.2vw] rounded-[0.5vw] flex items-center justify-center flex-shrink-0
+                      ${act.type.includes("Visit") ? "bg-blue-100 text-blue-600 border border-blue-200/50" :
+                        act.type.includes("Support") ? "bg-amber-100 text-amber-600 border border-amber-200/50" : "bg-indigo-100 text-indigo-600 border border-indigo-200/50"}`}>
+                      {act.type.includes("Visit") ? <MapPin className="w-[1.1vw] h-[1.1vw]" /> :
+                       act.type.includes("Support") ? <HelpCircle className="w-[1.1vw] h-[1.1vw]" /> : <CheckCircle className="w-[1.1vw] h-[1.1vw]" />}
+                   </div>
+                   <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start mb-[0.2vw]">
+                         <div className="font-bold text-[0.85vw] text-slate-800 tracking-tight">{act.title}</div>
+                         <span className="text-[0.68vw] text-slate-400 font-semibold bg-slate-50 border border-slate-100 px-[0.4vw] py-[0.1vw] rounded">
+                            {act.date ? new Date(act.date).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : 'Unknown'}
+                         </span>
+                      </div>
+                      <div className="flex items-center gap-[0.5vw] mb-[0.4vw]">
+                         <span className="text-[0.65vw] font-bold text-slate-500 uppercase tracking-widest">{act.type}</span>
+                         <Badge label={act.status} color={act.color} />
+                      </div>
+                      {act.details && (
+                         <div className="text-[0.75vw] text-slate-600 bg-slate-50/50 p-[0.5vw] rounded-[0.4vw] mt-[0.3vw] border border-slate-150 italic font-medium">
+                           "{act.details}"
+                         </div>
+                      )}
+                   </div>
+                </div>
+              ))}
            </div>
         )}
       </div>
@@ -921,11 +966,9 @@ const ServiceCallResponse = () => {
       if (e.status === "Resolved") return false;
       
       if (isAdmin) {
-        // Admin sees all unresolved with open products
         return (e.products || []).some(p => !p._resolved && p._productClosure?.status !== "Closed" && !p._supportRequested && !p._productClosure?.status);
       }
       
-      // Regular engineers only see products assigned to them
       const hasProductsForUser = (e.products || []).some(p => 
         p._assignedEngineerId === uid && 
         !p._resolved && 
@@ -940,13 +983,11 @@ const ServiceCallResponse = () => {
 
   const liveCounts = useMemo(() => {
     const uid = loggedInUser?.userId;
-    const isAdmin = loggedInUser?.department === "Admin";
     return {
       escalation: myEscalations.length,
       support:    supportReqs.filter(r => r.status !== "Resolved").length,
       fieldVisit: fieldVisits.filter(r => r.visitStatus !== "Closed").length,
       pending:    queue.filter(e => {
-        // Count entries where the user has pending products
         return (e.products || []).some(p => 
           p._assignedEngineerId === uid && 
           p._productClosure?.status === "Pending"
@@ -964,6 +1005,18 @@ const ServiceCallResponse = () => {
       setQueue(data.map(call => ({ ...call, callId: call._id })));
     } catch (err) {
       toast("Failed to update product status", "error");
+    }
+  };
+
+  const handleProductAttend = async (callId, pIdx) => {
+    try {
+      await axios.patch(`${API_URL}/service-calls/${callId}/product/${pIdx}/attend`);
+      toast("Call attended successfully", "success");
+      
+      const { data } = await axios.get(`${API_URL}/service-calls/active`);
+      setQueue(data.map(call => ({ ...call, callId: call._id })));
+    } catch (err) {
+      toast("Failed to mark call as attended", "error");
     }
   };
 
@@ -1006,11 +1059,11 @@ const ServiceCallResponse = () => {
   };
 
   const tabs = [
-    { id: "escalation", label: "Escalation/ Assignments", icon: Shield,    count: liveCounts.escalation, color: "bg-blue-600" },
-    { id: "pending",    label: "Pending",    icon: AlertCircle,count: liveCounts.pending,    color: "bg-yellow-500" },
-    { id: "support",    label: "Support",    icon: HelpCircle, count: liveCounts.support,    color: "bg-orange-500" },
-    { id: "fieldvisit", label: "Field Visit",icon: MapPin,     count: liveCounts.fieldVisit, color: "bg-blue-700" },
-    { id: "reports",    label: "Reports",    icon: BarChart2,  count: 0,                     color: "bg-gray-600" },
+    { id: "escalation", label: "Escalation/ Assignments", icon: Shield,    count: liveCounts.escalation, color: "from-blue-600 to-indigo-600 shadow-blue-500/10" },
+    { id: "pending",    label: "Pending",    icon: AlertCircle,count: liveCounts.pending,    color: "from-amber-500 to-orange-500 shadow-amber-500/10" },
+    { id: "support",    label: "Support",    icon: HelpCircle, count: liveCounts.support,    color: "from-blue-500 to-cyan-500 shadow-blue-500/10" },
+    { id: "fieldvisit", label: "Field Visit",icon: MapPin,     count: liveCounts.fieldVisit, color: "from-indigo-600 to-violet-600 shadow-indigo-500/10" },
+    { id: "reports",    label: "Reports",    icon: BarChart2,  count: 0,                     color: "from-slate-700 to-slate-800 shadow-slate-700/10" },
   ];
 
   const refreshData = async () => {
@@ -1029,17 +1082,18 @@ const ServiceCallResponse = () => {
 
   return (
     <div className="flex flex-col h-full text-[0.85vw]">
-      <div className="flex gap-[0.4vw] mb-[1vw] bg-white border rounded-[0.6vw] p-[0.3vw] sticky top-0 z-10 shadow-sm">
+      {/* Premium Glass-Effect Tab Container */}
+      <div className="flex gap-[0.4vw] mb-[1vw] bg-white border border-slate-200/90 rounded-[0.6vw] p-[0.3vw] sticky top-0 z-10 shadow-sm backdrop-blur-md">
         {tabs.map(t => (
-          <button key={t.id} onClick={() => setActiveTab(t.id)} className={`flex-1 flex items-center justify-center gap-[0.5vw] py-[0.5vw] rounded-[0.4vw] font-bold transition-all cursor-pointer ${activeTab === t.id ? `${t.color} text-white shadow` : "text-gray-500 hover:bg-gray-50"}`}>
+          <button key={t.id} onClick={() => setActiveTab(t.id)} className={`flex-1 flex items-center justify-center gap-[0.5vw] py-[0.5vw] rounded-[0.4vw] font-bold transition-all duration-200 transform active:scale-98 cursor-pointer ${activeTab === t.id ? `bg-gradient-to-r ${t.color} text-white shadow` : "text-slate-500 hover:bg-slate-50"}`}>
             <t.icon className="w-[1vw] h-[1vw]" />{t.label}
-            {t.count > 0 && <span className={`text-[0.65vw] px-[0.4vw] rounded-full font-bold ${activeTab === t.id ? "bg-white text-gray-900" : "bg-gray-100 text-gray-500"}`}>{t.count}</span>}
+            {t.count > 0 && <span className={`text-[0.65vw] px-[0.4vw] py-[0.05vw] rounded-full font-bold transition-colors ${activeTab === t.id ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"}`}>{t.count}</span>}
           </button>
         ))}
       </div>
       <div className="flex-1 overflow-y-auto pr-[0.3vw] pb-[5vw]">
-        {activeTab === "escalation" && myEscalations.map(e => <EscalationCard key={e.callId} entry={e} currentUser={loggedInUser} employees={employees} timer={timers.find(t => t.callId === e.callId)} isExpanded={expandedCall === e.callId} onToggle={() => setExpanded(expandedCall === e.callId ? null : e.callId)} onSupportRequest={(p, d) => handleSupportRequest(e.callId, p, d)} onAssignFieldVisit={(f, p) => handleAssignVisit(e.callId, "Field Visit", f, p)} onProductClose={(p, d) => handleProductClose(e.callId, p, d)} />)}
-        {activeTab === "pending"    && <PendingTab queue={queue} currentUser={loggedInUser} employees={employees} onProductClose={handleProductClose} onAssignFieldVisit={handleAssignVisit} expandedCall={expandedCall} setExpanded={setExpanded} onSupportRequest={handleSupportRequest} />}
+        {activeTab === "escalation" && myEscalations.map(e => <EscalationCard key={e.callId} entry={e} currentUser={loggedInUser} employees={employees} timer={timers.find(t => t.callId === e.callId)} isExpanded={expandedCall === e.callId} onToggle={() => setExpanded(expandedCall === e.callId ? null : e.callId)} onSupportRequest={(p, d) => handleSupportRequest(e.callId, p, d)} onAssignFieldVisit={(f, p) => handleAssignVisit(e.callId, "Field Visit", f, p)} onProductClose={(p, d) => handleProductClose(e.callId, p, d)} onProductAttend={(pIdx) => handleProductAttend(e.callId, pIdx)} />)}
+        {activeTab === "pending"    && <PendingTab queue={queue} currentUser={loggedInUser} employees={employees} onProductClose={handleProductClose} onAssignFieldVisit={handleAssignVisit} expandedCall={expandedCall} setExpanded={setExpanded} onSupportRequest={handleSupportRequest} onProductAttend={handleProductAttend} />}
         {activeTab === "support"    && <SupportRequestsTab currentUser={loggedInUser} reqs={supportReqs} onRefresh={refreshData} />}
         {activeTab === "fieldvisit" && <VisitsTab type="Field Visit" visits={fieldVisits} onRefresh={refreshData} />}
         {activeTab === "reports"    && <ReportsTab currentUser={loggedInUser} queue={queue} supportReqs={supportReqs} fieldVisits={fieldVisits} />}

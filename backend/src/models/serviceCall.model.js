@@ -23,6 +23,8 @@ const productSchema = new mongoose.Schema({
   _levelPointer: { type: Number, default: 0 },      // which step in SLA flow
   _escalationPointer: { type: Number, default: 0 }, // which engineer within that step
   _productClosure: mongoose.Schema.Types.Mixed,
+  _attended: { type: Boolean, default: false },
+  _attendedAt: Date,
 });
 
 const serviceCallSchema = new mongoose.Schema({
