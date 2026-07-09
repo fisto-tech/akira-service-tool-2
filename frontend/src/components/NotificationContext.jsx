@@ -101,7 +101,7 @@ export const NotificationProvider = ({ children }) => {
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-white rounded-[1.2vw] shadow-2xl border border-slate-200 w-full max-w-[32vw] overflow-hidden"
+              className="bg-white rounded-[1.2vw] shadow-2xl border border-slate-350 w-full max-w-[32vw] overflow-hidden"
             >
               <div className="p-[1.8vw] flex flex-col gap-[1.2vw]">
                 <div className="flex items-start gap-[1.2vw]">

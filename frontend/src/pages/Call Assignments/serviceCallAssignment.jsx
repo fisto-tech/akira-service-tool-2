@@ -156,13 +156,27 @@ export default function ServiceCallAssignment() {
 
   const tabCounts = useMemo(() => {
     const counts = { All: 0, Critical: 0, "Non-Critical": 0 };
-    groups.forEach(g => {
-      counts.All++;
-      if (g.status === "Critical") counts.Critical++;
-      else counts["Non-Critical"]++;
+    const s = searchTerm.toLowerCase();
+    let base = groups;
+    if (priorityFilter !== "All") {
+      base = base.filter(g => g.priority === priorityFilter);
+    }
+    if (s) {
+      base = base.filter(g =>
+        g.callNumber.toLowerCase().includes(s) ||
+        g.customerName.toLowerCase().includes(s) ||
+        g.segment.toLowerCase().includes(s) ||
+        g.products.some(({ p }) => (p.productModel || p.itemCode || "").toLowerCase().includes(s))
+      );
+    }
+    base.forEach(g => {
+      const pCount = g.products.length;
+      counts.All += pCount;
+      if (g.priority === "Critical") counts.Critical += pCount;
+      else counts["Non-Critical"] += pCount;
     });
     return counts;
-  }, [groups]);
+  }, [groups, searchTerm, priorityFilter]);
 
   const filteredGroups = useMemo(() => {
     const s = searchTerm.toLowerCase();
@@ -170,9 +184,9 @@ export default function ServiceCallAssignment() {
     
     // 1. Tab Filtering (Critical vs Non-Critical)
     if (activeTab === "Critical") {
-      res = res.filter(g => g.status === "Critical");
+      res = res.filter(g => g.priority === "Critical");
     } else if (activeTab === "Non-Critical") {
-      res = res.filter(g => g.status !== "Critical");
+      res = res.filter(g => g.priority !== "Critical");
     }
     
     // 2. Dropdown Priority Filter (further refine if needed)
@@ -326,27 +340,27 @@ export default function ServiceCallAssignment() {
     <div className="w-full h-screen flex flex-col bg-white overflow-hidden font-sans text-[0.85vw]">
 
       {/* ── HEADER ────────────────────────────────── */}
-      <div className="px-[1.5vw] py-[0.8vw] flex items-center justify-between border-b border-gray-100">
+      <div className="px-[1.5vw] py-[0.8vw] flex items-center justify-between border-b border-slate-400">
         <div className="flex items-center gap-[0.8vw]">
           <div className="w-[2.2vw] h-[2.2vw] bg-blue-600 rounded-lg flex items-center justify-center text-white border border-blue-500">
             <Layers className="w-[1.1vw] h-[1.1vw]" />
           </div>
           <div>
             <h1 className="text-[1.2vw] font-bold text-blue-600 tracking-tight leading-none">Assignment Desk</h1>
-            <p className="text-[0.72vw] text-black mt-[0.2vw] font-normal">{groups.length} pending assignments to review</p>
+            <p className="text-[0.72vw] text-black mt-[0.2vw] font-normal">{filteredGroups.reduce((acc, g) => acc + g.products.length, 0)} pending assignments to review</p>
           </div>
         </div>
 
         <div className="flex items-center gap-[1.5vw]">
           {/* Tabs for Critical vs Non-Critical */}
-          <div className="flex bg-slate-50 p-[0.2vw] rounded-lg border border-blue-100">
+          <div className="flex bg-slate-50 p-[0.2vw] rounded-lg border border-slate-400">
             {["All", "Critical", "Non-Critical"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`px-[1vw] py-[0.4vw] rounded-md text-[0.75vw] font-bold transition-all cursor-pointer flex items-center gap-[0.4vw] ${
                   activeTab === tab
-                    ? "bg-white text-blue-600 shadow-sm border border-blue-100"
+                    ? "bg-white text-blue-600 shadow-sm border border-slate-400"
                     : "text-gray-400 hover:text-blue-500"
                 }`}
               >
@@ -367,14 +381,14 @@ export default function ServiceCallAssignment() {
               placeholder="Search customers or calls..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-[15vw] h-[2.2vw] pl-[2vw] pr-[1vw] bg-slate-50 border border-blue-100 rounded-md outline-none focus:border-blue-400 transition-all text-black font-normal"
+              className="w-[15vw] h-[2.2vw] pl-[2vw] pr-[1vw] bg-slate-50 border border-slate-400 rounded-md outline-none focus:border-blue-400 transition-all text-black font-normal"
             />
           </div>
           
           <select
             value={priorityFilter}
             onChange={e => setPriorityFilter(e.target.value)}
-            className="h-[2.2vw] px-[0.6vw] bg-white border border-blue-100 rounded-md outline-none focus:border-blue-400 cursor-pointer text-black font-normal"
+            className="h-[2.2vw] px-[0.6vw] bg-white border border-slate-400 rounded-md outline-none focus:border-blue-400 cursor-pointer text-black font-normal"
           >
             <option value="All">All Priorities</option>
             <option value="Critical">Critical</option>
@@ -387,21 +401,21 @@ export default function ServiceCallAssignment() {
 
       {/* ── TABLE (ServiceCall.jsx Style) ────────────────────────── */}
       <div className="flex-1 overflow-auto px-[1.5vw] py-[1vw]">
-        <div className="bg-white rounded-[0.6vw] border border-blue-200 flex flex-col w-full overflow-y-auto overflow-x-hidden max-h-[70.5vh]">
+        <div className="bg-white rounded-[0.6vw] border border-slate-400 flex flex-col w-full overflow-y-auto overflow-x-hidden max-h-[70.5vh]">
           <table className="w-full text-left border-collapse">
             <thead className="bg-blue-50 sticky top-0 z-10">
               <tr>
-                <th className="p-[0.6vw] font-bold text-black border-b border-r border-blue-200 text-center w-[4%] text-[0.78vw]">S.No</th>
-                <th className="p-[0.6vw] font-bold text-black border-b border-r border-blue-200 text-center w-[10%] text-[0.78vw]">Call Info</th>
-                <th className="p-[0.6vw] font-bold text-black border-b border-r border-blue-200 text-center w-[8%] text-[0.78vw]">Category</th>
-                <th className="p-[0.6vw] font-bold text-black border-b border-r border-blue-200 w-[18%] text-[0.78vw]">Customer</th>
-                <th className="p-[0.6vw] font-bold text-black border-b border-r border-blue-200 text-center w-[8%] text-[0.78vw]">Segment</th>
-                <th className="p-[0.6vw] font-bold text-black border-b border-r border-blue-200 text-[0.78vw]">Product Details</th>
-                <th className="p-[0.6vw] font-bold text-black border-b border-r border-blue-200 text-center w-[8%] text-[0.78vw]">Urgency</th>
-                <th className="p-[0.6vw] font-bold text-black border-b border-blue-200 text-center w-[8%] text-[0.78vw]">Action</th>
+                <th className="p-[0.6vw] font-bold text-black border-b border-r border-slate-400 text-center w-[4%] text-[0.78vw]">S.No</th>
+                <th className="p-[0.6vw] font-bold text-black border-b border-r border-slate-400 text-center w-[10%] text-[0.78vw]">Call Info</th>
+                <th className="p-[0.6vw] font-bold text-black border-b border-r border-slate-400 text-center w-[8%] text-[0.78vw]">Category</th>
+                <th className="p-[0.6vw] font-bold text-black border-b border-r border-slate-400 w-[18%] text-[0.78vw]">Customer</th>
+                <th className="p-[0.6vw] font-bold text-black border-b border-r border-slate-400 text-center w-[8%] text-[0.78vw]">Segment</th>
+                <th className="p-[0.6vw] font-bold text-black border-b border-r border-slate-400 text-[0.78vw]">Product Details</th>
+                <th className="p-[0.6vw] font-bold text-black border-b border-r border-slate-400 text-center w-[8%] text-[0.78vw]">Urgency</th>
+                <th className="p-[0.6vw] font-bold text-black border-b border-slate-400 text-center w-[8%] text-[0.78vw]">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-blue-100">
+            <tbody className="divide-y divide-slate-300">
               {isLoading ? (
                 <tr>
                   <td colSpan={7} className="py-[10vh] text-center">
@@ -417,7 +431,7 @@ export default function ServiceCallAssignment() {
                 paginatedGroups.map((g, idx) => {
                   const rowCount = g.products.length;
                   const isCritical = g.status === "Critical";
-                  const criticalCellClass = isCritical ? "border-t-[0.15vw] border-b-[0.15vw] border-red-300 first:border-l-[0.15vw] last:border-r-[0.15vw]" : "border-blue-100";
+                  const criticalCellClass = isCritical ? "border-t-[0.15vw] border-b-[0.15vw] border-red-300 first:border-l-[0.15vw] last:border-r-[0.15vw]" : "border-slate-400";
 
                   return g.products.map((item, pIdx) => (
                     <tr key={`${g.groupKey}-${pIdx}`} className={`hover:bg-blue-50/20 transition-colors`}>
@@ -442,7 +456,7 @@ export default function ServiceCallAssignment() {
                               {g.customerName}
                             </div>
                             <div className="flex items-center gap-[0.4vw] mt-[0.1vw]">
-                              <span className="text-[0.6vw] text-blue-700 font-semibold bg-blue-50 px-[0.3vw] py-[0.05vw] rounded border border-blue-100">{g.partyCode}</span>
+                              <span className="text-[0.6vw] text-blue-700 font-semibold bg-blue-50 px-[0.3vw] py-[0.05vw] rounded border border-slate-400">{g.partyCode}</span>
                               <span className="text-[0.65vw] text-black font-normal uppercase">{g.location}</span>
                             </div>
                           </td>
@@ -506,7 +520,7 @@ export default function ServiceCallAssignment() {
               <button
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
-                className="p-[0.5vw] rounded-md border border-gray-200 hover:bg-gray-50 disabled:opacity-30 cursor-pointer"
+                className="p-[0.5vw] rounded-md border border-slate-400 hover:bg-gray-50 disabled:opacity-30 cursor-pointer"
               >
                 <ChevronLeft className="w-[1.2vw] h-[1.2vw]" />
               </button>
@@ -515,7 +529,7 @@ export default function ServiceCallAssignment() {
                   key={p}
                   onClick={() => setCurrentPage(p)}
                   className={`w-[2.2vw] h-[2.2vw] rounded-md border font-bold text-[0.75vw] transition-all cursor-pointer ${
-                    currentPage === p ? "bg-blue-600 border-blue-600 text-white shadow-sm" : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
+                    currentPage === p ? "bg-blue-600 border-blue-600 text-white shadow-sm" : "bg-white border-slate-400 text-gray-600 hover:bg-gray-50"
                   }`}
                 >
                   {p}
@@ -524,7 +538,7 @@ export default function ServiceCallAssignment() {
               <button
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
-                className="p-[0.5vw] rounded-md border border-gray-200 hover:bg-gray-50 disabled:opacity-30 cursor-pointer"
+                className="p-[0.5vw] rounded-md border border-slate-400 hover:bg-gray-50 disabled:opacity-30 cursor-pointer"
               >
                 <ChevronRight className="w-[1.2vw] h-[1.2vw]" />
               </button>
@@ -539,10 +553,10 @@ export default function ServiceCallAssignment() {
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-[2vw]">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedGroup(null)} />
             <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.98, opacity: 0 }}
-              className="relative w-[70vw] max-h-[90vh] bg-white rounded-xl flex flex-col overflow-hidden border border-blue-200"
+              className="relative w-[70vw] max-h-[90vh] bg-white rounded-xl flex flex-col overflow-hidden border border-slate-400"
             >
               {/* Header */}
-              <div className="px-[1.5vw] py-[1vw] border-b border-blue-100 flex items-center justify-between bg-blue-50/30">
+              <div className="px-[1.5vw] py-[1vw] border-b border-slate-400 flex items-center justify-between bg-blue-50/30">
                 <div className="flex items-center gap-[1vw]">
                   <div className="w-[2.5vw] h-[2.5vw] bg-blue-600 rounded-lg flex items-center justify-center text-white border border-blue-500">
                     <UserPlus className="w-[1.2vw] h-[1.2vw]" />
@@ -595,7 +609,7 @@ export default function ServiceCallAssignment() {
                   <div className="p-[1vw] border-b border-blue-50">
                     <div className="relative">
                       <Search className="absolute left-[0.7vw] top-1/2 -translate-y-1/2 w-[0.9vw] h-[0.9vw] text-blue-400" />
-                      <input type="text" placeholder="Search for available engineers..." value={engSearch} onChange={e => setEngSearch(e.target.value)} className="w-full pl-[2.2vw] pr-[1vw] py-[0.5vw] bg-white border border-blue-100 rounded-md outline-none focus:border-blue-400 text-[0.8vw] text-black font-normal" />
+                      <input type="text" placeholder="Search for available engineers..." value={engSearch} onChange={e => setEngSearch(e.target.value)} className="w-full pl-[2.2vw] pr-[1vw] py-[0.5vw] bg-white border border-slate-400 rounded-md outline-none focus:border-blue-400 text-[0.8vw] text-black font-normal" />
                     </div>
                   </div>
                   <div className="flex-1 overflow-y-auto p-[1vw] space-y-[0.6vw]">
@@ -611,7 +625,7 @@ export default function ServiceCallAssignment() {
                       filteredEmployees.map(emp => (
                         <div key={emp.userId} onClick={() => setSelectedEngineer(emp)} 
                           className={`flex items-center gap-[0.8vw] p-[0.8vw] rounded-lg border transition-all cursor-pointer ${
-                            selectedEngineer?.userId === emp.userId ? 'bg-blue-600 border-blue-700 text-white' : 'bg-white border-blue-100 hover:border-blue-300 hover:bg-blue-50/50'
+                            selectedEngineer?.userId === emp.userId ? 'bg-blue-600 border-blue-700 text-white' : 'bg-white border-slate-400 hover:border-blue-300 hover:bg-blue-50/50'
                           }`}>
                           <div className={`w-[2.5vw] h-[2.5vw] rounded-lg flex items-center justify-center font-bold text-[1vw] bg-gradient-to-br ${
                             selectedEngineer?.userId === emp.userId ? 'from-white/20 to-white/5' : avatarColor(emp.name)
@@ -635,8 +649,8 @@ export default function ServiceCallAssignment() {
                     <div className="py-[.5vw] px-[2vw] flex flex-col h-full">
                       <div className="flex-1 flex flex-col gap-[2vw] overflow-y-auto">
                         {/* Selected Engineer Card */}
-                        <div className="bg-white p-[1.2vw] rounded-xl border border-blue-200 flex items-center gap-[1.2vw]">
-                          <div className={`w-[2.8vw] h-[2.8vw] rounded-lg flex items-center justify-center text-[1vw] font-bold text-white bg-gradient-to-br ${avatarColor(selectedEngineer.name)} border border-blue-200 shadow-none`}>
+                        <div className="bg-white p-[1.2vw] rounded-xl border border-slate-400 flex items-center gap-[1.2vw]">
+                          <div className={`w-[2.8vw] h-[2.8vw] rounded-lg flex items-center justify-center text-[1vw] font-bold text-white bg-gradient-to-br ${avatarColor(selectedEngineer.name)} border border-slate-400 shadow-none`}>
                             {initials(selectedEngineer.name)}
                           </div>
                           <div>
@@ -675,7 +689,7 @@ export default function ServiceCallAssignment() {
                                 type="number" 
                                 value={resHours} 
                                 onChange={e => setResHours(e.target.value)} 
-                                className="w-full px-[0.8vw] py-[0.5vw] bg-white border border-blue-200 rounded-lg outline-none focus:border-blue-500 focus:ring-1 ring-blue-100 text-[1vw] font-bold text-black transition-all" 
+                                className="w-full px-[0.8vw] py-[0.5vw] bg-white border border-slate-400 rounded-lg outline-none focus:border-blue-500 focus:ring-1 ring-blue-100 text-[1vw] font-bold text-black transition-all" 
                               />
                             </div>
                             <div className="flex-1 flex flex-col gap-[0.4vw]">
@@ -684,11 +698,11 @@ export default function ServiceCallAssignment() {
                                 type="number" 
                                 value={resMins} 
                                 onChange={e => setResMins(e.target.value)} 
-                                className="w-full px-[0.8vw] py-[0.5vw] bg-white border border-blue-200 rounded-lg outline-none focus:border-blue-500 focus:ring-1 ring-blue-100 text-[1vw] font-bold text-black transition-all" 
+                                className="w-full px-[0.8vw] py-[0.5vw] bg-white border border-slate-400 rounded-lg outline-none focus:border-blue-500 focus:ring-1 ring-blue-100 text-[1vw] font-bold text-black transition-all" 
                               />
                             </div>
                           </div>
-                          <div className="flex items-center gap-[0.5vw] p-[0.8vw] bg-blue-50 rounded-lg border border-blue-100">
+                          <div className="flex items-center gap-[0.5vw] p-[0.8vw] bg-blue-50 rounded-lg border border-slate-400">
                             <Info className="w-[0.9vw] h-[0.9vw] text-blue-600" />
                             <span className="text-[0.7vw] text-black font-medium">Engineer will be notified of the deadline immediately.</span>
                           </div>

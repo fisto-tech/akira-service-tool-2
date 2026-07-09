@@ -29,8 +29,8 @@ const Badge = ({ label, color = "gray", size = "sm" }) => {
   const colorMap = {
     green: "bg-emerald-50 text-emerald-700 border-emerald-200",
     blue: "bg-blue-50 text-blue-700 border-blue-200",
-    slate: "bg-slate-100 text-slate-600 border-slate-200",
-    gray: "bg-gray-100 text-gray-600 border-gray-200",
+    slate: "bg-slate-100 text-slate-600 border-slate-400",
+    gray: "bg-gray-100 text-gray-600 border-slate-400",
     black: "bg-gray-900 text-white border-gray-900",
     red: "bg-red-50 text-red-700 border-red-200",
     orange: "bg-orange-50 text-orange-700 border-orange-200",
@@ -53,7 +53,7 @@ const STATUS_CONFIG = {
   "Open": { color: "gray", icon: AlertCircle, bg: "bg-gray-100", border: "border-gray-400", text: "text-gray-700" },
   "Under Testing": { color: "blue", icon: Wrench, bg: "bg-blue-100", border: "border-blue-300", text: "text-blue-800" },
   "Repair in Progress": { color: "orange", icon: Wrench, bg: "bg-orange-100", border: "border-orange-300", text: "text-orange-800" },
-  "Pending": { color: "slate", icon: Clock, bg: "bg-slate-100", border: "border-slate-300", text: "text-slate-800" },
+  "Pending": { color: "slate", icon: Clock, bg: "bg-slate-100", border: "border-slate-400", text: "text-slate-800" },
   "Completed": { color: "green", icon: CheckCircle, bg: "bg-green-100", border: "border-green-300", text: "text-green-800" },
   "Not Repairable": { color: "red", icon: AlertTriangle, bg: "bg-red-100", border: "border-red-300", text: "text-red-800" },
 };
@@ -65,7 +65,7 @@ const RefInput = ({ label, value, icon: Icon, span = 1 }) => (
       {/* {Icon && <Icon className="w-[0.8vw] h-[0.8vw]" />} */}
       {label}
     </label>
-    <div className="bg-white border border-gray-300 rounded-[0.4vw] py-[0.45vw] px-[0.6vw] text-[0.8vw] text-gray-900 break-words whitespace-normal overflow-hidden">
+    <div className="bg-white border border-gray-400 rounded-[0.4vw] py-[0.45vw] px-[0.6vw] text-[0.8vw] text-gray-900 break-words whitespace-normal overflow-hidden">
       {value || "—"}
     </div>
   </div>
@@ -106,7 +106,7 @@ const StatsBar = ({ items, activeFilter, onFilterChange }) => {
           <button
             key={chip.label}
             onClick={() => onFilterChange(chip.label)}
-            className={`flex items-center gap-[0.4vw] px-[0.8vw] py-[0.4vw] rounded-full border border-[0.15vw] transition-all text-[0.72vw] font-semibold cursor-pointer ${isActive ? chip.active + " border-gray-100" : chip.inactive + " border-gray-200 hover:border-gray-300"
+            className={`flex items-center gap-[0.4vw] px-[0.8vw] py-[0.4vw] rounded-full border border-[0.15vw] transition-all text-[0.72vw] font-semibold cursor-pointer ${isActive ? chip.active + " border-slate-400" : chip.inactive + " border-slate-400 hover:border-gray-400"
               }`}
           >
             <div className={`w-[0.5vw] h-[0.5vw] rounded-full ${isActive ? "bg-white" : chip.color}`} />
@@ -192,8 +192,8 @@ const ServiceInfoModal = ({ entry, product, onClose }) => {
           </div>
 
           {product.report && (
-            <div className="space-y-[1vw] mt-[1vw] p-[1vw] bg-white rounded-[0.6vw] border border-gray-200">
-               <h4 className="text-[0.85vw] font-bold text-gray-800 border-b border-gray-100 pb-[0.3vw]">Technical Report</h4>
+            <div className="space-y-[1vw] mt-[1vw] p-[1vw] bg-white rounded-[0.6vw] border border-slate-400">
+               <h4 className="text-[0.85vw] font-bold text-gray-800 border-b border-slate-400 pb-[0.3vw]">Technical Report</h4>
                <div className="grid grid-cols-2 gap-[1vw]">
                  <RefInput label="Tested By" value={product.report.testedBy} />
                  <RefInput label="Designators" value={product.report.designators} />
@@ -212,7 +212,7 @@ const ServiceInfoModal = ({ entry, product, onClose }) => {
                              <img 
                                 src={`${API_URL}${product.report.image}`} 
                                 alt="Report" 
-                                className="max-w-[15vw] rounded-[0.4vw] border border-gray-300 shadow-sm cursor-pointer hover:scale-105 transition-transform"
+                                className="max-w-[15vw] rounded-[0.4vw] border border-gray-400 shadow-sm cursor-pointer hover:scale-105 transition-transform"
                                 onClick={() => window.open(`${API_URL}${product.report.image}`, '_blank')}
                              />
                         </div>
@@ -224,7 +224,7 @@ const ServiceInfoModal = ({ entry, product, onClose }) => {
             </div>
           )}
         </div>
-        <div className="p-[1vw] border-t border-gray-200 bg-gray-50 text-right">
+        <div className="p-[1vw] border-t border-slate-400 bg-gray-50 text-right">
           <button onClick={onClose} className="px-[1.5vw] py-[0.5vw] bg-gray-800 text-white rounded-[0.4vw] font-bold text-[0.8vw] cursor-pointer">Close View</button>
         </div>
       </motion.div>
@@ -549,7 +549,7 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
         {problemDescHistory?.map((opt, i) => <option key={i} value={opt} />)}
       </datalist>
       {/* Header */}
-      <div className="flex items-center justify-between mb-[1vw] bg-white p-[0.8vw] rounded-[0.8vw] border border-gray-200 shadow-sm">
+      <div className="flex items-center justify-between mb-[1vw] bg-white p-[0.8vw] rounded-[0.8vw] border border-slate-400 shadow-sm">
         <div className="flex items-center gap-[0.6vw]">
           <div className="w-[2.2vw] h-[2.2vw] rounded-[0.5vw] bg-gradient-to-br from-blue-700 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-800/20">
             <Package className="w-[1.1vw] h-[1.1vw] text-white" />
@@ -602,7 +602,7 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
       {myItems.length === 0 ? (
         <EmptyState />
       ) : (
-        <div className="bg-white rounded-[0.6vw] border border-gray-300 overflow-hidden shadow-sm flex flex-col h-fit max-h-[72vh]">
+        <div className="bg-white rounded-[0.6vw] border border-gray-400 overflow-hidden shadow-sm flex flex-col h-fit max-h-[72vh]">
           {/* Table Container with Internal Scroll */}
           <div className="overflow-auto flex-1">
             <table className="w-full min-w-max border-separate border-spacing-0">
@@ -640,7 +640,7 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
                     return (
                       <React.Fragment key={`${entry.id}-${product._pid}`}>
                         {isNewCustomer && (
-                          <tr className="bg-blue-50/40 border-y border-blue-100 sticky top-[2.8vw] z-10 backdrop-blur-sm">
+                          <tr className="bg-blue-50/40 border-y border-blue-100 sticky top-[2.8vw] z-15 backdrop-blur-md">
                             <td colSpan={columns.length} className="px-[1vw] py-[0.5vw] border-b border-blue-100">
                               <div className="flex items-center gap-[0.6vw]">
                                 <div className="w-[0.35vw] h-[1.1vw] bg-blue-600 rounded-full" />
@@ -664,14 +664,14 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
                         >
 
                           {/* S.No */}
-                          <td className="px-[0.8vw] py-[0.7vw] text-center border border-gray-300 bg-white sticky left-0 z-10 shadow-[4px_0_6px_-1px_rgba(0,0,0,0.05)]">
+                          <td className="px-[0.8vw] py-[0.7vw] text-center border border-gray-400 bg-white sticky left-0 z-10 shadow-[4px_0_6px_-1px_rgba(0,0,0,0.05)]">
                             <span className="inline-flex items-center justify-center w-[1.5vw] h-[1.5vw] rounded-full bg-gray-100 text-[0.68vw] font-bold text-gray-600">
                               {((currentPage - 1) * itemsPerPage) + idx + 1}
                             </span>
                           </td>
 
                           {/* Date */}
-                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-400">
                             <div className="flex items-center gap-[0.3vw]">
                               <Calendar className="w-[0.75vw] h-[0.75vw] text-blue-600" />
                               <span className="text-[0.75vw] text-gray-700 font-medium whitespace-nowrap">
@@ -681,14 +681,14 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
                           </td>
 
                           {/* Ref No */}
-                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-400">
                             <span className="text-[0.75vw] font-semibold text-gray-800 whitespace-nowrap">
                               {entry.refNoCustomer || entry.refNo || "—"}
                             </span>
                           </td>
 
                           {/* Customer */}
-                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-400">
                             <div className="flex items-center gap-[0.5vw]">
                               <div className="w-[1.6vw] h-[1.6vw] rounded-full bg-gradient-to-br from-blue-700 to-blue-600 flex items-center justify-center text-white text-[0.55vw] font-bold flex-shrink-0">
                                 {entry.customerName?.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase() || "?"}
@@ -701,7 +701,7 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
                           </td>
 
                           {/* Product */}
-                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-400">
                             <div className="min-w-[10vw]">
                               <div className="text-[0.75vw] font-semibold text-gray-800 break-words whitespace-normal" title={product.productDescription}>
                                 {product.productDescription}
@@ -711,23 +711,23 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
                           </td>
 
                           {/* Board Type */}
-                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-400">
                             <span className="text-[0.75vw] font-semibold text-gray-700 whitespace-nowrap">
                               {product.boardType || "—"}
                             </span>
                           </td>
 
                           {/* Serial No */}
-                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-400">
                             <span className="text-[0.75vw] font-semibold text-gray-700 whitespace-nowrap">
                               {product.serialNumber || "—"}
                             </span>
                           </td>
 
                           {/* Tested By */}
-                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-400">
                             {isClaimedByMe ? (
-                              <select value={draft.testedBy} onChange={e => hc("testedBy", e.target.value)} className="w-full text-[0.75vw] border border-gray-300 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[8vw]">
+                              <select value={draft.testedBy} onChange={e => hc("testedBy", e.target.value)} className="w-full text-[0.75vw] border border-gray-400 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[8vw]">
                                 <option value="">Select</option>
                                 {employees.map(e => <option key={e.userId} value={e.name}>{e.name}</option>)}
                               </select>
@@ -737,9 +737,9 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
                           </td>
 
                           {/* 4M Category */}
-                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-400">
                             {isClaimedByMe ? (
-                              <select value={draft.fourMCategory} onChange={e => hc("fourMCategory", e.target.value)} className="w-full text-[0.75vw] border border-gray-300 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[8vw]">
+                              <select value={draft.fourMCategory} onChange={e => hc("fourMCategory", e.target.value)} className="w-full text-[0.75vw] border border-gray-400 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[8vw]">
                                 <option value="">Select</option>
                                 {fourMCategories?.map(opt => <option key={opt._id || opt.id} value={opt.name}>{opt.name}</option>)}
                               </select>
@@ -749,27 +749,27 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
                           </td>
 
                           {/* Error Code */}
-                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-400">
                             {isClaimedByMe ? (
-                              <input type="text" list="errorCodeList" value={draft.errorCode} onChange={e => hc("errorCode", e.target.value)} className="w-full text-[0.75vw] border border-gray-300 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[6vw]" placeholder="Code..." />
+                              <input type="text" list="errorCodeList" value={draft.errorCode} onChange={e => hc("errorCode", e.target.value)} className="w-full text-[0.75vw] border border-gray-400 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[6vw]" placeholder="Code..." />
                             ) : (
                               <span className="text-[0.75vw] whitespace-nowrap">{product.report?.errorCode || "—"}</span>
                             )}
                           </td>
 
                           {/* Problem Description */}
-                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-400">
                             {isClaimedByMe ? (
-                              <input type="text" list="problemDescList" value={draft.problemDescription} onChange={e => hc("problemDescription", e.target.value)} className="w-full text-[0.75vw] border border-gray-300 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[10vw]" placeholder="Problem..." />
+                              <input type="text" list="problemDescList" value={draft.problemDescription} onChange={e => hc("problemDescription", e.target.value)} className="w-full text-[0.75vw] border border-gray-400 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[10vw]" placeholder="Problem..." />
                             ) : (
                               <span className="text-[0.75vw]">{product.report?.problemDescription || "—"}</span>
                             )}
                           </td>
 
                           {/* Designators */}
-                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-400">
                             {isClaimedByMe ? (
-                              <select value={draft.designators} onChange={e => hc("designators", e.target.value)} className="w-full text-[0.75vw] border border-gray-300 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[8vw]">
+                              <select value={draft.designators} onChange={e => hc("designators", e.target.value)} className="w-full text-[0.75vw] border border-gray-400 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[8vw]">
                                 <option value="">Select</option>
                                 {employees.map(e => <option key={e.userId} value={e.name}>{e.name}</option>)}
                               </select>
@@ -779,36 +779,36 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
                           </td>
 
                           {/* Root Cause */}
-                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-400">
                             {isClaimedByMe ? (
-                              <textarea value={draft.rootCause} onChange={e => hc("rootCause", e.target.value)} rows={1} className="w-full text-[0.75vw] border border-gray-300 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[10vw] resize-y min-h-[1.5vw]" placeholder="Root Cause..." />
+                              <textarea value={draft.rootCause} onChange={e => hc("rootCause", e.target.value)} rows={1} className="w-full text-[0.75vw] border border-gray-400 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[10vw] resize-y min-h-[1.5vw]" placeholder="Root Cause..." />
                             ) : (
                               <span className="text-[0.75vw]">{product.report?.rootCause || "—"}</span>
                             )}
                           </td>
 
                           {/* Parts Replaced */}
-                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-400">
                             {isClaimedByMe ? (
-                              <textarea value={draft.partsReplacement} onChange={e => hc("partsReplacement", e.target.value)} rows={1} className="w-full text-[0.75vw] border border-gray-300 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[10vw] resize-y min-h-[1.5vw]" placeholder="Parts..." />
+                              <textarea value={draft.partsReplacement} onChange={e => hc("partsReplacement", e.target.value)} rows={1} className="w-full text-[0.75vw] border border-gray-400 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[10vw] resize-y min-h-[1.5vw]" placeholder="Parts..." />
                             ) : (
                               <span className="text-[0.75vw]">{product.report?.partsReplacement || "—"}</span>
                             )}
                           </td>
 
                           {/* Corrective Action */}
-                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-400">
                             {isClaimedByMe ? (
-                              <textarea value={draft.correctiveAction} onChange={e => hc("correctiveAction", e.target.value)} rows={1} className="w-full text-[0.75vw] border border-gray-300 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[10vw] resize-y min-h-[1.5vw]" placeholder="Action..." />
+                              <textarea value={draft.correctiveAction} onChange={e => hc("correctiveAction", e.target.value)} rows={1} className="w-full text-[0.75vw] border border-gray-400 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[10vw] resize-y min-h-[1.5vw]" placeholder="Action..." />
                             ) : (
                               <span className="text-[0.75vw]">{product.report?.correctiveAction || "—"}</span>
                             )}
                           </td>
 
                           {/* Disposition */}
-                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-400">
                             {isClaimedByMe ? (
-                              <select value={draft.disposition} onChange={e => hc("disposition", e.target.value)} className="w-full text-[0.75vw] border border-gray-300 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[8vw]">
+                              <select value={draft.disposition} onChange={e => hc("disposition", e.target.value)} className="w-full text-[0.75vw] border border-gray-400 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[8vw]">
                                 <option value="">Select</option>
                                 {DISPOSITION_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                               </select>
@@ -818,18 +818,18 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
                           </td>
 
                           {/* Completion Date */}
-                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-400">
                             {isClaimedByMe ? (
-                              <input type="date" value={draft.completedDate} onChange={e => hc("completedDate", e.target.value)} className="w-full text-[0.75vw] border border-gray-300 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[8vw]" />
+                              <input type="date" value={draft.completedDate} onChange={e => hc("completedDate", e.target.value)} className="w-full text-[0.75vw] border border-gray-400 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[8vw]" />
                             ) : (
                               <span className="text-[0.75vw] whitespace-nowrap">{product.report?.completedDate ? fmtDate(product.report.completedDate) : "—"}</span>
                             )}
                           </td>
 
                           {/* Status */}
-                          <td className="px-[0.8vw] py-[0.7vw] text-center border border-gray-300">
+                          <td className="px-[0.8vw] py-[0.7vw] text-center border border-gray-400">
                             {isClaimedByMe ? (
-                              <select value={draft.status} onChange={e => hc("status", e.target.value)} className="w-full text-[0.75vw] border border-gray-300 rounded p-[0.3vw] outline-none focus:border-blue-500 font-semibold min-w-[9vw]">
+                              <select value={draft.status} onChange={e => hc("status", e.target.value)} className="w-full text-[0.75vw] border border-gray-400 rounded p-[0.3vw] outline-none focus:border-blue-500 font-semibold min-w-[9vw]">
                                 {STATUS_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                               </select>
                             ) : (
@@ -841,16 +841,16 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
                           </td>
 
                           {/* Remarks */}
-                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300">
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-400">
                             {isClaimedByMe ? (
-                              <input type="text" value={draft.currentRemark} onChange={e => hc("currentRemark", e.target.value)} className="w-full text-[0.75vw] border border-gray-300 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[8vw]" placeholder="Remark..." />
+                              <input type="text" value={draft.currentRemark} onChange={e => hc("currentRemark", e.target.value)} className="w-full text-[0.75vw] border border-gray-400 rounded p-[0.3vw] outline-none focus:border-blue-500 min-w-[8vw]" placeholder="Remark..." />
                             ) : (
                               <span className="text-[0.75vw] text-gray-700 font-semibold">{pRemark}</span>
                             )}
                           </td>
 
                           {/* Image Upload */}
-                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-300 text-center min-w-[8vw]">
+                          <td className="px-[0.8vw] py-[0.7vw] border border-gray-400 text-center min-w-[8vw]">
                             {isClaimedByMe ? (
                               <div className="flex items-center justify-center gap-[0.5vw]">
                                 <input type="file" id={`file-${product._pid}`} accept="image/*" onChange={(e) => handleImageChange(product._pid, product, e)} className="hidden" />
@@ -858,7 +858,7 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
                                   <svg className="w-[1vw] h-[1vw]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                                 </label>
                                 {(draft.imagePreview || draft.image) && (
-                                  <div className="w-[2.2vw] h-[2.2vw] rounded-[0.4vw] border border-gray-200 overflow-hidden flex-shrink-0 relative group shadow-sm">
+                                  <div className="w-[2.2vw] h-[2.2vw] rounded-[0.4vw] border border-slate-400 overflow-hidden flex-shrink-0 relative group shadow-sm">
                                     <img src={draft.imagePreview || (draft.image.startsWith('http') ? draft.image : `${API_URL?.replace(/\/$/, '') || ''}${draft.image.startsWith('/') ? '' : '/'}${draft.image}`)} alt="preview" className="w-full h-full object-cover" />
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer" onClick={() => window.open(draft.imagePreview || (draft.image.startsWith('http') ? draft.image : `${API_URL?.replace(/\/$/, '') || ''}${draft.image.startsWith('/') ? '' : '/'}${draft.image}`), '_blank')}>
                                       <Eye className="w-[1vw] h-[1vw] text-white" />
@@ -868,7 +868,7 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
                               </div>
                             ) : (
                               product.report?.image ? (
-                                <div className="w-[2.2vw] h-[2.2vw] rounded-[0.4vw] border border-gray-200 overflow-hidden relative group shadow-sm mx-auto">
+                                <div className="w-[2.2vw] h-[2.2vw] rounded-[0.4vw] border border-slate-400 overflow-hidden relative group shadow-sm mx-auto">
                                   <img src={product.report.image.startsWith('http') ? product.report.image : `${API_URL?.replace(/\/$/, '') || ''}${product.report.image.startsWith('/') ? '' : '/'}${product.report.image}`} alt="preview" className="w-full h-full object-cover" />
                                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer" onClick={() => window.open(product.report.image.startsWith('http') ? product.report.image : `${API_URL?.replace(/\/$/, '') || ''}${product.report.image.startsWith('/') ? '' : '/'}${product.report.image}`, '_blank')}>
                                     <Eye className="w-[1vw] h-[1vw] text-white" />
@@ -879,7 +879,7 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
                           </td>
 
                           {/* Info */}
-                          <td className="px-[0.8vw] py-[0.7vw] text-center border border-gray-300">
+                          <td className="px-[0.8vw] py-[0.7vw] text-center border border-gray-400">
                              <button 
                                onClick={() => setInfoSelected({ entry, product })}
                                className="w-[1.8vw] h-[1.8vw] rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all cursor-pointer shadow-sm border border-blue-100 mx-auto"
@@ -890,7 +890,7 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
                           </td>
 
                           {/* Action */}
-                          <td className="px-[0.8vw] py-[0.7vw] text-center border border-gray-300 bg-white sticky right-0 z-10 shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.05)]">
+                          <td className="px-[0.8vw] py-[0.7vw] text-center border border-gray-400 bg-white sticky right-0 z-10 shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.05)]">
                             {product.assignedTo ? (
                               isClaimedByMe ? (
                                 <button
@@ -930,14 +930,14 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
           </div>
 
           {/* Table Footer */}
-          <div className="bg-gray-50 border-t border-gray-200 px-[1.2vw] py-[0.6vw] flex items-center justify-between">
+          <div className="bg-gray-50 border-t border-slate-400 px-[1.2vw] py-[0.6vw] flex items-center justify-between">
             <div className="flex items-center gap-[1.5vw]">
               <span className="text-[0.72vw] text-gray-500 font-medium">
                 Showing <strong className="text-gray-800">{paginatedItems.length}</strong> of <strong className="text-gray-800">{myItems.length}</strong> assigned products
               </span>
 
               {/* Pagination Controls */}
-              <div className="flex items-center gap-[1vw] border-l border-gray-300 pl-[1.5vw]">
+              <div className="flex items-center gap-[1vw] border-l border-gray-400 pl-[1.5vw]">
                 <div className="flex items-center gap-[0.5vw]">
                   <span className="text-[0.68vw] text-gray-500 font-bold uppercase tracking-wider">Rows per page:</span>
                   <select
@@ -946,7 +946,7 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
                       setItemsPerPage(Number(e.target.value));
                       setCurrentPage(1);
                     }}
-                    className="bg-white border border-gray-300 rounded-[0.3vw] px-[0.4vw] py-[0.15vw] text-[0.72vw] font-bold text-blue-700 outline-none focus:border-blue-500 transition-all cursor-pointer shadow-sm"
+                    className="bg-white border border-gray-400 rounded-[0.3vw] px-[0.4vw] py-[0.15vw] text-[0.72vw] font-bold text-blue-700 outline-none focus:border-blue-500 transition-all cursor-pointer shadow-sm"
                   >
                     {[10, 20, 50, 100].map(v => <option key={v} value={v}>{v}</option>)}
                   </select>
@@ -956,7 +956,7 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
                   <button
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    className="p-[0.3vw] rounded-[0.4vw] bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm group"
+                    className="p-[0.3vw] rounded-[0.4vw] bg-white border border-gray-400 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm group"
                     title="Previous Page"
                   >
                     <ChevronLeft className="w-[1vw] h-[1vw] text-gray-600 group-hover:text-blue-600" />
@@ -971,7 +971,7 @@ export default function ServiceMaterialInwardResponse({ currentUser: propUser })
                   <button
                     disabled={currentPage >= totalPages}
                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                    className="p-[0.3vw] rounded-[0.4vw] bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm group"
+                    className="p-[0.3vw] rounded-[0.4vw] bg-white border border-gray-400 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm group"
                     title="Next Page"
                   >
                     <ChevronRight className="w-[1vw] h-[1vw] text-gray-600 group-hover:text-blue-600" />

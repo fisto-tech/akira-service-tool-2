@@ -26,6 +26,7 @@ import {
   FileText,
   History,
   Wrench,
+  Calendar,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
@@ -47,22 +48,22 @@ const TYPE_OPTIONS = ["W", "PW"];
 const TYPE_LABELS = { W: "Warranty", PW: "Paid" };
 
 const FINAL_STATUS_COLORS = {
-  Pending: "bg-orange-100 text-orange-700 border-orange-300",
-  Delivered: "bg-green-100 text-green-700 border-green-300",
-  Hold: "bg-red-100 text-red-700 border-red-300",
-  "Not Repairable": "bg-gray-200 text-gray-700 border-gray-400",
+  Pending: "bg-amber-100 text-amber-800 border-amber-300",
+  Delivered: "bg-emerald-100 text-emerald-800 border-emerald-300",
+  Hold: "bg-rose-100 text-rose-800 border-rose-300",
+  "Not Repairable": "bg-slate-200 text-slate-800 border-slate-300",
 };
 
 // Employee-side status display (from `prod.report.status` / `prod.status`)
 // NOTE: This is separate from the supervisor "Final Status" flow.
 const STATUS_CONFIG = {
-  Open: { icon: AlertCircle, bg: "bg-gray-100", border: "border-gray-400", text: "text-gray-700" },
-  Assigned: { icon: User, bg: "bg-purple-100", border: "border-purple-300", text: "text-purple-800" },
-  "Under Testing": { icon: Wrench, bg: "bg-blue-100", border: "border-blue-300", text: "text-blue-800" },
-  "Repair in Progress": { icon: Wrench, bg: "bg-orange-100", border: "border-orange-300", text: "text-orange-800" },
-  Pending: { icon: Clock, bg: "bg-slate-100", border: "border-slate-300", text: "text-slate-800" },
-  Completed: { icon: CheckCircle2, bg: "bg-green-100", border: "border-green-300", text: "text-green-800" },
-  "Not Repairable": { icon: AlertTriangle, bg: "bg-red-100", border: "border-red-300", text: "text-red-800" },
+  Open: { icon: AlertCircle, bg: "bg-slate-100", border: "border-slate-300", text: "text-slate-700" },
+  Assigned: { icon: User, bg: "bg-violet-100/70", border: "border-violet-300/70", text: "text-violet-800" },
+  "Under Testing": { icon: Wrench, bg: "bg-sky-100/70", border: "border-sky-300/70", text: "text-sky-800" },
+  "Repair in Progress": { icon: Wrench, bg: "bg-amber-100/70", border: "border-amber-300/70", text: "text-amber-800" },
+  Pending: { icon: Clock, bg: "bg-slate-100", border: "border-slate-300", text: "text-slate-700" },
+  Completed: { icon: CheckCircle2, bg: "bg-emerald-100/70", border: "border-emerald-300/70", text: "text-emerald-800" },
+  "Not Repairable": { icon: AlertTriangle, bg: "bg-rose-100/70", border: "border-rose-300/70", text: "text-rose-800" },
 };
 
 // Helpers
@@ -179,7 +180,7 @@ const DuplicateModal = ({ onConfirm, onClose }) => {
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-white rounded-[0.8vw] shadow-2xl border border-gray-300 p-[1.8vw] w-[22vw]"
+        className="bg-white rounded-[0.8vw] shadow-2xl border border-gray-400 p-[1.8vw] w-[22vw]"
       >
         <div className="flex items-center gap-[0.6vw] mb-[1.2vw]">
           <div className="w-[2.2vw] h-[2.2vw] rounded-full bg-blue-100 flex items-center justify-center">
@@ -223,7 +224,7 @@ const DuplicateModal = ({ onConfirm, onClose }) => {
           <button
             type="button"
             onClick={onClose}
-            className="px-[1.2vw] py-[0.55vw] border border-gray-300 rounded-[0.4vw] text-[0.78vw] text-black/80 hover:bg-gray-50 cursor-pointer"
+            className="px-[1.2vw] py-[0.55vw] border border-gray-400 rounded-[0.4vw] text-[0.78vw] text-black/80 hover:bg-gray-50 cursor-pointer"
           >
             Cancel
           </button>
@@ -233,7 +234,7 @@ const DuplicateModal = ({ onConfirm, onClose }) => {
               onConfirm(count);
               onClose();
             }}
-            className="px-[1.4vw] py-[0.55vw] bg-blue-600 hover:bg-blue-700 text-white rounded-[0.4vw] text-[0.78vw] font-semibold cursor-pointer flex items-center gap-[0.4vw]"
+            className="px-[1.4vw] py-[0.55vw] bg-[#1a73e8] hover:bg-[#1557b0] text-white rounded-[0.4vw] text-[0.78vw] font-semibold cursor-pointer flex items-center gap-[0.4vw]"
           >
             <Copy className="w-[0.85vw] h-[0.85vw]" />Add {count}{" "}
             {count > 1 ? "Copies" : "Copy"}
@@ -253,7 +254,7 @@ const AddRowsModal = ({ onConfirm, onClose }) => {
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-white rounded-[0.8vw] shadow-2xl border border-gray-300 p-[1.8vw] w-[22vw]"
+        className="bg-white rounded-[0.8vw] shadow-2xl border border-gray-400 p-[1.8vw] w-[22vw]"
       >
         <div className="flex items-center gap-[0.6vw] mb-[1.2vw]">
           <div className="w-[2.2vw] h-[2.2vw] rounded-full bg-blue-100 flex items-center justify-center">
@@ -297,7 +298,7 @@ const AddRowsModal = ({ onConfirm, onClose }) => {
           <button
             type="button"
             onClick={onClose}
-            className="px-[1.2vw] py-[0.55vw] border border-gray-300 rounded-[0.4vw] text-[0.78vw] text-black/80 hover:bg-gray-50 cursor-pointer"
+            className="px-[1.2vw] py-[0.55vw] border border-gray-400 rounded-[0.4vw] text-[0.78vw] text-black/80 hover:bg-gray-50 cursor-pointer"
           >
             Cancel
           </button>
@@ -307,7 +308,7 @@ const AddRowsModal = ({ onConfirm, onClose }) => {
               onConfirm(count);
               onClose();
             }}
-            className="px-[1.4vw] py-[0.55vw] bg-blue-600 hover:bg-blue-700 text-white rounded-[0.4vw] text-[0.78vw] font-semibold cursor-pointer flex items-center gap-[0.4vw]"
+            className="px-[1.4vw] py-[0.55vw] bg-[#1a73e8] hover:bg-[#1557b0] text-white rounded-[0.4vw] text-[0.78vw] font-semibold cursor-pointer flex items-center gap-[0.4vw]"
           >
             <Plus className="w-[0.85vw] h-[0.85vw]" />Add {count}{" "}
             Row{count > 1 ? "s" : ""}
@@ -326,7 +327,7 @@ const UnsavedChangesModal = ({ onConfirm, onClose }) => {
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-white rounded-[0.8vw] shadow-2xl border border-gray-300 p-[2vw] w-[25vw]"
+        className="bg-white rounded-[0.8vw] shadow-2xl border border-gray-400 p-[2vw] w-[25vw]"
       >
         <div className="flex items-center gap-[0.8vw] mb-[1.2vw]">
           <div className="w-[2.5vw] h-[2.5vw] rounded-full bg-red-100 flex items-center justify-center">
@@ -346,7 +347,7 @@ const UnsavedChangesModal = ({ onConfirm, onClose }) => {
           <button
             type="button"
             onClick={onClose}
-            className="px-[1.5vw] py-[0.6vw] border border-gray-300 rounded-[0.4vw] text-[0.8vw] font-bold text-gray-700 hover:bg-gray-50 cursor-pointer"
+            className="px-[1.5vw] py-[0.6vw] border border-gray-400 rounded-[0.4vw] text-[0.8vw] font-bold text-gray-700 hover:bg-gray-50 cursor-pointer"
           >
             Continue Editing
           </button>
@@ -429,9 +430,9 @@ const BoardTypeMasterModal = ({ onClose }) => {
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-white rounded-[0.8vw] shadow-2xl border border-gray-300 w-[40vw] max-h-[85vh] flex flex-col overflow-hidden"
+        className="bg-white rounded-[0.8vw] shadow-2xl border border-gray-400 w-[40vw] max-h-[85vh] flex flex-col overflow-hidden"
       >
-        <div className="bg-blue-600 px-[1.5vw] py-[1.2vw] flex justify-between items-center">
+        <div className="bg-[#1a73e8] px-[1.5vw] py-[1.2vw] flex justify-between items-center">
           <div className="flex items-center gap-[0.8vw]">
             <div className="bg-white/20 p-[0.4vw] rounded-[0.4vw]">
               <Wrench className="w-[1.2vw] h-[1.2vw] text-white" />
@@ -446,7 +447,7 @@ const BoardTypeMasterModal = ({ onClose }) => {
           </button>
         </div>
 
-        <div className="p-[1.5vw] bg-gray-50 border-b border-gray-200">
+        <div className="p-[1.5vw] bg-gray-50 border-b border-slate-400">
           <form onSubmit={handleAdd} className="flex gap-[0.8vw] items-end">
             <div className="flex-1 space-y-[0.3vw]">
               <label className="text-[0.75vw] font-bold text-gray-700">Board Type Name *</label>
@@ -455,13 +456,13 @@ const BoardTypeMasterModal = ({ onClose }) => {
                 required
                 value={newItem.name}
                 onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
-                className="w-full border border-gray-300 rounded-[0.4vw] p-[0.55vw] text-[0.8vw] outline-none focus:border-blue-500"
+                className="w-full border border-gray-400 rounded-[0.4vw] p-[0.55vw] text-[0.8vw] outline-none focus:border-blue-500"
                 placeholder="e.g. Main Board"
               />
             </div>
             <button
               type="submit"
-              className="px-[1vw] py-[0.55vw] h-[2.2vw] bg-blue-600 hover:bg-blue-700 text-white rounded-[0.4vw] text-[0.8vw] font-bold cursor-pointer transition-all flex items-center gap-[0.4vw]"
+              className="px-[1vw] py-[0.55vw] h-[2.2vw] bg-[#1a73e8] hover:bg-[#1557b0] text-white rounded-[0.4vw] text-[0.8vw] font-bold cursor-pointer transition-all flex items-center gap-[0.4vw]"
             >
               <Plus className="w-[0.9vw] h-[0.9vw]" /> Add
             </button>
@@ -476,14 +477,14 @@ const BoardTypeMasterModal = ({ onClose }) => {
           ) : (
             <table className="w-full border-collapse">
               <thead>
-                <tr className="bg-gray-100 border-b border-gray-200">
+                <tr className="bg-gray-100 border-b border-slate-400">
                   <th className="text-left py-[0.6vw] px-[0.8vw] text-[0.75vw] font-bold text-gray-700">Name</th>
                   <th className="text-right py-[0.6vw] px-[0.8vw] text-[0.75vw] font-bold text-gray-700 w-[20%]">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((item) => (
-                  <tr key={item._id} className="border-b border-gray-100 hover:bg-gray-50">
+                  <tr key={item._id} className="border-b border-slate-400 hover:bg-gray-50">
                     {editingId === item._id ? (
                       <>
                         <td className="py-[0.5vw] px-[0.8vw]">
@@ -491,7 +492,7 @@ const BoardTypeMasterModal = ({ onClose }) => {
                             type="text"
                             value={editItem.name}
                             onChange={(e) => setEditItem({ ...editItem, name: e.target.value })}
-                            className="w-full border border-gray-300 rounded-[0.3vw] p-[0.4vw] text-[0.8vw] outline-none focus:border-blue-500"
+                            className="w-full border border-gray-400 rounded-[0.3vw] p-[0.4vw] text-[0.8vw] outline-none focus:border-blue-500"
                           />
                         </td>
                         <td className="py-[0.5vw] px-[0.8vw] text-right">
@@ -529,9 +530,9 @@ const ReportsModal = ({ row, onClose }) => {
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-white w-[60vw] max-h-[85vh] rounded-[0.8vw] shadow-2xl overflow-hidden flex flex-col border border-gray-300"
+        className="bg-white w-[60vw] max-h-[85vh] rounded-[0.8vw] shadow-2xl overflow-hidden flex flex-col border border-gray-400"
       >
-        <div className="bg-blue-600 px-[1.5vw] py-[1.2vw] flex justify-between items-center shadow-md">
+        <div className="bg-[#1a73e8] px-[1.5vw] py-[1.2vw] flex justify-between items-center shadow-md">
           <div className="flex items-center gap-[0.9vw]">
             <div className="bg-white/20 p-[0.4vw] rounded-full">
               <FileText className="w-[1.4vw] h-[1.4vw] text-white" />
@@ -561,7 +562,7 @@ const ReportsModal = ({ row, onClose }) => {
               <div
                 key={prod._pid}
                 className={`border rounded-[0.6vw] transition-all shadow-sm ${
-                  isExpanded ? "border-blue-400" : "border-gray-300"
+                  isExpanded ? "border-blue-400" : "border-gray-400"
                 }`}
               >
                 <div
@@ -573,7 +574,7 @@ const ReportsModal = ({ row, onClose }) => {
                   }`}
                 >
                   <div className="flex items-center gap-[1vw]">
-                    <span className="w-[1.6vw] h-[1.6vw] bg-blue-600 text-white rounded-full flex items-center justify-center text-[0.7vw] font-bold shadow-sm">
+                    <span className="w-[1.6vw] h-[1.6vw] bg-[#1a73e8] text-white rounded-full flex items-center justify-center text-[0.7vw] font-bold shadow-sm">
                       {idx + 1}
                     </span>
                     <div>
@@ -581,7 +582,7 @@ const ReportsModal = ({ row, onClose }) => {
                         {prod.productDescription}
                       </span>
                       <div className="flex items-center gap-[0.7vw] text-[0.72vw] text-gray-800 font-bold mt-[0.3vw]">
-                        <span className="bg-gray-200 px-[0.4vw] py-[0.05vw] rounded border border-gray-300">
+                        <span className="bg-gray-200 px-[0.4vw] py-[0.05vw] rounded border border-gray-400">
                           SN: {prod.serialNumber || "—"}
                         </span>
                         <span className="text-blue-500">·</span>
@@ -623,7 +624,7 @@ const ReportsModal = ({ row, onClose }) => {
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden border-t border-gray-300 bg-white"
+                      className="overflow-hidden border-t border-gray-400 bg-white"
                     >
                       {!r ? (
                         <div className="p-[2.5vw] text-center text-black text-[0.85vw] italic flex flex-col items-center gap-[0.6vw]">
@@ -656,13 +657,13 @@ const ReportsModal = ({ row, onClose }) => {
                               value={r.correctiveAction}
                             />
                             {r.partsReplacement && (
-                              <div className="bg-white border border-slate-200 rounded-[0.5vw] p-[0.8vw] shadow-sm hover:border-blue-200 transition-all">
+                              <div className="bg-white border border-slate-400 rounded-[0.5vw] p-[0.8vw] shadow-sm hover:border-blue-200 transition-all">
                                 <span className="text-[0.62vw] font-bold text-blue-500 uppercase block mb-[0.6vw]">
                                   Parts Replacement
                                 </span>
                                 <div className="space-y-[0.4vw]">
                                   {r.partsReplacement.split(',').map(s => s.trim()).filter(s => s.length > 0).map((part, i) => (
-                                    <div key={i} className="flex items-center gap-[0.6vw] text-[0.8vw] font-bold text-slate-800 bg-slate-50 border border-slate-100 px-[0.6vw] py-[0.4vw] rounded-[0.4vw]">
+                                    <div key={i} className="flex items-center gap-[0.6vw] text-[0.8vw] font-bold text-slate-800 bg-slate-50 border border-slate-400 px-[0.6vw] py-[0.4vw] rounded-[0.4vw]">
                                       <div className="w-[0.4vw] h-[0.4vw] rounded-full bg-blue-500" />
                                       {part}
                                     </div>
@@ -674,14 +675,14 @@ const ReportsModal = ({ row, onClose }) => {
                               </div>
                             )}
                             {r.image && (
-                              <div className="bg-white border border-slate-200 rounded-[0.5vw] p-[0.8vw] shadow-sm hover:border-blue-200 transition-all">
+                              <div className="bg-white border border-slate-400 rounded-[0.5vw] p-[0.8vw] shadow-sm hover:border-blue-200 transition-all">
                                 <span className="text-[0.62vw] font-bold text-blue-500 uppercase block mb-[0.6vw]">
                                   Technical Image
                                 </span>
                                 <img 
                                   src={`${API_URL}${r.image}`} 
                                   alt="Technical" 
-                                  className="max-w-full h-auto rounded-[0.4vw] border border-gray-200 cursor-pointer hover:scale-[1.02] transition-transform"
+                                  className="max-w-full h-auto rounded-[0.4vw] border border-slate-400 cursor-pointer hover:scale-[1.02] transition-transform"
                                   onClick={() => window.open(`${API_URL}${r.image}`, '_blank')}
                                 />
                               </div>
@@ -739,10 +740,10 @@ const ReportsModal = ({ row, onClose }) => {
           })}
         </div>
 
-        <div className="px-[1.5vw] py-[1vw] border-t border-gray-300 bg-gray-50 flex justify-end">
+        <div className="px-[1.5vw] py-[1vw] border-t border-gray-400 bg-gray-50 flex justify-end">
           <button
             onClick={onClose}
-            className="px-[2.5vw] py-[0.6vw] bg-blue-600 hover:bg-blue-700 text-white rounded-[0.5vw] text-[0.85vw] font-bold cursor-pointer transition-all shadow-md active:scale-95 flex items-center gap-[0.5vw]"
+            className="px-[2.5vw] py-[0.6vw] bg-[#1a73e8] hover:bg-[#1557b0] text-white rounded-[0.5vw] text-[0.85vw] font-bold cursor-pointer transition-all shadow-md active:scale-95 flex items-center gap-[0.5vw]"
           >
             Close Panel
           </button>
@@ -753,7 +754,7 @@ const ReportsModal = ({ row, onClose }) => {
 };
 
 const DetailItem = ({ label, value }) => (
-  <div className="bg-slate-50 p-[0.6vw] rounded-[0.4vw] border border-slate-200 shadow-sm">
+  <div className="bg-slate-50 p-[0.6vw] rounded-[0.4vw] border border-slate-400 shadow-sm">
     <span className="text-[0.62vw] font-bold text-blue-500 uppercase block leading-none mb-[0.3vw]">
       {label}
     </span>
@@ -762,7 +763,7 @@ const DetailItem = ({ label, value }) => (
 );
 
 const DetailSection = ({ label, value }) => (
-  <div className="bg-white border border-slate-200 rounded-[0.5vw] p-[0.8vw] shadow-sm hover:border-blue-200 transition-all">
+  <div className="bg-white border border-slate-400 rounded-[0.5vw] p-[0.8vw] shadow-sm hover:border-blue-200 transition-all">
     <span className="text-[0.62vw] font-bold text-blue-500 uppercase block mb-[0.4vw]">
       {label}
     </span>
@@ -1072,12 +1073,12 @@ const InwardForm = ({ initialData, customerDb, employees, boardTypes, onSave, on
       </AnimatePresence>
 
       {/* Header */}
-      <div className="flex items-center justify-between bg-white px-[1.2vw] py-[0.8vw] rounded-[0.6vw] shadow-sm border border-gray-300 mb-[1vw]">
+      <div className="flex items-center justify-between bg-white px-[1.2vw] py-[0.8vw] rounded-[0.6vw] shadow-sm border border-gray-400 mb-[1vw]">
         <div className="flex items-center gap-[1vw]">
           <button
             type="button"
             onClick={handleBackClick}
-            className="flex items-center gap-[0.4vw] text-black/70 hover:text-black border border-gray-300 bg-gray-50 px-[0.8vw] py-[0.4vw] rounded-[0.4vw] cursor-pointer"
+            className="flex items-center gap-[0.4vw] text-black/70 hover:text-black border border-gray-400 bg-gray-50 px-[0.8vw] py-[0.4vw] rounded-[0.4vw] cursor-pointer"
           >
             <ArrowLeft className="w-[1vw] h-[1vw]" />
             <span className="font-medium">Back</span>
@@ -1109,8 +1110,8 @@ const InwardForm = ({ initialData, customerDb, employees, boardTypes, onSave, on
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-[1vw]">
         {/* Customer Information */}
-        <div className="bg-white rounded-[0.6vw] shadow-sm border border-gray-300 p-[1.2vw]">
-          <h3 className="text-[0.85vw] font-bold text-black uppercase tracking-wide mb-[1vw] pb-[0.5vw] border-b border-gray-300 flex items-center gap-[0.5vw]">
+        <div className="bg-white rounded-[0.6vw] shadow-sm border border-gray-400 p-[1.2vw]">
+          <h3 className="text-[0.85vw] font-bold text-black uppercase tracking-wide mb-[1vw] pb-[0.5vw] border-b border-gray-400 flex items-center gap-[0.5vw]">
             <User className="w-[1vw] h-[1vw] text-blue-500" />Customer
             Information
           </h3>
@@ -1121,7 +1122,7 @@ const InwardForm = ({ initialData, customerDb, employees, boardTypes, onSave, on
               <input
                 readOnly
                 value={fmtDate(base.date)}
-                className="border border-gray-300 p-[0.6vw] rounded-[0.4vw] bg-gray-100 text-black cursor-not-allowed"
+                className="border border-gray-400 p-[0.6vw] rounded-[0.4vw] bg-gray-100 text-black cursor-not-allowed"
               />
             </div>
 
@@ -1135,7 +1136,7 @@ const InwardForm = ({ initialData, customerDb, employees, boardTypes, onSave, on
                 onChange={(e) => sb("refNoCustomer", e.target.value)}
                 disabled={isReadOnly}
                 placeholder="Enter customer ref no…"
-                className="border border-gray-300 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 ring-blue-100 focus:border-blue-400 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="border border-gray-400 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 ring-blue-100 focus:border-blue-400 disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -1149,7 +1150,7 @@ const InwardForm = ({ initialData, customerDb, employees, boardTypes, onSave, on
                 onChange={(e) => sb("refNoInternal", e.target.value)}
                 disabled={isReadOnly}
                 placeholder="Enter internal ref no…"
-                className="border border-gray-300 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 ring-blue-100 focus:border-blue-400 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="border border-gray-400 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 ring-blue-100 focus:border-blue-400 disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -1179,7 +1180,7 @@ const InwardForm = ({ initialData, customerDb, employees, boardTypes, onSave, on
                 />
               </div>
               {showCustDrop && !isReadOnly && (
-                <div className="absolute top-full left-0 w-full bg-white border border-gray-300 shadow-lg rounded-[0.4vw] mt-[0.3vw] max-h-[14vw] overflow-y-auto z-30">
+                <div className="absolute top-full left-0 w-full bg-white border border-gray-400 shadow-lg rounded-[0.4vw] mt-[0.3vw] max-h-[14vw] overflow-y-auto z-30">
                   {uniqueCustomers
                     .filter((c) =>
                       c.name?.toLowerCase().includes(custSearch.toLowerCase())
@@ -1216,7 +1217,7 @@ const InwardForm = ({ initialData, customerDb, employees, boardTypes, onSave, on
               <input
                 readOnly
                 value={base.customerCode}
-                className="border border-gray-300 p-[0.6vw] rounded-[0.4vw] bg-gray-100 text-gray-800 font-semibold cursor-not-allowed"
+                className="border border-gray-400 p-[0.6vw] rounded-[0.4vw] bg-gray-100 text-gray-800 font-semibold cursor-not-allowed"
               />
             </div>
 
@@ -1236,8 +1237,8 @@ const InwardForm = ({ initialData, customerDb, employees, boardTypes, onSave, on
         </div>
 
         {/* Product & Service Details */}
-        <div className="bg-white rounded-[0.6vw] shadow-sm border border-gray-300 p-[1.2vw]">
-          <div className="flex items-center justify-between mb-[1vw] pb-[0.5vw] border-b border-gray-300">
+        <div className="bg-white rounded-[0.6vw] shadow-sm border border-gray-400 p-[1.2vw]">
+          <div className="flex items-center justify-between mb-[1vw] pb-[0.5vw] border-b border-gray-400">
             <h3 className="text-[0.85vw] font-bold text-black uppercase tracking-wide flex items-center gap-[0.5vw]">
               <Package className="w-[1vw] h-[1vw] text-blue-500" />Product &amp;
               Service Details
@@ -1257,7 +1258,7 @@ const InwardForm = ({ initialData, customerDb, employees, boardTypes, onSave, on
           </div>
 
           {!base.customerCode && !isReadOnly && (
-            <div className="text-[0.78vw] text-black/50 bg-gray-50 border border-dashed border-gray-300 rounded-[0.4vw] p-[1vw] text-center mb-[0.8vw]">
+            <div className="text-[0.78vw] text-black/50 bg-gray-50 border border-dashed border-gray-400 rounded-[0.4vw] p-[1vw] text-center mb-[0.8vw]">
               Select a customer above to enable product search in each row
             </div>
           )}
@@ -1282,7 +1283,7 @@ const InwardForm = ({ initialData, customerDb, employees, boardTypes, onSave, on
           <button
             type="button"
             onClick={handleBackClick}
-            className="px-[1.5vw] py-[0.7vw] border border-gray-300 bg-white hover:bg-gray-50 text-black/90 rounded-[0.4vw] cursor-pointer flex items-center gap-[0.5vw] font-semibold"
+            className="px-[1.5vw] py-[0.7vw] border border-gray-400 bg-white hover:bg-gray-50 text-black/90 rounded-[0.4vw] cursor-pointer flex items-center gap-[0.5vw] font-semibold"
           >
             <X className="w-[1vw] h-[1vw]" />
             {isReadOnly &&
@@ -1304,7 +1305,7 @@ const InwardForm = ({ initialData, customerDb, employees, boardTypes, onSave, on
             )) && (
             <button
               type="submit"
-              className="px-[1.5vw] py-[0.7vw] bg-blue-600 hover:bg-blue-700 text-white rounded-[0.4vw] flex items-center gap-[0.5vw] cursor-pointer font-semibold shadow-md"
+              className="px-[1.5vw] py-[0.7vw] bg-[#1a73e8] hover:bg-[#1557b0] text-white rounded-[0.4vw] flex items-center gap-[0.5vw] cursor-pointer font-semibold shadow-md"
             >
               <Save className="w-[1vw] h-[1vw]" />
               {isEdit || isReadOnly ? "Update Entry" : "Register Inward"}
@@ -1401,10 +1402,10 @@ const AssignCell = ({ row, prod, employees, onAssign, onAssignSegmentGroup, onUp
             initial={{ opacity: 0, scale: 0.95, y: -4 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="absolute top-full left-0 mt-[0.3vw] bg-white border border-gray-300 shadow-xl rounded-[0.5vw] z-40 w-[20vw]"
+            className="absolute top-full left-0 mt-[0.3vw] bg-white border border-gray-400 shadow-xl rounded-[0.5vw] z-40 w-[20vw]"
           >
             {hasGroupCandidates && (
-              <div className="flex border-b border-gray-200">
+              <div className="flex border-b border-slate-400">
                 <button
                   type="button"
                   onClick={() => setTab("single")}
@@ -1441,7 +1442,7 @@ const AssignCell = ({ row, prod, employees, onAssign, onAssignSegmentGroup, onUp
               </div>
             )}
 
-            <div className="p-[0.55vw] border-b border-gray-200">
+            <div className="p-[0.55vw] border-b border-slate-400">
               <div className="relative">
                 <Search className="absolute left-[0.5vw] top-1/2 -translate-y-1/2 w-[0.8vw] h-[0.8vw] text-black/50" />
                 <input
@@ -1449,7 +1450,7 @@ const AssignCell = ({ row, prod, employees, onAssign, onAssignSegmentGroup, onUp
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search engineer…"
-                  className="w-full pl-[1.8vw] pr-[0.5vw] py-[0.4vw] border border-gray-300 rounded-[0.3vw] text-[0.72vw] outline-none focus:border-blue-400"
+                  className="w-full pl-[1.8vw] pr-[0.5vw] py-[0.4vw] border border-gray-400 rounded-[0.3vw] text-[0.72vw] outline-none focus:border-blue-400"
                 />
               </div>
             </div>
@@ -1520,7 +1521,7 @@ const AssignCell = ({ row, prod, employees, onAssign, onAssignSegmentGroup, onUp
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-[0.8vw] shadow-2xl border border-gray-300 p-[1.8vw] w-[26vw]"
+              className="bg-white rounded-[0.8vw] shadow-2xl border border-gray-400 p-[1.8vw] w-[26vw]"
             >
               <div className="flex items-center gap-[0.6vw] mb-[1.2vw]">
                 <div className="w-[2.2vw] h-[2.2vw] rounded-full bg-orange-100 flex items-center justify-center">
@@ -1542,14 +1543,14 @@ const AssignCell = ({ row, prod, employees, onAssign, onAssignSegmentGroup, onUp
                   value={deliveryDateInput}
                   onChange={(e) => setDeliveryDateInput(e.target.value)}
                   min={todayDateStr()}
-                  className="w-full border border-gray-300 rounded-[0.4vw] px-[0.6vw] py-[0.5vw] text-[0.8vw] outline-none focus:border-blue-400 text-black"
+                  className="w-full border border-gray-400 rounded-[0.4vw] px-[0.6vw] py-[0.5vw] text-[0.8vw] outline-none focus:border-blue-400 text-black"
                 />
               </div>
               <div className="flex gap-[0.6vw] justify-end">
                 <button
                   type="button"
                   onClick={() => { setPendingAssign(null); setDeliveryDateInput(""); }}
-                  className="px-[1.2vw] py-[0.55vw] border border-gray-300 rounded-[0.4vw] text-[0.78vw] text-black/80 hover:bg-gray-50 cursor-pointer"
+                  className="px-[1.2vw] py-[0.55vw] border border-gray-400 rounded-[0.4vw] text-[0.78vw] text-black/80 hover:bg-gray-50 cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1574,7 +1575,7 @@ const AssignCell = ({ row, prod, employees, onAssign, onAssignSegmentGroup, onUp
                     setPendingAssign(null);
                     setDeliveryDateInput("");
                   }}
-                  className="px-[1.4vw] py-[0.55vw] bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-[0.4vw] text-[0.78vw] font-semibold cursor-pointer flex items-center gap-[0.4vw]"
+                  className="px-[1.4vw] py-[0.55vw] bg-[#1a73e8] hover:bg-[#1557b0] disabled:opacity-50 text-white rounded-[0.4vw] text-[0.78vw] font-semibold cursor-pointer flex items-center gap-[0.4vw]"
                 >
                   <User className="w-[0.85vw] h-[0.85vw]" />Confirm & Assign
                 </button>
@@ -1628,7 +1629,7 @@ const FinalStatusCell = ({ row, prod, onUpdateProduct }) => {
     setOpen(false);
   };
 
-  const cls = FINAL_STATUS_COLORS[status] || "bg-gray-100 text-black/80 border-gray-300";
+  const cls = FINAL_STATUS_COLORS[status] || "bg-gray-100 text-black/80 border-gray-400";
 
   return (
     <div className="flex items-center justify-center gap-[0.4vw]">
@@ -1636,10 +1637,10 @@ const FinalStatusCell = ({ row, prod, onUpdateProduct }) => {
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
-          className={`text-[0.68vw] px-[0.5vw] py-[0.2vw] rounded-full border font-semibold flex items-center gap-[0.3vw] cursor-pointer ${cls}`}
+          className={`text-[0.7vw] px-[0.6vw] py-[0.3vw] rounded-[0.4vw] border font-bold flex items-center justify-between gap-[0.35vw] cursor-pointer ${cls}`}
         >
           {status}
-          <ChevronDown className="w-[0.7vw] h-[0.7vw]" />
+          <ChevronDown className="w-[0.7vw] h-[0.7vw] text-current" />
         </button>
 
         <AnimatePresence>
@@ -1648,7 +1649,7 @@ const FinalStatusCell = ({ row, prod, onUpdateProduct }) => {
               initial={{ opacity: 0, scale: 0.95, y: -4 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="absolute top-full right-0 mt-[0.3vw] bg-white border border-gray-300 shadow-xl rounded-[0.5vw] z-40 w-[17vw] p-[0.8vw]"
+              className="absolute top-full right-0 mt-[0.3vw] bg-white border border-gray-400 shadow-xl rounded-[0.5vw] z-40 w-[17vw] p-[0.8vw]"
             >
               <div className="text-[0.72vw] font-semibold text-black/80 mb-[0.5vw]">
                 Final Status
@@ -1664,7 +1665,7 @@ const FinalStatusCell = ({ row, prod, onUpdateProduct }) => {
                       className={`py-[0.3vw] rounded-[0.3vw] border text-[0.66vw] font-semibold cursor-pointer transition-all truncate px-[0.3vw] ${
                         status === opt
                           ? optCls + " ring-2 ring-offset-1 ring-blue-300"
-                          : "bg-gray-50 text-black/70 border-gray-300 hover:bg-gray-100"
+                          : "bg-gray-50 text-black/70 border-gray-400 hover:bg-gray-100"
                       }`}
                     >
                       {opt}
@@ -1681,7 +1682,7 @@ const FinalStatusCell = ({ row, prod, onUpdateProduct }) => {
                   type="date"
                   value={statusDate}
                   onChange={(e) => setStatusDate(e.target.value)}
-                  className="w-full border border-gray-300 rounded-[0.3vw] px-[0.4vw] py-[0.35vw] text-[0.72vw] outline-none focus:border-blue-400 text-black"
+                  className="w-full border border-gray-400 rounded-[0.3vw] px-[0.4vw] py-[0.35vw] text-[0.72vw] outline-none focus:border-blue-400 text-black"
                 />
               </div>
 
@@ -1690,14 +1691,14 @@ const FinalStatusCell = ({ row, prod, onUpdateProduct }) => {
                 value={remarks}
                 onChange={(e) => setRemarks(e.target.value)}
                 placeholder="Add remarks…"
-                className="w-full border border-gray-300 rounded-[0.3vw] p-[0.4vw] text-[0.72vw] outline-none focus:border-blue-400 resize-none mb-[0.6vw] text-black"
+                className="w-full border border-gray-400 rounded-[0.3vw] p-[0.4vw] text-[0.72vw] outline-none focus:border-blue-400 resize-none mb-[0.6vw] text-black"
               />
 
               <div className="flex justify-end gap-[0.4vw]">
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="px-[0.8vw] py-[0.3vw] text-[0.68vw] border border-gray-300 rounded-[0.3vw] text-black/80 hover:bg-gray-50 cursor-pointer"
+                  className="px-[0.8vw] py-[0.3vw] text-[0.68vw] border border-gray-400 rounded-[0.3vw] text-black/80 hover:bg-gray-50 cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1719,9 +1720,9 @@ const FinalStatusCell = ({ row, prod, onUpdateProduct }) => {
           type="button"
           onClick={() => setShowHistory((s) => !s)}
           title="View History"
-          className="p-[0.3vw] text-black/50 hover:text-blue-600 hover:bg-blue-50 rounded-[0.3vw] transition-colors cursor-pointer"
+          className="p-[0.35vw] text-slate-500 hover:text-blue-600 hover:bg-blue-50 border border-slate-300 hover:border-blue-400 rounded-full transition-colors cursor-pointer flex items-center justify-center shadow-sm"
         >
-          <Clock className="w-[0.9vw] h-[0.9vw]" />
+          <Clock className="w-[0.8vw] h-[0.8vw]" />
         </button>
         <AnimatePresence>
           {showHistory && (
@@ -1729,9 +1730,9 @@ const FinalStatusCell = ({ row, prod, onUpdateProduct }) => {
               initial={{ opacity: 0, scale: 0.95, y: -4 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="absolute top-full right-0 mt-[0.3vw] bg-white border border-gray-300 shadow-2xl rounded-[0.5vw] z-40 w-[22vw] p-[1vw]"
+              className="absolute top-full right-0 mt-[0.3vw] bg-white border border-gray-400 shadow-2xl rounded-[0.5vw] z-40 w-[22vw] p-[1vw]"
             >
-              <div className="flex items-center justify-between mb-[0.8vw] pb-[0.4vw] border-b border-gray-300">
+              <div className="flex items-center justify-between mb-[0.8vw] pb-[0.4vw] border-b border-gray-400">
                 <div className="text-[0.8vw] font-bold text-black flex items-center gap-[0.4vw]">
                   <Clock className="w-[0.9vw] h-[0.9vw] text-blue-500" />Status
                   History
@@ -1751,7 +1752,7 @@ const FinalStatusCell = ({ row, prod, onUpdateProduct }) => {
                     .map((h, i) => (
                       <div
                         key={i}
-                        className="bg-gray-50/50 rounded-[0.4vw] p-[0.6vw] border border-gray-200"
+                        className="bg-gray-50/50 rounded-[0.4vw] p-[0.6vw] border border-slate-400"
                       >
                         <div className="flex items-center justify-between mb-[0.2vw]">
                           <span
@@ -1834,6 +1835,60 @@ const getProductDelay = (row, prod) => {
   );
 };
 
+
+// ── Animation variants ───────────────────────────────────────────────────────
+const groupVariants = {
+  hidden: { opacity: 0, y: -6 },
+  visible: (i) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.06, duration: 0.22, ease: "easeOut" },
+  }),
+};
+ 
+const rowVariants = {
+  hidden: { opacity: 0, x: -10 },
+  visible: (i) => ({
+    opacity: 1,
+    x: 0,
+    transition: { delay: i * 0.04, duration: 0.18, ease: "easeOut" },
+  }),
+};
+ 
+// ── Animated <tr> wrappers (motion doesn't support <tr> directly in all
+//    table layouts, so we use style + a wrapper trick via CSS animation) ──────
+// We apply inline animation via className + a keyframe defined once.
+// Tailwind doesn't have stagger, so we pass animationDelay inline.
+const AnimatedTr = ({ delay = 0, className = "", children, ...rest }) => (
+  <tr
+    {...rest}
+    className={className}
+    style={{
+      animation: `smReveal 0.22s ease-out both`,
+      animationDelay: `${delay}ms`,
+    }}
+  >
+    {children}
+  </tr>
+);
+ 
+// Inject keyframe once (idempotent)
+if (typeof document !== "undefined" && !document.getElementById("sm-keyframes")) {
+  const style = document.createElement("style");
+  style.id = "sm-keyframes";
+  style.textContent = `
+    @keyframes smReveal {
+      from { opacity: 0; transform: translateY(-5px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes smSlideIn {
+      from { opacity: 0; transform: translateX(-8px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+  `;
+  document.head.appendChild(style);
+}
+ 
 const AdminTableView = ({
   employees,
   onView,
@@ -1851,434 +1906,590 @@ const AdminTableView = ({
   totalPages,
   isPageSelected,
   isSupervisor,
-}) => (
-  <div className="bg-white rounded-[0.6vw] shadow-sm border border-gray-300 flex flex-col">
-    <div className="overflow-auto max-h-[65vh] min-h-[65vh] w-full rounded-t-[0.6vw]">
-      <table className="w-full text-left border-collapse">
-        <thead className="bg-blue-50 sticky top-0 z-10">
-          <tr>
-            {!isSupervisor && (
+}) => {
+  const [collapsedCustomers, setCollapsedCustomers] = useState({});
+  const [collapsedEntries, setCollapsedEntries]     = useState({});
+ 
+  const toggleCustomer = (name) =>
+    setCollapsedCustomers((p) => ({ ...p, [name]: !p[name] }));
+  const toggleEntry = (id) =>
+    setCollapsedEntries((p) => ({ ...p, [id]: !p[id] }));
+ 
+  // Group paginated data by customer
+  const groups = useMemo(() => {
+    const map = new Map();
+    paginatedData.forEach((row) => {
+      const key = row.customerName || "—";
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push(row);
+    });
+    return Array.from(map.entries()).map(([customerName, rows]) => ({
+      customerName,
+      rows: [...rows].sort(
+        (a, b) => new Date(a.date || a.timestamp) - new Date(b.date || b.timestamp)
+      ),
+    }));
+  }, [paginatedData]);
+
+  // Calculate shown and total records count (products inside entries)
+  const recordsPaginationInfo = useMemo(() => {
+    // 1. Total records in filteredData
+    const totalRecords = filteredData.reduce((sum, row) => sum + (row.products?.length || 1), 0);
+    
+    // 2. Preceding records (before the current page)
+    const precedingEntries = filteredData.slice(0, (currentPage - 1) * ITEMS_PER_PAGE);
+    const precedingRecords = precedingEntries.reduce((sum, row) => sum + (row.products?.length || 1), 0);
+    
+    // 3. Current page records
+    const currentPageRecords = paginatedData.reduce((sum, row) => sum + (row.products?.length || 1), 0);
+    
+    // 4. Start & End indices
+    const startIdx = paginatedData.length > 0 ? precedingRecords + 1 : 0;
+    const endIdx = precedingRecords + currentPageRecords;
+    
+    return { startIdx, endIdx, totalRecords };
+  }, [filteredData, paginatedData, currentPage]);
+ 
+  const productCols = ["Product", "Product Code", "Segment", "Serial No", "Board Type", "Exp. Delivery", "Type"];
+  const actionCols  = ["Emp Status", "Final Status", "Delay"];
+  const totalCols   = (isSupervisor ? 0 : 1) + 1 + productCols.length + actionCols.length;
+ 
+  // Running delay counter for stagger across all rows
+  let animDelay = 0;
+ 
+  return (
+    <div className="bg-white rounded-[0.6vw] shadow-sm border border-slate-300 flex flex-col">
+      <div className="overflow-auto max-h-[65vh] min-h-[65vh] w-full rounded-t-[0.6vw]">
+        <table className="w-full text-left border-collapse">
+ 
+          {/* ── THEAD ─────────────────────────────────────────────────────── */}
+          <thead
+            className="sticky top-0 z-10"
+            style={{ background: "#1a73e8" }}
+          >
+            <tr>
+              {!isSupervisor && (
+                <th
+                  rowSpan={2}
+                  className="p-[0.6vw] border-b-2 border-r border-blue-400/30 text-center align-middle w-[2.5%] sticky top-0 z-20"
+                  style={{ background: "#1a73e8" }}
+                >
+                  <button
+                    type="button"
+                    onClick={onToggleSelectPage}
+                    className="flex items-center justify-center w-full cursor-pointer"
+                  >
+                    <div className={`w-[1.1vw] h-[1.1vw] rounded-[0.2vw] border border-white flex items-center justify-center transition-all ${
+                      isPageSelected ? "bg-white text-[#1a73e8]" : "bg-transparent"
+                    }`}>
+                      {isPageSelected && <span className="text-[0.75vw] leading-none font-bold text-[#1a73e8]">✓</span>}
+                    </div>
+                  </button>
+                </th>
+              )}
+ 
               <th
                 rowSpan={2}
-                className="p-[0.6vw] border-b-2 border-r border-gray-300 text-center align-middle w-[3%] bg-blue-50"
+                className="px-[0.6vw] py-[0.55vw] font-bold text-white text-center border-b-2 border-r border-blue-400/30 whitespace-nowrap text-[0.8vw] align-middle w-[3%] sticky top-0 z-20"
+                style={{ background: "#1a73e8" }}
               >
-                <button
-                  type="button"
-                  onClick={onToggleSelectPage}
-                  className="flex items-center justify-center w-full cursor-pointer"
-                >
-                  {isPageSelected ? (
-                    <CheckSquare className="w-[1.1vw] h-[1.1vw] text-blue-600" />
-                  ) : (
-                    <Square className="w-[1.1vw] h-[1.1vw] text-gray-700" />
-                  )}
-                </button>
+                S. No
               </th>
-            )}
-            {["S.No", "Date", "Customer Name", "Category"].map((h) => {
-              const minW = h === "Customer Name" ? "200px" : "100px";
-              return (
-                <th
-                  key={h}
-                  rowSpan={2}
-                  style={{ minWidth: minW }}
-                  className="px-[0.6vw] py-[0.5vw] font-bold text-black text-center border-b-2 border-r border-gray-300 whitespace-nowrap text-[0.78vw] align-middle bg-blue-50"
-                >
-                  {h}
-                </th>
-              );
-            })}
-            <th
-              colSpan={PRODUCT_SUB_COLS.length}
-              className="px-[0.6vw] py-[0.4vw] font-bold text-black border-b border-r border-gray-300 text-center text-[0.78vw] bg-blue-100"
-            >
-              Products
-            </th>
-            {["Edit", "Reports", "Emp Status", "Final Status", "Remarks", "Delay"].map((h, idx) => {
-              if (isSupervisor && h === "Edit") return null;
-              const minW =
-                h === "Remarks" ? "180px" :
-                h === "Final Status" ? "140px" :
-                h === "Emp Status" ? "140px" :
-                "100px";
-              return (
-                <th
-                  key={h}
-                  rowSpan={2}
-                  style={{ minWidth: minW }}
-                  className="px-[0.6vw] py-[0.5vw] font-bold text-black text-center border-b-2 border-r border-gray-300 last:border-r-0 whitespace-nowrap text-[0.78vw] align-middle bg-blue-50"
-                >
-                  {h}
-                </th>
-              );
-            })}
-          </tr>
-          <tr>
-            {PRODUCT_SUB_COLS.map((h, i) => {
-              const minW = h === "Product" ? "220px" : "140px";
-              return (
-                <th
-                  key={h}
-                  style={{ minWidth: minW }}
-                  className={`px-[0.6vw] py-[0.4vw] font-bold text-black text-center border-b-2 border-r border-gray-300 whitespace-nowrap text-[0.72vw] bg-blue-50 ${
-                    i === PRODUCT_SUB_COLS.length - 1
-                      ? "border-r border-gray-300"
-                      : ""
-                  }`}
-                >
-                  {h}
-                </th>
-              );
-            })}
-          </tr>
-        </thead>
-
-        <tbody>
-          {paginatedData.length > 0 ? (
-            paginatedData.flatMap((row, i) => {
-              const sn = (currentPage - 1) * ITEMS_PER_PAGE + i + 1;
-              const isSelected = selectedItems.has(row.id);
-
-              const prods =
-                row.products && row.products.length > 0
-                  ? row.products
-                  : [
-                      {
-                        _pid: "legacy",
-                        productDescription: row.productDescription,
-                        productCode: row.productCode,
-                        serialNumber: row.serialNumber,
-                        type: row.type,
-                        qty: row.qty,
-                        expectedDeliveryDate: row.expectedDeliveryDate,
-                        assignedTo: row.assignedTo || "",
-                        assignedToName: row.assignedToName || "",
-                        assignedDepartment: row.assignedDepartment || "",
-                      },
-                    ];
-
-              const span = prods.length;
-              const bgCls = isSelected ? "bg-blue-50" : "";
-
-              return prods.map((prod, pi) => {
-                const employeeStatus = prod.report?.status || prod.status || "Open";
-                const employeeStatusCfg = STATUS_CONFIG[employeeStatus] || STATUS_CONFIG["Open"];
-                const EmployeeStatusIcon = employeeStatusCfg.icon;
-
-                return (
-                <tr
-                  key={`${row.id}-${pi}`}
-                  className={`transition-colors hover:bg-gray-50/60 ${bgCls} ${
-                    pi > 0
-                      ? "border-t border-dashed border-gray-300"
-                      : "border-t border-gray-300"
-                  }`}
-                >
-                  {pi === 0 && (
-                    <>
-                      {!isSupervisor && (
-                        <td
-                          rowSpan={span}
-                          className="p-[0.7vw] border-r border-gray-300 text-center align-middle"
-                        >
-                          <button
-                            type="button"
-                            onClick={() => onToggleSelect(row.id)}
-                            className="flex items-center justify-center w-full cursor-pointer"
-                          >
-                            {isSelected ? (
-                              <CheckSquare className="w-[1.1vw] h-[1.1vw] text-blue-600" />
-                            ) : (
-                              <Square className="w-[1.1vw] h-[1.1vw] text-gray-700 hover:text-black" />
-                            )}
-                          </button>
-                        </td>
-                      )}
-                      <td
-                        rowSpan={span}
-                        className="p-[0.7vw] border-r border-gray-300 text-black/80 font-medium text-center text-[0.78vw] align-middle"
-                      >
-                        {sn}
-                      </td>
-                      <td
-                        rowSpan={span}
-                        className="p-[0.7vw] border-r border-gray-300 text-black text-[0.72vw] whitespace-nowrap align-middle text-center"
-                      >
-                        {fmtDate(row.date || row.timestamp)}
-                      </td>
-                      <td
-                        rowSpan={span}
-                        className="p-[0.7vw] border-r border-gray-300 align-middle text-center"
-                      >
-                        <div
-                          className="font-semibold text-black text-[0.75vw] max-w-[9vw] break-words mx-auto text-center"
-                          title={row.customerName}
-                        >
-                          {row.customerName || "—"}
-                        </div>
-                      </td>
-                      <td
-                        rowSpan={span}
-                        className="p-[0.7vw] border-r border-gray-300 align-middle text-center"
-                      >
-                        <div className="text-[0.65vw] text-gray-800 font-bold mx-auto text-center break-words">
-                          {row.category || "—"}
-                        </div>
-                      </td>
-                    </>
-                  )}
-
-                  {/* Product sub-cols */}
-                  <td className="px-[0.65vw] py-[0.6vw] border-r border-gray-300 align-middle text-center">
-                    <div className="flex flex-col items-center gap-[0.3vw]">
-                      <div
-                        className="font-medium text-black text-[0.75vw] max-w-[10vw] break-words mx-auto text-center"
-                        title={prod.productDescription}
-                      >
-                        {prod.productDescription || "—"}
-                      </div>
-                      {prod.report?.status === "Completed" && (
-                        <span className="inline-flex items-center gap-[0.25vw] rounded-[0.35vw] bg-green-100 text-green-700 px-[0.45vw] py-[0.3vw] text-[0.62vw] font-semibold flex-shrink-0 w-max mx-auto">
-                          <span className="w-[0.5vw] h-[0.5vw] rounded-full bg-green-600" />
-                          Completed by emp
-                        </span>
-                      )}
-                    </div>
-                    {prod.productCode && (
-                      <div className="text-[0.62vw] text-black mt-[0.1vw] mx-auto text-center">
-                        {prod.productCode}
-                      </div>
-                    )}
-                    {prod.productSegment && (
-                      <div className="text-[0.6vw] text-blue-500 font-medium mt-[0.05vw] mx-auto text-center">
-                        {prod.productSegment}
-                      </div>
-                    )}
-                  </td>
-
-                  <td className="px-[0.65vw] py-[0.6vw] border-r border-gray-300 text-[0.7vw] text-black font-semibold align-middle text-center">
-                    {prod.serialNumber || (
-                      <span className="text-gray-700">—</span>
-                    )}
-                  </td>
-
-                  <td className="px-[0.65vw] py-[0.6vw] border-r border-gray-300 text-[0.7vw] text-black font-semibold whitespace-nowrap align-middle text-center">
-                    {fmtDate(prod.expectedDeliveryDate)}
-                  </td>
-
-                  {pi === 0 && (
-                    <>
-                      <td
-                        rowSpan={span}
-                        className="px-[0.65vw] py-[0.6vw] border-r border-gray-300 text-center align-middle"
-                      >
-                        <div className="flex flex-col items-center gap-[0.4vw]">
-                          {isSupervisor ? (
-                            <button
-                              type="button"
-                              onClick={() => onView(row)}
-                              title="View"
-                              className="text-purple-400 hover:text-purple-600 cursor-pointer p-[0.3vw] rounded-[0.3vw] hover:bg-purple-50 transition-colors flex flex-col items-center gap-[0.1vw] mx-auto"
-                            >
-                              <Eye className="w-[0.95vw] h-[0.95vw]" />
-                              <span className="text-[0.55vw] leading-none">
-                                View
-                              </span>
-                            </button>
-                          ) : (
-                            <>
-                              {row.products?.some((p) => !!p.assignedTo) ? (
-                                <button
-                                  type="button"
-                                  onClick={() => onView(row)}
-                                  title="View"
-                                  className="text-purple-400 hover:text-purple-600 cursor-pointer p-[0.3vw] rounded-[0.3vw] hover:bg-purple-50 transition-colors flex flex-col items-center gap-[0.1vw] mx-auto"
-                                >
-                                  <Eye className="w-[0.95vw] h-[0.95vw]" />
-                                  <span className="text-[0.55vw] leading-none">
-                                    View
-                                  </span>
-                                </button>
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => onEdit(row)}
-                                  title="Edit"
-                                  className="text-gray-800 hover:text-blue-600 cursor-pointer p-[0.3vw] rounded-[0.3vw] hover:bg-blue-50 transition-colors mx-auto block"
-                                >
-                                  <Edit3 className="w-[0.95vw] h-[0.95vw]" />
-                                </button>
-                              )}
-                              <button
-                                type="button"
-                                onClick={() => onDelete(row.id)}
-                                title="Delete"
-                                className="text-red-400 hover:text-red-600 cursor-pointer p-[0.3vw] rounded-[0.3vw] hover:bg-red-50 transition-colors mx-auto block"
-                              >
-                                <Trash2 className="w-[0.95vw] h-[0.95vw]" />
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </td>
-
-                      <td
-                        rowSpan={span}
-                        className="px-[0.65vw] py-[0.6vw] border-r border-gray-300 align-middle text-center"
-                      >
-                        <button
-                          type="button"
-                          onClick={() =>
-                            onUpdateRow(row.id, { _openReports: true })
-                          }
-                          className="text-[0.65vw] px-[0.5vw] py-[0.2vw] bg-gray-100 hover:bg-blue-100 text-black hover:text-blue-700 border border-black/20 hover:border-blue-300 rounded-[0.3vw] cursor-pointer font-semibold transition-all"
-                        >
-                          View Reports
-                        </button>
-                      </td>
-                    </>
-                  )}
-
-                  <td className="px-[0.65vw] py-[0.6vw] border-r border-gray-300 align-middle text-center">
-                    <span className={`inline-flex items-center gap-[0.3vw] px-[0.6vw] py-[0.25vw] rounded-full border text-[0.68vw] font-semibold ${employeeStatusCfg.bg} ${employeeStatusCfg.border} ${employeeStatusCfg.text}`}>
-                      <EmployeeStatusIcon className="w-[0.8vw] h-[0.8vw]" />
-                      {employeeStatus === "Completed" ? "Completed by emp" : employeeStatus}
-                    </span>
-                  </td>
-
-                  <td className="px-[0.65vw] py-[0.6vw] border-r border-gray-300 align-middle text-center">
-                    <FinalStatusCell row={row} prod={prod} onUpdateProduct={onUpdateProduct} />
-                  </td>
-
-                  <td className="px-[0.65vw] py-[0.6vw] align-middle text-center">
-                    <div
-                      className="text-[0.7vw] text-black font-medium max-w-[10vw] break-words mx-auto text-center"
-                      title={prod.finalStatusRemarks}
-                    >
-                      {prod.finalStatusRemarks || (
-                        <span className="text-gray-700 font-bold">—</span>
-                      )}
-                    </div>
-                    {prod.finalStatusDate && (
-                      <div className="text-[0.6vw] text-blue-500 font-medium mt-[0.1vw] mx-auto text-center">
-                        {fmtDate(prod.finalStatusDate)}
-                      </div>
-                    )}
-                  </td>
-
-                  <td className="px-[0.65vw] py-[0.6vw] border-l border-r border-gray-300 text-[0.7vw] text-gray-800 font-bold align-middle text-center">
-                    {getProductDelay(row, prod)}
-                  </td>
-                </tr>
-              )});
-            })
-          ) : (
-            <tr>
-              <td
-                colSpan={5 + PRODUCT_SUB_COLS.length + 6}
-                className="py-[4vw] text-center text-black/50 text-[0.85vw]"
+ 
+              {/* Products super-header */}
+              <th
+                colSpan={productCols.length}
+                className="px-[0.6vw] py-[0.45vw] font-bold text-white border-b border-r border-blue-400/30 text-center text-[0.8vw] tracking-wide uppercase sticky top-0 z-20"
+                style={{ background: "#1a73e8" }}
               >
-                No records found.
-              </td>
+                PRODUCTS
+              </th>
+ 
+              {actionCols.map((h) => (
+                <th
+                  key={h}
+                  rowSpan={2}
+                  style={{
+                    minWidth: h === "Final Status" || h === "Emp Status" ? "148px" : "100px",
+                    background: "#1a73e8",
+                  }}
+                  className="px-[0.6vw] py-[0.55vw] font-bold text-white text-center border-b-2 border-r border-blue-400/30 last:border-r-0 whitespace-nowrap text-[0.8vw] align-middle sticky top-0 z-20"
+                >
+                  {h}
+                </th>
+              ))}
             </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+ 
+            <tr style={{ background: "#1a73e8" }}>
+              {productCols.map((h) => (
+                <th
+                  key={h}
+                  style={{
+                    minWidth: h === "Product" ? "210px" : h === "Product Code" ? "140px" : h === "Segment" ? "100px" : "125px",
+                    background: "#1a73e8",
+                  }}
+                  className="px-[0.6vw] py-[0.45vw] font-semibold text-white/90 text-center border-b-2 border-r border-blue-400/30 whitespace-nowrap text-[0.76vw] sticky top-[2.1vw] z-20"
+                >
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+ 
+          {/* ── TBODY ─────────────────────────────────────────────────────── */}
+          <tbody>
+            {groups.length > 0 ? (
+              groups.flatMap(({ customerName, rows }, groupIdx) => {
+                const isCustomerCollapsed = collapsedCustomers[customerName];
+ 
+                const totalProducts = rows.reduce((a, r) => a + (r.products?.length || 1), 0);
+                const pendingCount  = rows.reduce(
+                  (a, r) => a + (r.products || []).filter((p) => (p.finalStatus || "Pending") === "Pending").length, 0
+                );
+                const deliveredCount = rows.reduce(
+                  (a, r) => a + (r.products || []).filter((p) => p.finalStatus === "Delivered").length, 0
+                );
+                const holdCount = rows.reduce(
+                  (a, r) => a + (r.products || []).filter((p) => p.finalStatus === "Hold").length, 0
+                );
+ 
+                const custDelay = animDelay;
+                animDelay += 40;
+ 
+                return [
+                  // ── CUSTOMER HEADER ROW ──────────────────────────────────
+                  <AnimatedTr
+                    key={`cust-${customerName}`}
+                    delay={custDelay}
+                    className="cursor-pointer select-none border-b border-slate-300 bg-white hover:bg-slate-50 transition-colors"
+                    onClick={() => toggleCustomer(customerName)}
+                  >
+                    <td
+                      colSpan={totalCols}
+                      className="px-[0.9vw] py-[0.65vw] border-l-[4px] border-[#1a73e8] sticky top-[4.0vw] z-10 bg-white shadow-sm border-b border-slate-300"
+                    >
+                      <div className="flex items-center gap-[0.7vw]">
+                        {isCustomerCollapsed ? (
+                          <ChevronRight className="w-[1.1vw] h-[1.1vw] text-slate-500 flex-shrink-0" />
+                        ) : (
+                          <ChevronDown className="w-[1.1vw] h-[1.1vw] text-slate-500 flex-shrink-0" />
+                        )}
+ 
+                        <span className="font-bold text-slate-800 text-[0.88vw] tracking-wide">
+                          {customerName}
+                        </span>
+ 
+                        {/* Entry count */}
+                        <span className="bg-slate-100 text-slate-600 border border-slate-300/80 text-[0.68vw] font-bold px-[0.5vw] py-[0.1vw] rounded ml-[0.2vw]">
+                          {rows.length} {rows.length === 1 ? "entry" : "entries"}
+                        </span>
+ 
+                        {/* Status summary badges */}
+                        <div className="ml-auto flex items-center gap-[0.8vw]">
+                          {pendingCount > 0 && (
+                            <span className="bg-orange-50 text-orange-600 border border-orange-200 text-[0.68vw] font-bold px-[0.6vw] py-[0.15vw] rounded-full">
+                              {pendingCount} Pending
+                            </span>
+                          )}
+                          {holdCount > 0 && (
+                            <span className="bg-rose-50 text-rose-700 border border-rose-200 text-[0.68vw] font-bold px-[0.6vw] py-[0.15vw] rounded-full">
+                              {holdCount} Hold
+                            </span>
+                          )}
+                          {deliveredCount > 0 && (
+                            <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[0.68vw] font-bold px-[0.6vw] py-[0.15vw] rounded-full">
+                              {deliveredCount} Delivered
+                            </span>
+                          )}
+                          <span className="text-slate-500 text-[0.7vw] font-semibold flex items-center gap-[0.2vw]">
+                            <span>{totalProducts} product{totalProducts !== 1 ? "s" : ""}</span>
+                            <ChevronRight className="w-[0.9vw] h-[0.9vw] text-slate-500" />
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                  </AnimatedTr>,
+ 
+                  // ── ENTRIES (hidden when customer collapsed) ─────────────
+                  ...(isCustomerCollapsed
+                    ? []
+                    : rows.flatMap((row, rowIdx) => {
+                        const globalSn     = (currentPage - 1) * ITEMS_PER_PAGE + paginatedData.indexOf(row) + 1;
+                        const isSelected   = selectedItems.has(row.id);
+                        const isEntryCollapsed = collapsedEntries[row.id];
+ 
+                        const prods =
+                          row.products && row.products.length > 0
+                            ? row.products
+                            : [{
+                                _pid: "legacy",
+                                productDescription: row.productDescription,
+                                productCode: row.productCode,
+                                productSegment: row.productSegment || "",
+                                serialNumber: row.serialNumber,
+                                boardType: row.boardType,
+                                type: row.type,
+                                qty: row.qty,
+                                expectedDeliveryDate: row.expectedDeliveryDate,
+                                assignedTo: row.assignedTo || "",
+                                assignedToName: row.assignedToName || "",
+                              }];
+ 
+                        const entryDelay = animDelay;
+                        animDelay += 30;
+ 
+                        return [
+                          // ── ENTRY SUB-HEADER ────────────────────────────
+                          <AnimatedTr
+                            key={`entry-hdr-${row.id}`}
+                            delay={entryDelay}
+                            className={`border-t border-b border-slate-300 cursor-pointer select-none transition-colors duration-150 ${
+                              isSelected ? "bg-blue-50/60" : "bg-white hover:bg-slate-50"
+                            }`}
+                          >
+                            {!isSupervisor && (
+                              <td
+                                className="p-[0.5vw] border-r border-slate-300 text-center align-middle"
+                                onClick={(e) => { e.stopPropagation(); onToggleSelect(row.id); }}
+                              >
+                                <button type="button" className="flex items-center justify-center w-full cursor-pointer">
+                                  <div className={`w-[1.1vw] h-[1.1vw] rounded-[0.2vw] border flex items-center justify-center transition-all ${
+                                    isSelected
+                                      ? "bg-blue-600 border-blue-600 text-white"
+                                      : "border-slate-300 hover:border-slate-400 bg-white"
+                                  }`}>
+                                    {isSelected && <span className="text-[0.75vw] leading-none font-bold">✓</span>}
+                                  </div>
+                                </button>
+                              </td>
+                            )}
+ 
+                            {/* S.No */}
+                            <td
+                              className="px-[0.5vw] py-[0.5vw] border-r border-slate-300 text-center text-[0.78vw] font-bold text-slate-600 align-middle"
+                              onClick={() => toggleEntry(row.id)}
+                            >
+                              {globalSn}
+                            </td>
+ 
+                            {/* Date + meta + actions — spans remaining cols */}
+                            <td
+                              colSpan={productCols.length + actionCols.length}
+                              className="px-[0.8vw] py-[0.5vw] align-middle"
+                              onClick={() => toggleEntry(row.id)}
+                            >
+                              <div className="flex items-center gap-[0.75vw] flex-wrap">
+                                {/* Chevron */}
+                                <span
+                                  className="text-slate-400 flex-shrink-0 transition-transform duration-200"
+                                  style={{ display: "inline-flex", transform: isEntryCollapsed ? "rotate(-90deg)" : "rotate(0deg)" }}
+                                >
+                                  <ChevronDown className="w-[0.82vw] h-[0.82vw]" />
+                                </span>
+ 
+                                {/* Date */}
+                                <div className="flex items-center gap-[0.4vw]">
+                                  <Calendar className="w-[0.9vw] h-[0.9vw] text-slate-500 flex-shrink-0" />
+                                  <span className="text-[0.78vw] font-bold text-slate-700 whitespace-nowrap">
+                                    {fmtDate(row.date || row.timestamp)}
+                                  </span>
+                                </div>
+ 
+                                {/* Ref number */}
+                                {(row.refNoInternal || row.refNoCustomer) && (
+                                  <span className="text-[0.7vw] font-bold bg-blue-50 text-blue-600 border border-blue-200 px-[0.6vw] py-[0.1vw] rounded-[0.3vw] whitespace-nowrap">
+                                    {row.refNoInternal || row.refNoCustomer}
+                                  </span>
+                                )}
+ 
+                                {/* Category */}
+                                {row.category && (
+                                  <span className="text-[0.7vw] font-semibold text-slate-700 bg-slate-50 border border-slate-300 px-[0.6vw] py-[0.1vw] rounded-[0.3vw] whitespace-nowrap">
+                                    {row.category}
+                                  </span>
+                                )}
+ 
+                                {/* Product count */}
+                                <span className="text-[0.7vw] font-semibold text-slate-500">
+                                  {prods.length} product{prods.length !== 1 ? "s" : ""}
+                                </span>
+ 
+                                {/* Actions — right side */}
+                                <div
+                                  className="ml-auto flex items-center gap-[0.5vw]"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() => onUpdateRow(row.id, { _openReports: true })}
+                                    className="flex items-center gap-[0.3vw] text-[0.75vw] font-bold px-[0.7vw] py-[0.35vw] bg-white text-slate-700 hover:text-blue-700 border border-slate-300 hover:border-blue-400 rounded-[0.4vw] cursor-pointer shadow-sm transition-colors"
+                                  >
+                                    <FileText className="w-[0.85vw] h-[0.85vw] text-slate-500" />
+                                    Reports
+                                  </button>
+ 
+                                  {isSupervisor ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => onView(row)}
+                                      title="View"
+                                      className="w-[2vw] h-[2vw] flex items-center justify-center bg-white hover:bg-slate-50 text-slate-500 hover:text-blue-600 border border-slate-300 hover:border-blue-400 rounded-[0.4vw] shadow-sm cursor-pointer transition-colors"
+                                    >
+                                      <Eye className="w-[0.9vw] h-[0.9vw]" />
+                                    </button>
+                                  ) : row.products?.some((p) => !!p.assignedTo) ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => onView(row)}
+                                      title="View (assigned)"
+                                      className="w-[2vw] h-[2vw] flex items-center justify-center bg-white hover:bg-slate-50 text-slate-500 hover:text-blue-600 border border-slate-300 hover:border-blue-400 rounded-[0.4vw] shadow-sm cursor-pointer transition-colors"
+                                    >
+                                      <Eye className="w-[0.9vw] h-[0.9vw]" />
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => onEdit(row)}
+                                      title="Edit"
+                                      className="w-[2vw] h-[2vw] flex items-center justify-center bg-white hover:bg-slate-50 text-slate-500 hover:text-blue-600 border border-slate-300 hover:border-blue-400 rounded-[0.4vw] shadow-sm cursor-pointer transition-colors"
+                                    >
+                                      <Edit3 className="w-[0.9vw] h-[0.9vw]" />
+                                    </button>
+                                  )}
+ 
+                                  {!isSupervisor && (
+                                    <button
+                                      type="button"
+                                      onClick={() => onDelete(row.id)}
+                                      title="Delete"
+                                      className="w-[2vw] h-[2vw] flex items-center justify-center bg-white hover:bg-slate-50 text-slate-400 hover:text-rose-600 border border-slate-300 hover:border-rose-400 rounded-[0.4vw] shadow-sm cursor-pointer transition-colors"
+                                    >
+                                      <Trash2 className="w-[0.9vw] h-[0.9vw]" />
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+                          </AnimatedTr>,
+ 
+                          // ── PRODUCT ROWS ─────────────────────────────────
+                          ...(isEntryCollapsed
+                            ? []
+                            : prods.map((prod, pi) => {
+                                const employeeStatus    = prod.report?.status || prod.status || "Open";
+                                const employeeStatusCfg = STATUS_CONFIG[employeeStatus] || STATUS_CONFIG["Open"];
+                                const EmployeeStatusIcon = employeeStatusCfg.icon;
+ 
+                                const prodDelay = animDelay;
+                                animDelay += 20;
+ 
+                                return (
+                                  <AnimatedTr
+                                    key={`${row.id}-p-${pi}`}
+                                    delay={prodDelay}
+                                    className={`transition-colors duration-100 ${
+                                      isSelected ? "bg-blue-50/40" : pi % 2 === 0 ? "bg-white hover:bg-slate-50/80" : "bg-slate-50/40 hover:bg-slate-100/50"
+                                    } border-b border-slate-300`}
+                                  >
+                                    {/* Checkbox placeholder */}
+                                    {!isSupervisor && (
+                                      <td className="border-r border-slate-300" style={{ background: "transparent" }} />
+                                    )}
+ 
+                                    {/* S.No placeholder */}
+                                    <td className="border-r border-slate-300" />
 
-    {/* Pagination */}
-    <div className="border-t border-blue-100 p-[0.6vw] bg-blue-50 flex justify-between items-center rounded-b-[0.6vw]">
-      <div className="text-[0.8vw] text-black/70">
-        Showing{" "}
-        <strong>
-          {paginatedData.length > 0
-            ? (currentPage - 1) * ITEMS_PER_PAGE + 1
-            : 0}
-        </strong>{" "}
-        to{" "}
-        <strong>
-          {Math.min(currentPage * ITEMS_PER_PAGE, filteredData.length)}
-        </strong>{" "}
-        of <strong>{filteredData.length}</strong> entries
+                                    {/* Product Description */}
+                                    <td className="px-[0.7vw] py-[0.55vw] border-r border-slate-300 align-middle">
+                                      <div className="flex flex-col gap-[0.2vw]">
+                                        <div
+                                          className="font-bold text-slate-800 text-[0.8vw] max-w-[15vw] break-words leading-snug"
+                                          title={prod.productDescription}
+                                        >
+                                          {prod.productDescription || "—"}
+                                        </div>
+                                        {prod.report?.status === "Completed" && (
+                                          <span className="inline-flex items-center gap-[0.25vw] rounded-[0.3vw] bg-emerald-50 text-emerald-700 border border-emerald-200 px-[0.4vw] py-[0.1vw] text-[0.68vw] font-semibold w-max mt-[0.25vw]">
+                                            <CheckCircle2 className="w-[0.75vw] h-[0.75vw] text-emerald-600" />
+                                            Completed by emp
+                                          </span>
+                                        )}
+                                      </div>
+                                    </td>
+
+                                    {/* Product Code */}
+                                    <td className="px-[0.7vw] py-[0.55vw] border-r border-slate-300 text-[0.8vw] text-slate-700 font-semibold align-middle text-center">
+                                      {prod.productCode || <span className="text-slate-400">—</span>}
+                                    </td>
+
+                                    {/* Segment */}
+                                    <td className="px-[0.7vw] py-[0.55vw] border-r border-slate-300 text-[0.8vw] text-blue-600 font-bold align-middle text-center uppercase">
+                                      {prod.productSegment || <span className="text-slate-400">—</span>}
+                                    </td>
+
+                                    {/* Serial No */}
+                                    <td className="px-[0.65vw] py-[0.55vw] border-r border-slate-300 text-[0.8vw] text-slate-800 font-bold align-middle text-center">
+                                      {prod.serialNumber || <span className="text-slate-400">—</span>}
+                                    </td>
+ 
+                                    {/* Board Type */}
+                                    <td className="px-[0.65vw] py-[0.55vw] border-r border-slate-300 text-[0.8vw] text-slate-700 font-semibold align-middle text-center">
+                                      {prod.boardType || <span className="text-slate-400">—</span>}
+                                    </td>
+ 
+                                    {/* Exp. Delivery */}
+                                    <td className="px-[0.65vw] py-[0.55vw] border-r border-slate-300 text-[0.8vw] text-slate-700 font-semibold whitespace-nowrap align-middle text-center">
+                                      {fmtDate(prod.expectedDeliveryDate)}
+                                    </td>
+ 
+                                    {/* Type badge */}
+                                    <td className="px-[0.65vw] py-[0.55vw] border-r border-slate-300 align-middle text-center">
+                                      <span
+                                        className={`text-[0.7vw] font-bold px-[0.6vw] py-[0.15vw] rounded-[0.3vw] border ${
+                                          prod.type === "W"
+                                            ? "bg-blue-50 text-blue-600 border-blue-200"
+                                            : "bg-orange-50 text-orange-600 border-orange-200"
+                                        }`}
+                                      >
+                                        {TYPE_LABELS[prod.type] || prod.type || "—"}
+                                      </span>
+                                    </td>
+ 
+                                    {/* Emp Status */}
+                                    <td className="px-[0.65vw] py-[0.55vw] border-r border-slate-300 align-middle text-center">
+                                      <span
+                                        className={`inline-flex items-center gap-[0.3vw] px-[0.6vw] py-[0.25vw] rounded-[0.3vw] border text-[0.7vw] font-semibold ${employeeStatusCfg.bg} ${employeeStatusCfg.border} ${employeeStatusCfg.text}`}
+                                      >
+                                        <EmployeeStatusIcon className="w-[0.75vw] h-[0.75vw]" />
+                                        {employeeStatus === "Completed" ? "Completed by emp" : employeeStatus}
+                                      </span>
+                                    </td>
+ 
+                                    {/* Final Status */}
+                                    <td className="px-[0.65vw] py-[0.55vw] border-r border-slate-300 align-middle text-center">
+                                      <FinalStatusCell row={row} prod={prod} onUpdateProduct={onUpdateProduct} />
+                                    </td>
+ 
+                                    {/* Delay */}
+                                    <td className="px-[0.65vw] py-[0.55vw] text-[0.8vw] font-bold align-middle text-center text-slate-700">
+                                      {getProductDelay(row, prod)}
+                                    </td>
+                                  </AnimatedTr>
+                                );
+                              })),
+                        ];
+                      })),
+                ];
+              })
+            ) : (
+              <tr>
+                <td
+                  colSpan={totalCols}
+                  className="py-[4vw] text-center text-slate-400 text-[0.88vw] font-medium"
+                >
+                  No records found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
-      <div className="flex items-center gap-[1.2vw]">
-        <button
-          type="button"
-          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-          disabled={currentPage === 1}
-          className="p-[0.4vw] border border-gray-300 rounded-[0.3vw] hover:bg-white disabled:opacity-50 bg-white shadow-sm cursor-pointer"
-        >
-          <ChevronLeft className="w-[1vw] h-[1vw] text-black/80" />
-        </button>
-        <div className="flex gap-[0.7vw]">
-          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-            let pNum = i + 1;
-            if (totalPages > 5 && currentPage > 3) pNum = currentPage - 2 + i;
-            if (pNum > totalPages) return null;
-            return (
-              <button
-                key={pNum}
-                type="button"
-                onClick={() => setCurrentPage(pNum)}
-                className={`w-[1.8vw] h-[1.8vw] flex items-center justify-center rounded-[0.3vw] text-[0.8vw] font-medium cursor-pointer ${
-                  currentPage === pNum
-                    ? "bg-blue-600 text-white"
-                    : "bg-white border border-gray-300 text-black/80 hover:bg-gray-50"
-                }`}
-              >
-                {pNum}
-              </button>
-            );
-          })}
+ 
+      {/* ── PAGINATION ──────────────────────────────────────────────────── */}
+      <div className="border-t border-slate-300 px-[1.2vw] py-[0.85vw] bg-white flex justify-between items-center rounded-b-[0.6vw]">
+        <div className="text-[0.78vw] font-medium text-slate-600">
+          Showing{" "}
+          <strong className="text-slate-800">
+            {recordsPaginationInfo.startIdx}
+          </strong>{" "}
+          to{" "}
+          <strong className="text-slate-800">
+            {recordsPaginationInfo.endIdx}
+          </strong>{" "}
+          of <strong className="text-slate-800">{recordsPaginationInfo.totalRecords}</strong> records
         </div>
-        <button
-          type="button"
-          onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-          disabled={currentPage === totalPages || totalPages === 0}
-          className="p-[0.4vw] border border-gray-300 rounded-[0.3vw] hover:bg-white disabled:opacity-50 bg-white shadow-sm cursor-pointer"
-        >
-          <ChevronRight className="w-[1vw] h-[1vw] text-black/80" />
-        </button>
+ 
+        <div className="flex items-center gap-[0.6vw]">
+          <button
+            type="button"
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="w-[2vw] h-[2vw] flex items-center justify-center border border-slate-300 rounded-[0.4vw] hover:bg-slate-50 disabled:opacity-30 bg-white cursor-pointer transition-colors"
+          >
+            <ChevronLeft className="w-[1vw] h-[1vw] text-slate-600 font-bold" />
+          </button>
+ 
+          <div className="flex gap-[0.4vw]">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pNum = i + 1;
+              if (totalPages > 5 && currentPage > 3) pNum = currentPage - 2 + i;
+              if (pNum > totalPages) return null;
+              return (
+                <button
+                  key={pNum}
+                  type="button"
+                  onClick={() => setCurrentPage(pNum)}
+                  className={`w-[2vw] h-[2vw] flex items-center justify-center rounded-[0.4vw] text-[0.78vw] font-bold cursor-pointer transition-colors ${
+                    currentPage === pNum
+                      ? "bg-[#1a73e8] text-white border border-[#1a73e8]"
+                      : "bg-white border border-slate-300 text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  {pNum}
+                </button>
+              );
+            })}
+          </div>
+ 
+          <button
+            type="button"
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages || totalPages === 0}
+            className="w-[2vw] h-[2vw] flex items-center justify-center border border-slate-300 rounded-[0.4vw] hover:bg-slate-50 disabled:opacity-30 bg-white cursor-pointer transition-colors"
+          >
+            <ChevronRight className="w-[1vw] h-[1vw] text-slate-600 font-bold" />
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Status chip config
 const STATUS_CHIPS = [
   {
     label: "All",
-    activeColor: "bg-gray-700 text-white border-gray-700",
-    inactiveColor: "bg-gray-100 text-black/90 border-gray-300 hover:bg-gray-200",
-    dot: "bg-gray-400",
+    activeColor: "bg-slate-700 text-white border-slate-700",
+    inactiveColor: "bg-white text-slate-700 border-slate-300 hover:bg-slate-50",
+    dot: "bg-slate-400",
     activeDot: "bg-white",
   },
   {
     label: "Pending",
-    activeColor: "bg-orange-500 text-white border-orange-500",
-    inactiveColor: "bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100",
-    dot: "bg-orange-500",
+    activeColor: "bg-amber-600 text-white border-amber-600",
+    inactiveColor: "bg-white text-amber-700 border-amber-200 hover:bg-amber-50",
+    dot: "bg-amber-400",
     activeDot: "bg-white",
   },
   {
     label: "Delivered",
-    activeColor: "bg-green-600 text-white border-green-600",
-    inactiveColor: "bg-green-50 text-green-700 border-green-200 hover:bg-green-100",
-    dot: "bg-green-500",
+    activeColor: "bg-emerald-700 text-white border-emerald-700",
+    inactiveColor: "bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50",
+    dot: "bg-emerald-400",
     activeDot: "bg-white",
   },
   {
     label: "Hold",
-    activeColor: "bg-red-600 text-white border-red-600",
-    inactiveColor: "bg-red-50 text-red-700 border-red-200 hover:bg-red-100",
-    dot: "bg-red-500",
+    activeColor: "bg-rose-700 text-white border-rose-700",
+    inactiveColor: "bg-white text-rose-700 border-rose-200 hover:bg-rose-50",
+    dot: "bg-rose-400",
     activeDot: "bg-white",
   },
   {
     label: "Not Repairable",
-    activeColor: "bg-gray-600 text-white border-gray-600",
-    inactiveColor: "bg-gray-200 text-gray-700 border-gray-400 hover:bg-gray-300",
-    dot: "bg-gray-500",
+    activeColor: "bg-slate-600 text-white border-slate-600",
+    inactiveColor: "bg-white text-slate-600 border-slate-300 hover:bg-slate-50",
+    dot: "bg-slate-400",
     activeDot: "bg-white",
   },
 ];
@@ -2530,11 +2741,10 @@ export default function App() {
   };
 
   const counts = useMemo(() => {
-    const c = { All: entries.length };
+    const allProducts = entries.flatMap((e) => e.products || []);
+    const c = { All: allProducts.length };
     FINAL_STATUS_OPTIONS.forEach((s) => {
-      c[s] = entries.filter((e) =>
-        (e.products || []).some((p) => (p.finalStatus || "Pending") === s)
-      ).length;
+      c[s] = allProducts.filter((p) => (p.finalStatus || "Pending") === s).length;
     });
     return c;
   }, [entries]);
@@ -2585,7 +2795,7 @@ export default function App() {
             exit={{ opacity: 0, x: 20 }}
           >
             {/* Top bar */}
-            <div className="flex items-center justify-between bg-white p-[0.7vw] rounded-[0.6vw] shadow-sm border border-gray-300 mb-[0.9vw]">
+            <div className="flex items-center justify-between bg-white p-[0.7vw] rounded-[0.6vw] shadow-sm border border-gray-400 mb-[0.9vw]">
               <div className="relative w-[30vw]">
                 <Search className="absolute left-[0.8vw] top-1/2 -translate-y-1/2 text-gray-800 w-[1vw] h-[1vw]" />
                 <input
@@ -2617,16 +2827,16 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => setIsBoardTypeMasterOpen(true)}
-                      className="cursor-pointer flex items-center gap-[0.5vw] bg-white border border-gray-300 hover:bg-blue-50 text-blue-700 font-semibold px-[1vw] h-[2.4vw] rounded-[0.4vw] transition-colors"
+                      className="cursor-pointer flex items-center gap-[0.5vw] bg-white hover:bg-slate-50 text-slate-700 hover:text-blue-600 border border-slate-300 hover:border-blue-400 font-bold px-[1vw] h-[2.4vw] rounded-[0.4vw] transition-all shadow-sm"
                     >
-                      <Wrench className="w-[1vw] h-[1vw]" /> Board Types Master
+                      <Wrench className="w-[1vw] h-[1vw] text-slate-500" /> Board Types Master
                     </button>
                     <button
                       type="button"
                       onClick={goToForm}
-                      className="cursor-pointer flex items-center gap-[0.5vw] bg-white border border-gray-300 hover:bg-gray-50 text-black/90 px-[1vw] h-[2.4vw] rounded-[0.4vw]"
+                      className="cursor-pointer flex items-center gap-[0.5vw] bg-[#1a73e8] hover:bg-[#1557b0] text-white font-bold px-[1vw] h-[2.4vw] border border-[#1a73e8] rounded-[0.4vw] transition-all shadow-sm"
                     >
-                      <Plus className="w-[1.2vw] h-[1.2vw]" />Add
+                      <Plus className="w-[1.2vw] h-[1.2vw] text-white" />Add
                     </button>
                   </>
                 )}

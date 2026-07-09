@@ -297,7 +297,7 @@ const EditableProductTable = ({
   return (
     <div 
       ref={tableContainerRef}
-      className="w-full overflow-x-auto border border-gray-200 rounded-[0.6vw] bg-white mb-[15vw]"
+      className="w-full overflow-x-auto border border-slate-350 rounded-[0.6vw] bg-white mb-[15vw]"
     >
       <table className="w-full border-collapse text-[0.8vw]">
         <thead className="bg-blue-50/80 border-b border-gray-300 sticky top-0 z-20 shadow-sm">
@@ -329,7 +329,7 @@ const EditableProductTable = ({
                       <tr
                         ref={provided.innerRef}
                         {...provided.draggableProps}
-                        className={`border-b border-gray-100 last:border-0 hover:bg-blue-50/30 transition-colors ${snapshot.isDragging ? "bg-white shadow-lg ring-1 ring-blue-200 z-50 table" : ""}`}
+                        className={`border-b border-slate-300 last:border-0 hover:bg-blue-50/30 transition-colors ${snapshot.isDragging ? "bg-white shadow-lg ring-1 ring-blue-200 z-50 table" : ""}`}
                       >
                         {!isReadOnly && (
                           <td className="py-[0.6vw] px-[0.5vw] text-center align-middle" {...provided.dragHandleProps}>
@@ -385,11 +385,11 @@ const EditableProductTable = ({
                                           e.stopPropagation();
                                           selectProduct(prod._pid, p);
                                       }}
-                                      className="p-[0.6vw] hover:bg-blue-100 cursor-pointer border-b border-gray-100 last:border-0"
+                                      className="p-[0.6vw] hover:bg-blue-100 cursor-pointer border-b border-slate-300 last:border-0"
                                     >
                                       <div className="font-bold text-gray-900 text-[0.8vw]">{p.itemDescription || p.productDescription}</div>
                                       <div className="text-[0.7vw] text-gray-700 flex items-center gap-[0.4vw] mt-[0.1vw]">
-                                        <span className="bg-gray-100 px-[0.3vw] rounded font-mono border border-gray-200">{p.itemCode || p.productCode}</span>
+                                        <span className="bg-gray-100 px-[0.3vw] rounded font-mono border border-slate-350">{p.itemCode || p.productCode}</span>
                                         {(p.productSegment || p.segment) && <span className="font-medium">· {p.productSegment || p.segment}</span>}
                                       </div>
                                     </div>
@@ -436,7 +436,7 @@ const EditableProductTable = ({
                         </td>
 
                         <td className={`py-[0.6vw] px-[0.8vw] relative transition-all ${getCellClass(index, 5)}`} onMouseDown={(e) => handleCellMouseDown(index, 5, e)} onMouseEnter={() => handleCellMouseEnter(index, 5)}>
-                          <div className="flex bg-gray-100 p-[0.2vw] rounded-[0.4vw] w-full border border-gray-200">
+                          <div className="flex bg-gray-100 p-[0.2vw] rounded-[0.4vw] w-full border border-slate-350">
                             {typeOptions.map(opt => (
                               <button key={opt} type="button" onClick={() => handleUpdate(prod._pid, "type", opt)} disabled={isReadOnly} className={`flex-1 py-[0.3vw] text-[0.7vw] font-bold rounded-[0.3vw] transition-all ${prod.type === opt ? (opt === 'W' ? "bg-green-600 text-white shadow-none" : "bg-blue-600 text-white shadow-none") : "text-gray-700 hover:bg-gray-200"} disabled:opacity-70 disabled:cursor-not-allowed`}>{opt}</button>
                             ))}

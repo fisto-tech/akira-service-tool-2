@@ -89,7 +89,7 @@ const NavBar = ({ type }) => {
               <div className="relative" ref={profileRef}>
                 <div
                   onClick={() => setShowProfile(!showProfile)}
-                  className="w-[1.9vw] h-[1.9vw] rounded-full flex items-center justify-center cursor-pointer hover:scale-110 transition-all duration-200 hover:shadow-lg overflow-hidden border border-gray-200"
+                  className="w-[1.9vw] h-[1.9vw] rounded-full flex items-center justify-center cursor-pointer hover:scale-110 transition-all duration-200 hover:shadow-lg overflow-hidden border border-slate-350"
                   title="Profile"
                 >
                   {loggedInUser?.profilePicture ? (
@@ -109,7 +109,7 @@ const NavBar = ({ type }) => {
 
                 {/* Profile Dropdown */}
                 {showProfile && loggedInUser && (
-                  <div className="absolute right-0 mt-[0.5vw] w-[18vw] bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-50">
+                  <div className="absolute right-0 mt-[0.5vw] w-[18vw] bg-white rounded-xl shadow-2xl border border-slate-350 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-50">
                     {/* Header with gradient */}
                     <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-[1vw] py-[1vw]">
                       <div className="flex items-center gap-[0.8vw]">
@@ -219,7 +219,7 @@ const NavBar = ({ type }) => {
                     </div>
 
                     {/* Divider */}
-                    <div className="border-t border-gray-100 mx-[0.8vw]"></div>
+                    <div className="border-t border-slate-300 mx-[0.8vw]"></div>
 
                     {/* Logout Button */}
                     <div className="px-[1vw] py-[0.6vw]">

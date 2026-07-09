@@ -168,10 +168,10 @@ const TABS = [
 ];
 
 const TAB_COLORS = {
-  blue: { active: "bg-blue-700 text-white border-blue-700 shadow-md", inactive: "bg-white text-black border-slate-300 hover:bg-blue-50 hover:border-blue-400", badge: "bg-blue-100 text-blue-900" },
-  green: { active: "bg-emerald-700 text-white border-emerald-700 shadow-md", inactive: "bg-white text-black border-slate-300 hover:bg-emerald-50 hover:border-emerald-400", badge: "bg-emerald-100 text-emerald-900" },
-  amber: { active: "bg-amber-600 text-white border-amber-600 shadow-md", inactive: "bg-white text-black border-slate-300 hover:bg-amber-50 hover:border-amber-400", badge: "bg-amber-100 text-amber-900" },
-  teal: { active: "bg-teal-700 text-white border-teal-700 shadow-md", inactive: "bg-white text-black border-slate-300 hover:bg-teal-50 hover:border-teal-400", badge: "bg-teal-100 text-teal-900" },
+  blue: { active: "bg-blue-700 text-white border-blue-700 shadow-md", inactive: "bg-white text-black border-slate-400 hover:bg-blue-50 hover:border-blue-400", badge: "bg-blue-100 text-blue-900" },
+  green: { active: "bg-emerald-700 text-white border-emerald-700 shadow-md", inactive: "bg-white text-black border-slate-400 hover:bg-emerald-50 hover:border-emerald-400", badge: "bg-emerald-100 text-emerald-900" },
+  amber: { active: "bg-amber-600 text-white border-amber-600 shadow-md", inactive: "bg-white text-black border-slate-400 hover:bg-amber-50 hover:border-amber-400", badge: "bg-amber-100 text-amber-900" },
+  teal: { active: "bg-teal-700 text-white border-teal-700 shadow-md", inactive: "bg-white text-black border-slate-400 hover:bg-teal-50 hover:border-teal-400", badge: "bg-teal-100 text-teal-900" },
 };
 
 // ── Status badge ─────────────────────────────────────────────
@@ -183,12 +183,12 @@ const STATUS_COLORS = {
   Completed: "bg-green-100 text-black border-green-300",
   "Under Testing": "bg-blue-100 text-black border-blue-300",
   "Repair in Progress": "bg-blue-100 text-black border-blue-300",
-  Open: "bg-slate-100 text-black border-slate-300",
+  Open: "bg-slate-100 text-black border-slate-400",
   Assigned: "bg-purple-100 text-black border-purple-300",
 };
 
 const StatusBadge = ({ status }) => (
-  <span className={`px-[0.5vw] py-[0.1vw] rounded-full text-[0.8vw] font-semibold whitespace-pre border shadow-sm ${STATUS_COLORS[status] || "bg-slate-100 text-black border-slate-300"}`}>
+  <span className={`px-[0.5vw] py-[0.1vw] rounded-full text-[0.8vw] font-semibold whitespace-pre border shadow-sm ${STATUS_COLORS[status] || "bg-slate-100 text-black border-slate-400"}`}>
     {status || "—"}
   </span>
 );
@@ -207,12 +207,12 @@ const EmptyState = ({ message }) => (
 
 // ── Th helper ────────────────────────────────────────────────
 const Th = ({ children, cls = "" }) => (
-  <th className={`px-[0.8vw] py-[0.7vw] text-[0.85vw] text-black font-bold whitespace-nowrap border-b-2 border-r border-slate-300 last:border-r-0 bg-blue-50/50 ${cls}`}>
+  <th className={`px-[0.8vw] py-[0.7vw] text-[0.85vw] text-black font-bold whitespace-nowrap border-b-2 border-r border-slate-400 last:border-r-0 bg-blue-50/50 ${cls}`}>
     {children}
   </th>
 );
 const Td = ({ children, cls = "" }) => (
-  <td className={`px-[1vw] py-[1vw] text-[0.8vw] text-black border-r border-b border-slate-200 last:border-r-0 align-middle ${cls}`}>
+  <td className={`px-[1vw] py-[1vw] text-[0.8vw] text-black border-r border-b border-slate-400 last:border-r-0 align-middle ${cls}`}>
     {children}
   </td> 
 );
@@ -230,9 +230,9 @@ const Pagination = ({ totalItems, itemsPerPage, currentPage, onPageChange }) => 
   }
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between mt-[1vw] gap-[0.6vw] px-[0.1vw] bg-slate-50/50 p-[0.4vw] rounded-[0.6vw] border border-slate-100">
-      <div className="text-[0.7vw] text-slate-500 font-medium">
-        Showing <span className="font-bold text-slate-700">{totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-bold text-slate-700">{Math.min(currentPage * itemsPerPage, totalItems)}</span> of <span className="font-bold text-slate-700">{totalItems}</span> records
+    <div className="flex flex-col sm:flex-row items-center justify-between mt-[1vw] gap-[0.6vw] px-[0.1vw] bg-slate-50/50 py-[0.4vw] px-[1vw] rounded-[0.6vw] border border-slate-400">
+      <div className="text-[0.7vw] text-slate-650 font-bold">
+        Showing <span className="font-bold text-slate-800">{totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-bold text-slate-800">{Math.min(currentPage * itemsPerPage, totalItems)}</span> of <span className="font-bold text-slate-800">{totalItems}</span> records
       </div>
       
       {totalPages > 1 && (
@@ -240,19 +240,19 @@ const Pagination = ({ totalItems, itemsPerPage, currentPage, onPageChange }) => 
           <button
             onClick={() => onPageChange(1)}
             disabled={currentPage === 1}
-            className="p-[0.4vw] rounded-[0.4vw] border border-slate-200 disabled:opacity-30 hover:bg-white hover:border-blue-300 transition-all cursor-pointer group"
+            className="p-[0.4vw] rounded-[0.4vw] border border-slate-400 disabled:opacity-30 hover:bg-white hover:border-blue-300 transition-all cursor-pointer group"
           >
-            <ChevronsLeft className="w-[0.9vw] h-[0.9vw] text-slate-600 group-hover:text-blue-600" />
+            <ChevronsLeft className="w-[0.9vw] h-[0.9vw] text-slate-650 group-hover:text-blue-600" />
           </button>
           <button
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="p-[0.4vw] rounded-[0.4vw] border border-slate-200 disabled:opacity-30 hover:bg-white hover:border-blue-300 transition-all cursor-pointer group"
+            className="p-[0.4vw] rounded-[0.4vw] border border-slate-400 disabled:opacity-30 hover:bg-white hover:border-blue-300 transition-all cursor-pointer group"
           >
-            <ChevronLeft className="w-[0.9vw] h-[0.9vw] text-slate-600 group-hover:text-blue-600" />
+            <ChevronLeft className="w-[0.9vw] h-[0.9vw] text-slate-650 group-hover:text-blue-600" />
           </button>
 
-          <div className="flex items-center mx-[0.2vw] bg-white p-[0.15vw] rounded-[0.5vw] border border-slate-200 shadow-sm">
+          <div className="flex items-center mx-[0.2vw] bg-white p-[0.15vw] rounded-[0.5vw] border border-slate-400 shadow-sm">
             {pages.map((page, i) => (
               page === "..." ? (
                 <span key={`dots-${i}`} className="px-[0.3vw] text-slate-400 text-[0.65vw]">...</span>
@@ -272,16 +272,16 @@ const Pagination = ({ totalItems, itemsPerPage, currentPage, onPageChange }) => 
           <button
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="p-[0.4vw] rounded-[0.4vw] border border-slate-200 disabled:opacity-30 hover:bg-white hover:border-blue-300 transition-all cursor-pointer group"
+            className="p-[0.4vw] rounded-[0.4vw] border border-slate-400 disabled:opacity-30 hover:bg-white hover:border-blue-300 transition-all cursor-pointer group"
           >
-            <ChevronRight className="w-[0.9vw] h-[0.9vw] text-slate-600 group-hover:text-blue-600" />
+            <ChevronRight className="w-[0.9vw] h-[0.9vw] text-slate-655 group-hover:text-blue-600" />
           </button>
           <button
             onClick={() => onPageChange(totalPages)}
             disabled={currentPage === totalPages}
-            className="p-[0.4vw] rounded-[0.4vw] border border-slate-200 disabled:opacity-30 hover:bg-white hover:border-blue-300 transition-all cursor-pointer group"
+            className="p-[0.4vw] rounded-[0.4vw] border border-slate-400 disabled:opacity-30 hover:bg-white hover:border-blue-300 transition-all cursor-pointer group"
           >
-            <ChevronsRight className="w-[0.9vw] h-[0.9vw] text-slate-600 group-hover:text-blue-600" />
+            <ChevronsRight className="w-[0.9vw] h-[0.9vw] text-slate-655 group-hover:text-blue-600" />
           </button>
         </div>
       )}
@@ -377,7 +377,7 @@ const TestingRepairReport = ({ entries, fromDate, setFromDate, toDate, setToDate
           {statuses.map((s) => (
             <button key={s} type="button"
               onClick={() => setFilterStatus(s)}
-              className={`px-[0.8vw] py-[0.3vw] rounded-full text-[0.7vw] border font-bold cursor-pointer transition-all ${filterStatus === s ? "bg-blue-700 text-white border-blue-700 shadow-sm" : "bg-white text-black border-slate-300 hover:border-blue-400"
+              className={`px-[0.8vw] py-[0.3vw] rounded-full text-[0.7vw] border font-bold cursor-pointer transition-all ${filterStatus === s ? "bg-blue-700 text-white border-blue-700 shadow-sm" : "bg-white text-black border-slate-400 hover:border-blue-400"
                 }`}
             >{s}</button>
           ))}
@@ -387,14 +387,14 @@ const TestingRepairReport = ({ entries, fromDate, setFromDate, toDate, setToDate
             <Search className="absolute left-[0.6vw] top-1/2 -translate-y-1/2 w-[0.85vw] h-[0.85vw] text-black/40" />
             <input value={search} onChange={(e) => setSearch(e.target.value)}
               placeholder="Search reports..."
-              className="pl-[2vw] pr-[0.8vw] h-[2.2vw] border border-slate-300 rounded-[0.5vw] focus:outline-none focus:border-blue-500 text-[0.75vw] w-[11vw] text-black"
+              className="pl-[2vw] pr-[0.8vw] h-[2.2vw] border border-slate-400 rounded-[0.5vw] focus:outline-none focus:border-blue-500 text-[0.75vw] w-[11vw] text-black"
             />
           </div>
           <DateRangeFilter from={fromDate} setFrom={setFromDate} to={toDate} setTo={setToDate} />
           <ExportButtons onCsv={exportCsv} onPdf={downloadPdf} />
         </div>
       </div>
-      <div className="flex-1 overflow-auto rounded-lg md:rounded-[0.5vw] border border-slate-300 shadow-sm relative">
+      <div className="flex-1 overflow-auto rounded-lg md:rounded-[0.5vw] border border-slate-400 shadow-sm relative">
         <table id="table-testing" className="w-full min-w-max border-collapse text-left">
           <thead className="sticky top-0 z-20 bg-blue-50">
             <tr>
@@ -451,11 +451,11 @@ const TestingRepairReport = ({ entries, fromDate, setFromDate, toDate, setToDate
           onPageChange={setCurrentPage}
         />
         <SummaryBar items={[
-          { label: "Total Reports", value: rows.length, color: "text-blue-800" },
-          { label: "Completed", value: rows.filter(({ p }) => p.report?.status === "Completed").length, color: "text-emerald-800" },
-          { label: "In Progress", value: rows.filter(({ p }) => p.report?.status === "Repair in Progress").length, color: "text-blue-700" },
-          { label: "Not Repairable", value: rows.filter(({ p }) => p.report?.status === "Not Repairable").length, color: "text-red-700" },
-        ]} />
+  { label: "Total Reports", value: filtered.length, color: "text-blue-800" },
+  { label: "Completed", value: filtered.filter(({ p }) => p.report?.status === "Completed").length, color: "text-emerald-800" },
+  { label: "In Progress", value: filtered.filter(({ p }) => p.report?.status === "Repair in Progress").length, color: "text-blue-700" },
+  { label: "Not Repairable", value: filtered.filter(({ p }) => p.report?.status === "Not Repairable").length, color: "text-red-700" },
+]} />
       </div>
     </div>
   );
@@ -575,7 +575,7 @@ const DeliveryReport = ({ entries, fromDate, setFromDate, toDate, setToDate }) =
           {statuses.map((s) => (
             <button key={s} type="button"
               onClick={() => setFilterStatus(s)}
-              className={`px-[0.8vw] py-[0.3vw] rounded-full text-[0.7vw] border font-bold cursor-pointer transition-all ${filterStatus === s ? "bg-emerald-800 text-white border-emerald-800 shadow-sm" : "bg-white text-black border-slate-300 hover:border-emerald-400"
+              className={`px-[0.8vw] py-[0.3vw] rounded-full text-[0.7vw] border font-bold cursor-pointer transition-all ${filterStatus === s ? "bg-emerald-800 text-white border-emerald-800 shadow-sm" : "bg-white text-black border-slate-400 hover:border-emerald-400"
                 }`}
             >{s}</button>
           ))}
@@ -585,14 +585,14 @@ const DeliveryReport = ({ entries, fromDate, setFromDate, toDate, setToDate }) =
             <Search className="absolute left-[0.6vw] top-1/2 -translate-y-1/2 w-[0.85vw] h-[0.85vw] text-black/40" />
             <input value={search} onChange={(e) => setSearch(e.target.value)}
               placeholder="Search customers..."
-              className="pl-[2vw] pr-[0.8vw] h-[2.2vw] border border-slate-300 rounded-[0.5vw] focus:outline-none focus:border-emerald-500 text-[0.75vw] w-[11vw] text-black"
+              className="pl-[2vw] pr-[0.8vw] h-[2.2vw] border border-slate-400 rounded-[0.5vw] focus:outline-none focus:border-emerald-500 text-[0.75vw] w-[11vw] text-black"
             />
           </div>
           <DateRangeFilter from={fromDate} setFrom={setFromDate} to={toDate} setTo={setToDate} />
           <ExportButtons color="green" onCsv={exportCsv} onPdf={downloadPdf} />
         </div>
       </div>
-      <div className="flex-1 overflow-auto rounded-lg md:rounded-[0.5vw] border border-slate-300 shadow-sm relative">
+      <div className="flex-1 overflow-auto rounded-lg md:rounded-[0.5vw] border border-slate-400 shadow-sm relative">
         <table id="table-delivery" className="w-full min-w-max border-collapse text-left">
           <thead className="sticky top-0 z-20 bg-emerald-50">
             <tr>
@@ -637,11 +637,11 @@ const DeliveryReport = ({ entries, fromDate, setFromDate, toDate, setToDate }) =
           onPageChange={setCurrentPage}
         />
         <SummaryBar items={[
-          { label: "Total Products", value: rows.length, color: "text-black" },
-          { label: "Delivered", value: deliveredCount, color: "text-emerald-800" },
-          { label: "Avg TAT", value: avgTat !== "—" ? `${avgTat} days` : "—", color: "text-slate-800" },
-          { label: "Delayed", value: delayedCount, color: "text-red-700" },
-        ]} />
+  { label: "Total Products", value: filtered.length, color: "text-black" },
+  { label: "Delivered", value: deliveredCount, color: "text-emerald-800" },
+  { label: "Avg TAT", value: avgTat !== "—" ? `${avgTat} days` : "—", color: "text-slate-800" },
+  { label: "Delayed", value: delayedCount, color: "text-red-700" },
+]} />
       </div>
     </div>
   );
@@ -725,7 +725,7 @@ const RootCauseReport = ({ entries, fromDate, setFromDate, toDate, setToDate }) 
             <Search className="absolute left-[0.6vw] top-1/2 -translate-y-1/2 w-[0.85vw] h-[0.85vw] text-black/40" />
             <input value={search} onChange={(e) => setSearch(e.target.value)}
               placeholder="Search root causes..."
-              className="pl-[2vw] pr-[0.8vw] h-[2.2vw] border border-slate-300 rounded-[0.5vw] focus:outline-none focus:border-amber-500 text-[0.75vw] w-[11vw] text-black"
+              className="pl-[2vw] pr-[0.8vw] h-[2.2vw] border border-slate-400 rounded-[0.5vw] focus:outline-none focus:border-amber-500 text-[0.75vw] w-[11vw] text-black"
             />
           </div>
           <DateRangeFilter from={fromDate} setFrom={setFromDate} to={toDate} setTo={setToDate} />
@@ -733,7 +733,7 @@ const RootCauseReport = ({ entries, fromDate, setFromDate, toDate, setToDate }) 
           <ExportButtons color="amber" onCsv={exportCsv} onPdf={downloadPdf} />
         </div>
       </div>
-      <div className="flex-1 overflow-auto rounded-lg md:rounded-[0.5vw] border border-slate-300 shadow-sm relative">
+      <div className="flex-1 overflow-auto rounded-lg md:rounded-[0.5vw] border border-slate-400 shadow-sm relative">
         <table id="table-rca" className="w-full min-w-max border-collapse text-left">
           <thead className="sticky top-0 z-20 bg-amber-50">
             <tr>
@@ -822,12 +822,12 @@ const RootCauseReport = ({ entries, fromDate, setFromDate, toDate, setToDate }) 
           currentPage={currentPage}
           onPageChange={setCurrentPage}
         />
-        <SummaryBar items={[
-          { label: "Total RCA", value: rows.length, color: "text-amber-800" },
-          { label: "Warranty", value: rows.filter(({ p }) => p.type === "W").length, color: "text-emerald-800" },
-          { label: "Paid", value: rows.filter(({ p }) => p.type === "PW").length, color: "text-slate-800" },
-          { label: "Filtered", value: filtered.length, color: "text-black" },
-        ]} />
+       <SummaryBar items={[
+  { label: "Total RCA", value: filtered.length, color: "text-amber-800" },
+  { label: "Warranty", value: filtered.filter(({ p }) => p.type === "W").length, color: "text-emerald-800" },
+  { label: "Paid", value: filtered.filter(({ p }) => p.type === "PW").length, color: "text-slate-800" },
+  { label: "Results", value: filtered.length, color: "text-black" },
+]} />
       </div>
     </div>
   );
@@ -917,7 +917,7 @@ const CorrectiveActionReport = ({ entries, fromDate, setFromDate, toDate, setToD
           {["All", "Completed", "Pending"].map((v) => (
             <button key={v} type="button"
               onClick={() => setFilterVerify(v)}
-              className={`px-[0.8vw] py-[0.3vw] rounded-full text-[0.7vw] border font-bold cursor-pointer transition-all ${filterVerify === v ? "bg-teal-800 text-white border-teal-800 shadow-sm" : "bg-white text-black border-slate-300 hover:border-teal-400"
+              className={`px-[0.8vw] py-[0.3vw] rounded-full text-[0.7vw] border font-bold cursor-pointer transition-all ${filterVerify === v ? "bg-teal-800 text-white border-teal-800 shadow-sm" : "bg-white text-black border-slate-400 hover:border-teal-400"
                 }`}
             >{v}</button>
           ))}
@@ -927,14 +927,14 @@ const CorrectiveActionReport = ({ entries, fromDate, setFromDate, toDate, setToD
             <Search className="absolute left-[0.6vw] top-1/2 -translate-y-1/2 w-[0.85vw] h-[0.85vw] text-black" />
             <input value={search} onChange={(e) => setSearch(e.target.value)}
               placeholder="Search actions..."
-              className="pl-[2vw] pr-[0.8vw] h-[2.2vw] border border-slate-300 rounded-[0.5vw] focus:outline-none focus:border-teal-500 text-[0.75vw] w-[11vw] text-black font-medium"
+              className="pl-[2vw] pr-[0.8vw] h-[2.2vw] border border-slate-400 rounded-[0.5vw] focus:outline-none focus:border-teal-500 text-[0.75vw] w-[11vw] text-black font-medium"
             />
           </div>
           <DateRangeFilter from={fromDate} setFrom={setFromDate} to={toDate} setTo={setToDate} />
           <ExportButtons color="teal" onCsv={exportCsv} onPdf={downloadPdf} />
         </div>
       </div>
-      <div className="flex-1 overflow-auto rounded-[0.5vw] border border-slate-300 shadow-sm relative">
+      <div className="flex-1 overflow-auto rounded-[0.5vw] border border-slate-400 shadow-sm relative">
         <table id="table-corrective" className="w-full min-w-max border-collapse text-left">
           <thead className="sticky top-0 z-20 bg-teal-50">
             <tr>
@@ -1009,11 +1009,11 @@ const CorrectiveActionReport = ({ entries, fromDate, setFromDate, toDate, setToD
           onPageChange={setCurrentPage}
         />
         <SummaryBar items={[
-          { label: "Total Actions", value: rows.length, color: "text-teal-700" },
-          { label: "Verified", value: rows.filter(({ p }) => p.report?.status === "Completed").length, color: "text-green-700" },
-          { label: "Pending", value: rows.filter(({ p }) => p.report?.status !== "Completed").length, color: "text-orange-600" },
-          { label: "Parts Replaced", value: rows.filter(({ p }) => p.report?.partsReplacement).length, color: "text-blue-700" },
-        ]} />
+  { label: "Total Actions", value: filtered.length, color: "text-teal-700" },
+  { label: "Verified", value: filtered.filter(({ p }) => p.report?.status === "Completed").length, color: "text-green-700" },
+  { label: "Pending", value: filtered.filter(({ p }) => p.report?.status !== "Completed").length, color: "text-orange-600" },
+  { label: "Parts Replaced", value: filtered.filter(({ p }) => p.report?.partsReplacement).length, color: "text-blue-700" },
+]} />
       </div>
     </div>
   );
@@ -1027,7 +1027,7 @@ const ExportButtons = ({ onCsv, onPdf, color = "blue" }) => {
     green: "border-emerald-200 text-emerald-800 hover:bg-emerald-50",
     amber: "border-amber-200 text-amber-800 hover:bg-amber-50",
     teal: "border-teal-200 text-teal-800 hover:bg-teal-50",
-  }[color] || "border-slate-300 text-black hover:bg-slate-50";
+  }[color] || "border-slate-400 text-black hover:bg-slate-50";
 
   return (
     <div className="flex items-center gap-[0.4vw]">
@@ -1057,7 +1057,7 @@ const SummaryBar = ({ items }) => (
 );
 
 const DateRangeFilter = ({ from, setFrom, to, setTo }) => (
-  <div className="flex items-center gap-[0.4vw] bg-white p-[0.2vw] px-[0.6vw] rounded-[0.5vw] border border-slate-300 shadow-sm h-[2.2vw]">
+  <div className="flex items-center gap-[0.4vw] bg-white p-[0.2vw] px-[0.6vw] rounded-[0.5vw] border border-slate-400 shadow-sm h-[2.2vw]">
     <Calendar className="w-[0.9vw] h-[0.9vw] text-black" />
     <div className="flex items-center gap-[0.2vw]">
       <input 
@@ -1092,7 +1092,7 @@ const ExpandDetail = ({ label, value, color }) => {
     yellow: "bg-yellow-50 border-yellow-200 text-yellow-800",
   };
   return (
-    <div className={`rounded-[0.4vw] border p-[0.6vw] ${colors[color] || "bg-gray-50 border-gray-200 text-gray-800"}`}>
+    <div className={`rounded-[0.4vw] border p-[0.6vw] ${colors[color] || "bg-gray-50 border-slate-400 text-gray-800"}`}>
       <div className="text-[0.65vw] font-bold uppercase tracking-wider mb-[0.3vw] opacity-70">{label}</div>
       <div className="text-[0.72vw] leading-relaxed">{value || <span className="opacity-40 italic">Not provided</span>}</div>
     </div>
@@ -1142,10 +1142,19 @@ export default function ServiceMaterialReports() {
   const tab = TABS.find((t) => t.id === activeTab);
   const colors = TAB_COLORS[tab?.color || "blue"];
 
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full min-h-[60vh] bg-slate-50 p-[1.2vw] rounded-[1vw] border border-slate-400">
+        <div className="w-[3vw] h-[3vw] border-[0.3vw] border-black/10 border-t-blue-600 rounded-full animate-spin mb-[1vw]" />
+        <span className="text-[1vw] font-bold text-slate-800">Fetching records...</span>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full h-[calc(100vh-60px)] flex flex-col font-sans text-[0.85vw] bg-blue-50/30 p-[0.6vw] rounded-[1vw] overflow-hidden">
+    <div className="w-full h-[calc(100vh-10vh)] flex flex-col font-sans text-[0.85vw] bg-blue-50/30 p-[0.6vw] rounded-[1vw] overflow-hidden">
       {/* Header */}
-      <div className="flex-shrink-0 bg-white border border-slate-300 rounded-[0.8vw] shadow-sm mb-[0.8vw] overflow-hidden">
+      <div className="flex-shrink-0 bg-white border border-slate-400 rounded-[0.8vw] shadow-sm mb-[0.8vw] overflow-hidden">
         <div className="bg-[#1e40af] px-[1.5vw] py-[1vw] flex items-center gap-[0.8vw] relative">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-900/40 to-transparent pointer-events-none" />
           <div className="bg-white/15 p-[0.4vw] rounded-[0.6vw] z-10 shadow-inner">
@@ -1158,7 +1167,7 @@ export default function ServiceMaterialReports() {
         </div>
 
         {/* Tab Buttons */}
-        <div className="px-4 md:px-[1.2vw] py-2 md:py-[0.6vw] flex items-center gap-2 md:gap-[0.6vw] flex-wrap bg-blue-50/20 border-t border-slate-200">
+        <div className="px-4 md:px-[1.2vw] py-2 md:py-[0.6vw] flex items-center gap-2 md:gap-[0.6vw] flex-wrap bg-blue-50/20 border-t border-slate-400">
           {TABS.map((t) => {
             const tc = TAB_COLORS[t.color];
             const Icon = t.icon;
@@ -1180,7 +1189,7 @@ export default function ServiceMaterialReports() {
       </div>
 
       {/* Report Panel */}
-      <div className="flex-1 bg-white border border-slate-300 rounded-xl md:rounded-[0.8vw] shadow-sm p-3 md:p-[1vw] overflow-hidden">
+      <div className="flex-1 bg-white border border-slate-400 rounded-xl md:rounded-[0.8vw] shadow-sm p-3 md:p-[1vw] overflow-hidden">
         {activeTab === "testing" && <TestingRepairReport entries={filteredEntries} fromDate={fromDate} setFromDate={setFromDate} toDate={toDate} setToDate={setToDate} />}
         {activeTab === "delivery" && <DeliveryReport entries={filteredEntries} fromDate={fromDate} setFromDate={setFromDate} toDate={toDate} setToDate={setToDate} />}
         {activeTab === "rca" && <RootCauseReport entries={filteredEntries} fromDate={fromDate} setFromDate={setFromDate} toDate={toDate} setToDate={setToDate} />}

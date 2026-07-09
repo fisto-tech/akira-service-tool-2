@@ -321,7 +321,7 @@ const ProductionEditableProductTable = ({
   return (
     <div 
       ref={tableContainerRef}
-      className="w-full overflow-x-auto border border-gray-200 rounded-[0.6vw] bg-white mb-[1vw]"
+      className="w-full overflow-x-auto border border-slate-350 rounded-[0.6vw] bg-white mb-[1vw]"
     >
       <table className="w-full border-collapse text-[0.8vw]">
         <thead className="bg-blue-50/80 border-b border-gray-300 sticky top-0 z-20 shadow-sm">
@@ -362,7 +362,7 @@ const ProductionEditableProductTable = ({
                       <tr
                         ref={provided.innerRef}
                         {...provided.draggableProps}
-                        className={`border-b border-gray-100 last:border-0 hover:bg-blue-50/30 transition-colors ${snapshot.isDragging ? "bg-white shadow-lg ring-1 ring-blue-200 z-50 table" : ""}`}
+                        className={`border-b border-slate-300 last:border-0 hover:bg-blue-50/30 transition-colors ${snapshot.isDragging ? "bg-white shadow-lg ring-1 ring-blue-200 z-50 table" : ""}`}
                       >
                         {!isReadOnly && (
                           <td className="py-[0.6vw] px-[0.5vw] text-center align-middle" {...provided.dragHandleProps}>
@@ -419,11 +419,11 @@ const ProductionEditableProductTable = ({
                                           e.stopPropagation();
                                           selectProduct(prod._pid, p);
                                       }}
-                                      className={`p-[0.6vw] cursor-pointer border-b border-gray-100 last:border-0 transition-colors ${selectedIndex === i ? "bg-blue-600 text-white" : "hover:bg-blue-100"}`}
+                                      className={`p-[0.6vw] cursor-pointer border-b border-slate-300 last:border-0 transition-colors ${selectedIndex === i ? "bg-blue-600 text-white" : "hover:bg-blue-100"}`}
                                     >
                                       <div className={`font-semibold text-[0.8vw] ${selectedIndex === i ? "text-white" : "text-gray-900"}`}>{p.itemDescription || p.productDescription}</div>
                                       <div className={`text-[0.7vw] flex items-center gap-[0.4vw] mt-[0.1vw] ${selectedIndex === i ? "text-white/80" : "text-gray-700"}`}>
-                                        <span className={`px-[0.3vw] rounded font-mono border ${selectedIndex === i ? "bg-white/20 border-white/30" : "bg-gray-100 border-gray-200"}`}>{p.itemCode || p.productCode}</span>
+                                        <span className={`px-[0.3vw] rounded font-mono border ${selectedIndex === i ? "bg-white/20 border-white/30" : "bg-gray-100 border-slate-350"}`}>{p.itemCode || p.productCode}</span>
                                       </div>
                                     </div>
                                   ))

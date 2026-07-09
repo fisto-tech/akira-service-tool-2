@@ -1,0 +1,24 @@
+{
+  "name": "akira-service-tool-2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "scratch_check_depts.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "concurrently \"cd frontend && npm run dev\" \"cd backend && npm run dev\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fisto-tech/akira-service-tool-2.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fisto-tech/akira-service-tool-2/issues"
+  },
+  "homepage": "https://github.com/fisto-tech/akira-service-tool-2#readme",
+  "dependencies": {
+    "concurrently": "^10.0.3"
+  }
+}

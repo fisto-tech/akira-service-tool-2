@@ -24,7 +24,7 @@ const STATUS_COLORS = {
   "Under Testing / Repair in Progress": "bg-purple-50 text-purple-700 border-purple-200",
   "Pending": "bg-amber-50 text-amber-700 border-amber-200",
   "Completed / Not Repairable": "bg-emerald-50 text-emerald-700 border-emerald-200",
-  "Delivered / Hold": "bg-slate-100 text-slate-700 border-slate-300",
+  "Delivered / Hold": "bg-slate-100 text-slate-700 border-slate-400",
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -121,7 +121,7 @@ const UpdateModal = ({ item, currentUser, onClose, onUpdate }) => {
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className="bg-white rounded-[0.8vw] shadow-2xl w-[55vw] max-h-[85vh] overflow-hidden flex flex-col border border-gray-300"
+        className="bg-white rounded-[0.8vw] shadow-2xl w-[55vw] max-h-[85vh] overflow-hidden flex flex-col border border-gray-400"
       >
         <div className="bg-blue-600 px-[1.5vw] py-[1vw] flex justify-between items-center">
           <div className="flex items-center gap-[0.8vw]">
@@ -137,7 +137,7 @@ const UpdateModal = ({ item, currentUser, onClose, onUpdate }) => {
         </div>
 
         <div className="flex-1 overflow-y-auto p-[1.5vw] space-y-[1.2vw]">
-          <div className="grid grid-cols-3 gap-[1vw] bg-gray-50 p-[1vw] rounded-[0.4vw] border border-gray-300">
+          <div className="grid grid-cols-3 gap-[1vw] bg-gray-50 p-[1vw] rounded-[0.4vw] border border-gray-400">
             <div>
               <span className="text-[0.6vw] font-semibold text-gray-500 uppercase">Product Name</span>
               <p className="text-[0.8vw] font-semibold text-gray-800 mt-[0.2vw]">{product.productDescription}</p>
@@ -169,7 +169,7 @@ const UpdateModal = ({ item, currentUser, onClose, onUpdate }) => {
                       value={form.problem}
                       onChange={e => setForm({ ...form, problem: e.target.value })}
                       placeholder="Detailed explanation of findings..."
-                      className="w-full border border-gray-300 rounded-[0.4vw] p-[0.6vw] text-[0.78vw] text-gray-800 outline-none focus:border-blue-400 resize-none mt-[0.3vw]"
+                      className="w-full border border-gray-400 rounded-[0.4vw] p-[0.6vw] text-[0.78vw] text-gray-800 outline-none focus:border-blue-400 resize-none mt-[0.3vw]"
                     />
                   </div>
                   <div>
@@ -179,7 +179,7 @@ const UpdateModal = ({ item, currentUser, onClose, onUpdate }) => {
                       value={form.rootCause}
                       onChange={e => setForm({ ...form, rootCause: e.target.value })}
                       placeholder="What caused this issue?"
-                      className="w-full border border-gray-300 rounded-[0.4vw] p-[0.6vw] text-[0.78vw] text-gray-800 outline-none focus:border-blue-400 resize-none mt-[0.3vw]"
+                      className="w-full border border-gray-400 rounded-[0.4vw] p-[0.6vw] text-[0.78vw] text-gray-800 outline-none focus:border-blue-400 resize-none mt-[0.3vw]"
                     />
                   </div>
                 </div>
@@ -191,7 +191,7 @@ const UpdateModal = ({ item, currentUser, onClose, onUpdate }) => {
                       value={form.correction}
                       onChange={e => setForm({ ...form, correction: e.target.value })}
                       placeholder="What steps were taken to fix it?"
-                      className="w-full border border-gray-300 rounded-[0.4vw] p-[0.6vw] text-[0.78vw] text-gray-800 outline-none focus:border-blue-400 resize-none mt-[0.3vw]"
+                      className="w-full border border-gray-400 rounded-[0.4vw] p-[0.6vw] text-[0.78vw] text-gray-800 outline-none focus:border-blue-400 resize-none mt-[0.3vw]"
                     />
                   </div>
                   <div>
@@ -200,7 +200,7 @@ const UpdateModal = ({ item, currentUser, onClose, onUpdate }) => {
                       type="date"
                       value={form.completionDate}
                       onChange={e => setForm({ ...form, completionDate: e.target.value })}
-                      className="w-full border border-gray-300 rounded-[0.4vw] p-[0.5vw] text-[0.78vw] text-gray-800 outline-none focus:border-blue-400 mt-[0.3vw]"
+                      className="w-full border border-gray-400 rounded-[0.4vw] p-[0.5vw] text-[0.78vw] text-gray-800 outline-none focus:border-blue-400 mt-[0.3vw]"
                     />
                   </div>
                   <div>
@@ -208,7 +208,7 @@ const UpdateModal = ({ item, currentUser, onClose, onUpdate }) => {
                     <select
                       value={form.status}
                       onChange={e => setForm({ ...form, status: e.target.value })}
-                      className="w-full border border-gray-300 rounded-[0.4vw] p-[0.5vw] text-[0.78vw] text-gray-800 outline-none focus:border-blue-400 mt-[0.3vw] bg-white"
+                      className="w-full border border-gray-400 rounded-[0.4vw] p-[0.5vw] text-[0.78vw] text-gray-800 outline-none focus:border-blue-400 mt-[0.3vw] bg-white"
                     >
                       {STATUS_OPTIONS.map(opt => <option key={opt}>{opt}</option>)}
                     </select>
@@ -220,7 +220,7 @@ const UpdateModal = ({ item, currentUser, onClose, onUpdate }) => {
         </div>
 
         {!isClosed && (
-          <div className="p-[1vw] border-t border-gray-300 bg-gray-50 flex justify-end gap-[0.8vw]">
+          <div className="p-[1vw] border-t border-gray-400 bg-gray-50 flex justify-end gap-[0.8vw]">
             <button onClick={onClose} className="px-[1.5vw] py-[0.6vw] rounded-[0.4vw] text-[0.75vw] font-medium text-gray-600 hover:bg-gray-200 transition-all cursor-pointer">
               Cancel
             </button>
@@ -283,7 +283,7 @@ export default function ProductionMaterialResponse() {
   return (
     <div className="w-full flex flex-col h-full bg-gray-50 p-[1.2vw] gap-[0.8vw]">
       {/* Header */}
-      <div className="flex justify-between items-end border-b border-gray-300 pb-[0.8vw]">
+      <div className="flex justify-between items-end border-b border-gray-400 pb-[0.8vw]">
         <div>
           <h1 className="text-[1.1vw] font-bold text-gray-900 flex items-center gap-[0.6vw] uppercase ">
             <ClipboardList className="w-[1.4vw] h-[1.4vw] text-blue-600" /> Daily Technical Response Board
@@ -300,23 +300,23 @@ export default function ProductionMaterialResponse() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Filter assignments..."
-              className="pl-[2.2vw] pr-[1vw] py-[0.5vw] w-[18vw] border border-gray-300 rounded-[0.4vw] text-[0.78vw] text-gray-700 outline-none focus:border-blue-400 bg-white"
+              className="pl-[2.2vw] pr-[1vw] py-[0.5vw] w-[18vw] border border-gray-400 rounded-[0.4vw] text-[0.78vw] text-gray-700 outline-none focus:border-blue-400 bg-white"
             />
           </div>
         </div>
       </div>
 
       {/* Table */}
-      <div className="flex-1 bg-white border border-gray-300 rounded-[0.6vw] shadow-sm overflow-hidden flex flex-col">
+      <div className="flex-1 bg-white border border-gray-400 rounded-[0.6vw] shadow-sm overflow-hidden flex flex-col">
         <div className="flex-1 overflow-y-auto">
           <table className="w-full text-left border-collapse">
-            <thead className="bg-blue-50 border-b border-gray-300 sticky top-0 z-10">
+            <thead className="bg-blue-50 border-b border-gray-400 sticky top-0 z-10">
               <tr className="text-[0.7vw] text-gray-800 font-semibold uppercase">
-                <th className="px-[1.2vw] py-[0.8vw] w-[12%] border-r border-gray-300">Reg Details</th>
-                <th className="px-[1.2vw] py-[0.8vw] w-[25%] border-r border-gray-300">Product & Identification</th>
-                <th className="px-[1.2vw] py-[0.8vw] w-[15%] border-r border-gray-300">Customer</th>
-                <th className="px-[1.2vw] py-[0.8vw] w-[10%] border-r border-gray-300">My Role</th>
-                <th className="px-[1.2vw] py-[0.8vw] w-[20%] border-r border-gray-300">Submission Status</th>
+                <th className="px-[1.2vw] py-[0.8vw] w-[12%] border-r border-gray-400">Reg Details</th>
+                <th className="px-[1.2vw] py-[0.8vw] w-[25%] border-r border-gray-400">Product & Identification</th>
+                <th className="px-[1.2vw] py-[0.8vw] w-[15%] border-r border-gray-400">Customer</th>
+                <th className="px-[1.2vw] py-[0.8vw] w-[10%] border-r border-gray-400">My Role</th>
+                <th className="px-[1.2vw] py-[0.8vw] w-[20%] border-r border-gray-400">Submission Status</th>
                 <th className="px-[1.2vw] py-[0.8vw] w-[8%] text-center">Action</th>
               </tr>
             </thead>
@@ -325,29 +325,29 @@ export default function ProductionMaterialResponse() {
                 const response = item.product.responses?.[item.role];
                 const roleLabel = item.role === "assembledBy" ? "Assembler" : item.role === "testedBy" ? "Tester" : "FI";
                 const isClosed = item.entry.finalStatus === "Completed" || item.entry.finalStatus === "Rejected";
-                const statusColorClass = response ? (STATUS_COLORS[response.status] || "bg-gray-100 text-gray-700 border-gray-300") : "";
+                const statusColorClass = response ? (STATUS_COLORS[response.status] || "bg-gray-100 text-gray-700 border-gray-400") : "";
 
                 return (
                   <tr key={`${item.entry.id}-${item.product._pid}-${item.role}`} className="group hover:bg-blue-50/30 transition-colors">
-                    <td className="px-[1.2vw] py-[1vw] border-r border-gray-300">
+                    <td className="px-[1.2vw] py-[1vw] border-r border-gray-400">
                       <div className="text-[0.75vw] font-semibold text-gray-800 uppercase">{item.entry.refNoInternal}</div>
                       <div className="text-[0.6vw] font-normal text-gray-500 mt-[0.1vw]">{fmtDate(item.entry.date)}</div>
                     </td>
-                    <td className="px-[1.2vw] py-[1vw] border-r border-gray-300">
+                    <td className="px-[1.2vw] py-[1vw] border-r border-gray-400">
                       <div className="text-[0.78vw] font-semibold text-gray-800 truncate" title={item.product.productDescription}>{item.product.productDescription}</div>
                       <div className="flex items-center gap-[0.4vw] mt-[0.2vw] flex-wrap">
-                        <span className="text-[0.6vw] font-medium text-gray-600 border border-gray-300 px-[0.3vw] py-[0.05vw] rounded bg-gray-50">{item.product.jobOrderNo}</span>
+                        <span className="text-[0.6vw] font-medium text-gray-600 border border-gray-400 px-[0.3vw] py-[0.05vw] rounded bg-gray-50">{item.product.jobOrderNo}</span>
                         <span className="text-[0.6vw] font-normal text-gray-500">ID: {item.product.identification || "—"}</span>
                       </div>
                     </td>
-                    <td className="px-[1.2vw] py-[1vw] border-r border-gray-300">
+                    <td className="px-[1.2vw] py-[1vw] border-r border-gray-400">
                       <div className="text-[0.75vw] font-semibold text-gray-700 truncate" title={item.product.customerName}>{item.product.customerName}</div>
                       <div className="text-[0.55vw] font-normal text-gray-500 mt-[0.1vw]">{item.product.category || "General"}</div>
                     </td>
-                    <td className="px-[1.2vw] py-[1vw] border-r border-gray-300">
+                    <td className="px-[1.2vw] py-[1vw] border-r border-gray-400">
                       <span className="bg-blue-600 text-white px-[0.5vw] py-[0.15vw] rounded-[0.2vw] text-[0.6vw] font-medium uppercase ">{roleLabel}</span>
                     </td>
-                    <td className="px-[1.2vw] py-[1vw] border-r border-gray-300">
+                    <td className="px-[1.2vw] py-[1vw] border-r border-gray-400">
                       {response ? (
                         <div className="flex items-center gap-[0.5vw]">
                           <div className={`w-[0.4vw] h-[0.4vw] rounded-full ${response.status === 'Completed / Not Repairable' ? 'bg-emerald-500' : 'bg-blue-500'}`} />
@@ -405,7 +405,7 @@ export default function ProductionMaterialResponse() {
       </AnimatePresence>
 
       {/* Helper note for report data */}
-      <div className="text-[0.6vw] text-gray-400 border-t border-gray-300 pt-[0.6vw] mt-[0.2vw] flex justify-center gap-[1vw]">
+      <div className="text-[0.6vw] text-gray-400 border-t border-gray-400 pt-[0.6vw] mt-[0.2vw] flex justify-center gap-[1vw]">
         <span className="flex items-center gap-[0.3vw]"><div className="w-[0.5vw] h-[0.5vw] rounded-full bg-blue-500"></div> Submitted responses appear in Technical Reports</span>
         <span className="flex items-center gap-[0.3vw]"><div className="w-[0.5vw] h-[0.5vw] rounded-full bg-amber-500 animate-pulse"></div> Pending submissions</span>
       </div>

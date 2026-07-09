@@ -54,13 +54,26 @@ const getProductStatus = (p, callStatus) => {
   return callStatus ? callStatus.toLowerCase() : "registered";
 };
 const PROD_STATUS_CFG = {
-  resolved:   { label: "Resolved",    dot: "bg-green-500",  cls: "bg-green-50 border-green-300 text-green-700"    },
-  closed:     { label: "Resolved",    dot: "bg-green-500",  cls: "bg-green-50 border-green-300 text-green-700"    },
-  pending:    { label: "Pending",     dot: "bg-yellow-500", cls: "bg-yellow-50 border-yellow-300 text-yellow-700" },
-  support:    { label: "Open",        dot: "bg-orange-500", cls: "bg-orange-50 border-orange-300 text-orange-700" },
-  registered: { label: "Registered",  dot: "bg-purple-400", cls: "bg-purple-50 border-purple-300 text-purple-700"  },
-  open:       { label: "Open",        dot: "bg-green-400",  cls: "bg-green-50 border-green-300 text-green-700"    },
-  assigned:   { label: "Assigned",    dot: "bg-blue-400",   cls: "bg-blue-50 border-blue-300 text-blue-700"       },
+  resolved:            { label: "Resolved",    dot: "bg-green-500",  cls: "bg-green-50 border-green-300 text-green-700"    },
+  closed:              { label: "Resolved",    dot: "bg-green-500",  cls: "bg-green-50 border-green-300 text-green-700"    },
+  pending:             { label: "Pending",     dot: "bg-yellow-500", cls: "bg-yellow-50 border-yellow-300 text-yellow-700" },
+  support:             { label: "Open",        dot: "bg-orange-500", cls: "bg-orange-50 border-orange-300 text-orange-700" },
+  registered:          { label: "Registered",  dot: "bg-purple-400", cls: "bg-purple-50 border-purple-300 text-purple-700"  },
+  open:                { label: "Open",        dot: "bg-green-400",  cls: "bg-green-50 border-green-300 text-green-700"    },
+  assigned:            { label: "Assigned",    dot: "bg-blue-400",   cls: "bg-blue-50 border-blue-300 text-blue-700"       },
+  escalated:           { label: "Escalated",   dot: "bg-orange-500", cls: "bg-orange-50 border-orange-300 text-orange-700" },
+  critical:            { label: "Critical",    dot: "bg-red-500",    cls: "bg-red-50 border-red-300 text-red-700"          },
+  critical_unresolved: { label: "Critical",    dot: "bg-red-500",    cls: "bg-red-50 border-red-300 text-red-700"          }
+};
+
+const getStatusCfg = (statusKey) => {
+  if (!statusKey) return PROD_STATUS_CFG.registered;
+  const key = statusKey.toLowerCase();
+  return PROD_STATUS_CFG[key] || { 
+    label: key.charAt(0).toUpperCase() + key.slice(1), 
+    dot: "bg-gray-400", 
+    cls: "bg-gray-50 border-gray-300 text-gray-700" 
+  };
 };
 
 const deriveCallStatus = (products = [], currentStatus = "Registered") => {
@@ -90,7 +103,7 @@ const getTypeColor = (type, types = []) => {
     case "End Customer":  return "bg-green-100 text-green-700 border-green-200";
     case "Distributor":   return "bg-purple-100 text-purple-700 border-purple-200";
     case "Dealer":        return "bg-orange-100 text-orange-700 border-orange-200";
-    default:              return "bg-gray-100 text-gray-700 border-gray-200";
+    default:              return "bg-gray-100 text-gray-700 border-slate-400";
   }
 };
 
@@ -221,6 +234,19 @@ const buildFullFlow = (entry, supportReqs, fieldVisits, serviceCenterRepairs) =>
         product: pLabel,
       });
     });
+
+    if (p._attended) {
+      events.push({
+        time:   p._attendedAt || new Date().toISOString(),
+        type:   "attended",
+        person: p._assignedEngineerName || entry.currentEngineerName,
+        dept:   p._currentDepartment || entry.currentDepartment,
+        label:  `${pLabel} Attended`,
+        reason: "Engineer is working on the call",
+        scope:  "product",
+        product: pLabel,
+      });
+    }
 
     if (p._resolved) {
       events.push({
@@ -443,7 +469,7 @@ const FlowModal = ({ row, allFlows, onClose }) => {
     const targetProducts = activeTab === "all" ? (entry.products || []) : [entry.products[activeTab]].filter(Boolean);
     
     const nextEscalations = targetProducts.map(p => {
-      if (p._resolved || p._productClosure?.status === "Closed") return null;
+      if (p._resolved || p._productClosure?.status === "Closed" || p._attended) return null;
       
       const custDb = lsLoad(CUSTOMER_DB_KEY, []);
       const custRow = custDb.find(r => r.partyCode === row.partyCode);
@@ -491,6 +517,7 @@ const FlowModal = ({ row, allFlows, onClose }) => {
 
   const TYPE_CFG = {
     assign:     { icon: User,         cls: "bg-blue-500",   label: "bg-blue-50 border-blue-200 text-blue-700"     },
+    attended:   { icon: Activity,     cls: "bg-teal-500",   label: "bg-teal-50 border-teal-200 text-teal-700"     },
     escalate:   { icon: ChevronRight, cls: "bg-orange-500", label: "bg-orange-50 border-orange-200 text-orange-700"},
     resolve:    { icon: CheckCircle,  cls: "bg-green-500",  label: "bg-green-50 border-green-200 text-green-700"  },
     close:      { icon: CheckCircle,  cls: "bg-green-600",  label: "bg-green-50 border-green-200 text-green-700"  },
@@ -532,7 +559,7 @@ const FlowModal = ({ row, allFlows, onClose }) => {
               {Array.from({ length: productCount }, (_, pi) => {
                 const p = entry?.products?.[pi];
                 const name = p?.productModel || p?.itemCode || `Product ${pi + 1}`;
-                const cfg  = PROD_STATUS_CFG[getProductStatus(p || {})];
+                const cfg  = getStatusCfg(getProductStatus(p || {}));
                 return (
                   <button key={pi} onClick={() => setActiveTab(pi)}
                     className={`flex items-center gap-[0.3vw] px-[0.7vw] py-[0.25vw] rounded-[0.3vw] text-[0.65vw] font-semibold transition-colors cursor-pointer ${activeTab === pi ? "bg-white text-gray-800" : "bg-white/10 text-gray-300 hover:bg-white/20"}`}>
@@ -557,7 +584,7 @@ const FlowModal = ({ row, allFlows, onClose }) => {
         <div className="flex flex-1 overflow-hidden">
 
           {/* Left: People involved */}
-          <div className="w-[30%] border-r border-gray-100 bg-gray-50 p-[1vw] overflow-y-auto flex-shrink-0">
+          <div className="w-[30%] border-r border-slate-400 bg-gray-50 p-[1vw] overflow-y-auto flex-shrink-0">
             <div className="text-[0.68vw] font-bold text-gray-400 uppercase tracking-wider mb-[0.7vw] flex items-center gap-[0.3vw]">
               <User className="w-[0.75vw] h-[0.75vw]" />People Involved
               <span className="ml-auto bg-gray-200 text-gray-600 px-[0.4vw] rounded-full text-[0.6vw] font-bold">{visiblePeople.length}</span>
@@ -567,7 +594,7 @@ const FlowModal = ({ row, allFlows, onClose }) => {
             ) : (
               <div className="space-y-[0.5vw]">
                 {visiblePeople.map((person, i) => (
-                  <div key={person.id} className="bg-white border border-gray-200 rounded-[0.4vw] p-[0.6vw] flex items-start gap-[0.5vw]">
+                  <div key={person.id} className="bg-white border border-slate-400 rounded-[0.4vw] p-[0.6vw] flex items-start gap-[0.5vw]">
                     <Avatar name={person.name} size="md" />
                     <div className="flex-1 min-w-0">
                       <div className="text-[0.78vw] font-bold text-gray-800 truncate">{person.name}</div>
@@ -614,7 +641,7 @@ const FlowModal = ({ row, allFlows, onClose }) => {
                           <Icon className="w-[0.85vw] h-[0.85vw] text-white" />
                         </div>
                         {/* Content */}
-                        <div className="flex-1 bg-white border border-gray-100 rounded-[0.4vw] p-[0.55vw] shadow-sm">
+                        <div className="flex-1 bg-white border border-slate-400 rounded-[0.4vw] p-[0.55vw] shadow-sm">
                           <div className="flex items-start justify-between gap-[0.4vw]">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-[0.4vw] flex-wrap">
@@ -631,7 +658,7 @@ const FlowModal = ({ row, allFlows, onClose }) => {
                                 </div>
                               )}
                               {ev.reason && (
-                                <div className="text-[0.68vw] text-gray-500 mt-[0.2vw] bg-gray-50 border border-gray-100 rounded-[0.25vw] px-[0.4vw] py-[0.15vw]">
+                                <div className="text-[0.68vw] text-gray-500 mt-[0.2vw] bg-gray-50 border border-slate-400 rounded-[0.25vw] px-[0.4vw] py-[0.15vw]">
                                   {ev.reason}
                                 </div>
                               )}
@@ -652,10 +679,10 @@ const FlowModal = ({ row, allFlows, onClose }) => {
 
         {/* Products summary bar */}
         {entry?.products?.length > 0 && (
-          <div className="border-t border-gray-100 bg-gray-50 px-[1.4vw] py-[0.6vw] flex items-center gap-[1vw] flex-shrink-0">
+          <div className="border-t border-slate-400 bg-gray-50 px-[1.4vw] py-[0.6vw] flex items-center gap-[1vw] flex-shrink-0">
             <span className="text-[0.68vw] font-bold text-gray-400 uppercase">Products</span>
             {entry.products.map((p, i) => {
-              const cfg = PROD_STATUS_CFG[getProductStatus(p)];
+              const cfg = getStatusCfg(getProductStatus(p));
               return (
                 <div key={i} className={`flex items-center gap-[0.3vw] px-[0.5vw] py-[0.2vw] rounded-full border text-[0.68vw] font-semibold ${cfg.cls}`}>
                   <div className={`w-[0.45vw] h-[0.45vw] rounded-full ${cfg.dot}`} />
@@ -666,7 +693,7 @@ const FlowModal = ({ row, allFlows, onClose }) => {
           </div>
         )}
 
-        <div className="px-[1.4vw] py-[0.7vw] bg-white border-t border-gray-100 flex justify-end flex-shrink-0">
+        <div className="px-[1.4vw] py-[0.7vw] bg-white border-t border-slate-400 flex justify-end flex-shrink-0">
           <button onClick={onClose} className="px-[1.5vw] py-[0.5vw] bg-gray-800 hover:bg-gray-900 text-white rounded-[0.4vw] text-[0.82vw] font-semibold cursor-pointer">
             Close
           </button>
@@ -722,14 +749,14 @@ const ConfigManagerModal = ({ title, icon: Icon, items, onClose, onSave }) => {
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
       <div className="bg-white w-[32vw] rounded-[0.6vw] shadow-2xl flex flex-col max-h-[80vh]">
-        <div className="px-[1.2vw] py-[0.8vw] border-b border-gray-200 flex justify-between items-center bg-gray-50">
+        <div className="px-[1.2vw] py-[0.8vw] border-b border-slate-400 flex justify-between items-center bg-gray-50">
           <h2 className="text-[1vw] font-semibold text-gray-800 flex items-center gap-[0.5vw]"><Icon className="w-[1.1vw] h-[1.1vw]" />{title}</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-700 cursor-pointer"><X className="w-[1.1vw] h-[1.1vw]" /></button>
         </div>
         <div className="px-[1.2vw] pt-[1vw] pb-[0.6vw]">
           <div className="flex gap-[0.5vw]">
             <input ref={inputRef} type="text" value={newValue} onChange={e => setNewValue(e.target.value)} onKeyDown={e => e.key === "Enter" && handleAdd()}
-              className="flex-1 border border-gray-300 rounded-[0.4vw] px-[0.7vw] py-[0.55vw] text-[0.85vw] outline-none focus:border-gray-400" />
+              className="flex-1 border border-gray-400 rounded-[0.4vw] px-[0.7vw] py-[0.55vw] text-[0.85vw] outline-none focus:border-gray-400" />
             <button type="button" onClick={handleAdd} disabled={!newValue.trim()}
               className="px-[0.9vw] py-[0.55vw] bg-gray-800 hover:bg-gray-900 disabled:bg-gray-300 text-white rounded-[0.4vw] flex items-center gap-[0.3vw] text-[0.8vw] font-medium cursor-pointer">
               <Plus className="w-[0.9vw] h-[0.9vw]" />Add
@@ -738,12 +765,12 @@ const ConfigManagerModal = ({ title, icon: Icon, items, onClose, onSave }) => {
         </div>
         <div className="px-[1.2vw] pb-[0.8vw] flex-1 overflow-y-auto space-y-[0.4vw]">
           {localItems.map((item, idx) => (
-            <div key={idx} className={`flex items-center gap-[0.5vw] rounded-[0.4vw] border p-[0.5vw] ${editingIdx === idx ? "border-gray-400 bg-gray-50" : "border-gray-200 bg-white"}`}>
+            <div key={idx} className={`flex items-center gap-[0.5vw] rounded-[0.4vw] border p-[0.5vw] ${editingIdx === idx ? "border-gray-400 bg-gray-50" : "border-slate-400 bg-white"}`}>
               {editingIdx === idx ? (
                 <>
                   <input ref={editRef} type="text" value={editValue} onChange={e => setEditValue(e.target.value)}
                     onKeyDown={e => { if (e.key === "Enter") handleSaveEdit(idx); if (e.key === "Escape") setEditingIdx(null); }}
-                    className="flex-1 border border-gray-300 rounded-[0.3vw] px-[0.6vw] py-[0.4vw] text-[0.85vw] outline-none" />
+                    className="flex-1 border border-gray-400 rounded-[0.3vw] px-[0.6vw] py-[0.4vw] text-[0.85vw] outline-none" />
                   <button type="button" onClick={() => handleSaveEdit(idx)} className="text-gray-700 hover:text-gray-900 cursor-pointer p-[0.3vw]"><CheckCircle className="w-[1vw] h-[1vw]" /></button>
                   <button type="button" onClick={() => setEditingIdx(null)} className="text-gray-400 hover:text-gray-600 cursor-pointer p-[0.3vw]"><X className="w-[1vw] h-[1vw]" /></button>
                 </>
@@ -758,8 +785,8 @@ const ConfigManagerModal = ({ title, icon: Icon, items, onClose, onSave }) => {
             </div>
           ))}
         </div>
-        <div className="px-[1.2vw] py-[0.8vw] border-t border-gray-200 flex justify-end gap-[0.7vw] bg-gray-50">
-          <button type="button" onClick={onClose} className="px-[1.2vw] py-[0.5vw] border border-gray-300 bg-white text-gray-700 rounded-[0.4vw] cursor-pointer text-[0.85vw] font-medium">Cancel</button>
+        <div className="px-[1.2vw] py-[0.8vw] border-t border-slate-400 flex justify-end gap-[0.7vw] bg-gray-50">
+          <button type="button" onClick={onClose} className="px-[1.2vw] py-[0.5vw] border border-gray-400 bg-white text-gray-700 rounded-[0.4vw] cursor-pointer text-[0.85vw] font-medium">Cancel</button>
           <button type="button" onClick={() => { onSave(localItems); onClose(); }} className="px-[1.2vw] py-[0.5vw] bg-gray-800 hover:bg-gray-900 text-white rounded-[0.4vw] cursor-pointer flex items-center gap-[0.4vw] text-[0.85vw] font-medium">
             <Save className="w-[0.9vw] h-[0.9vw]" />Save Changes
           </button>
@@ -1059,9 +1086,9 @@ const ServiceCallForm = ({ initialData, customerDb, serviceCalls, partyTypes, em
     <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.2 }}
       className="w-full font-sans text-[0.85vw] max-h-[90vh] overflow-y-auto">
       {/* Header */}
-      <div className="flex items-center justify-between bg-white px-[1.2vw] py-[0.8vw] rounded-[0.6vw] shadow-sm border border-gray-200 mb-[1vw]">
+      <div className="flex items-center justify-between bg-white px-[1.2vw] py-[0.8vw] rounded-[0.6vw] shadow-sm border border-slate-400 mb-[1vw]">
         <div className="flex items-center gap-[1vw]">
-          <button type="button" onClick={onBack} className="flex items-center gap-[0.4vw] text-gray-500 hover:text-gray-800 border border-gray-300 bg-gray-50 hover:bg-gray-100 px-[0.8vw] py-[0.4vw] rounded-[0.4vw] cursor-pointer">
+          <button type="button" onClick={onBack} className="flex items-center gap-[0.4vw] text-gray-500 hover:text-gray-800 border border-gray-400 bg-gray-50 hover:bg-gray-100 px-[0.8vw] py-[0.4vw] rounded-[0.4vw] cursor-pointer">
             <ArrowLeft className="w-[1vw] h-[1vw]" /><span className="font-medium">Back</span>
           </button>
           <h2 className="text-[1vw] font-bold text-gray-800">{isEdit ? "Edit Service Call" : "New Service Call Entry"}</h2>
@@ -1075,32 +1102,32 @@ const ServiceCallForm = ({ initialData, customerDb, serviceCalls, partyTypes, em
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-[1vw]">
         {/* SECTION 1: Call Details */}
-        <div className="bg-white rounded-[0.6vw] shadow-sm border border-gray-200 p-[1.2vw]">
-          <h3 className="text-[0.85vw] font-bold text-gray-500 uppercase tracking-wide mb-[1vw] pb-[0.5vw] border-b border-gray-100 flex items-center gap-[0.5vw]">
+        <div className="bg-white rounded-[0.6vw] shadow-sm border border-slate-400 p-[1.2vw]">
+          <h3 className="text-[0.85vw] font-bold text-gray-500 uppercase tracking-wide mb-[1vw] pb-[0.5vw] border-b border-slate-400 flex items-center gap-[0.5vw]">
             <Clock className="w-[1vw] h-[1vw] text-blue-500" />Call Details
           </h3>
           <div className="grid grid-cols-4 gap-[1.2vw]">
             <div className="flex flex-col gap-[0.3vw]">
               <label className="font-semibold text-gray-600">Call Number</label>
-              <input readOnly value={formData.callNumber} className="bg-gray-100 border border-gray-300 rounded-[0.4vw] p-[0.6vw] text-gray-500 cursor-not-allowed font-mono" />
+              <input readOnly value={formData.callNumber} className="bg-gray-100 border border-gray-400 rounded-[0.4vw] p-[0.6vw] text-gray-500 cursor-not-allowed font-mono" />
             </div>
             <div className="flex flex-col gap-[0.3vw]">
               <label className="font-semibold text-gray-600">Date & Time</label>
-              <input readOnly value={formData.dateTime} className="bg-gray-100 border border-gray-300 rounded-[0.4vw] p-[0.6vw] text-gray-500 cursor-not-allowed" />
+              <input readOnly value={formData.dateTime} className="bg-gray-100 border border-gray-400 rounded-[0.4vw] p-[0.6vw] text-gray-500 cursor-not-allowed" />
             </div>
             <div className="flex flex-col gap-[0.3vw]">
               <label className="font-semibold text-gray-600 flex items-center justify-between">
                 Mode of Call
                 <button type="button" onClick={() => setShowModesManager(true)} className="text-gray-400 hover:text-gray-700 cursor-pointer p-[0.2vw] rounded hover:bg-gray-100"><Settings className="w-[0.85vw] h-[0.85vw]" /></button>
               </label>
-              <select value={formData.mode} onChange={e => set("mode", e.target.value)} className="border border-gray-300 rounded-[0.4vw] p-[0.6vw] bg-white outline-none">
+              <select value={formData.mode} onChange={e => set("mode", e.target.value)} className="border border-gray-400 rounded-[0.4vw] p-[0.6vw] bg-white outline-none">
                 {modes.map(m => <option key={m}>{m}</option>)}
               </select>
             </div>
             <div className="flex flex-col gap-[0.3vw]">
               <label className="font-semibold text-gray-600">Priority</label>
               <select value={formData.priority} onChange={e => set("priority", e.target.value)}
-                className={`border border-gray-300 rounded-[0.4vw] p-[0.6vw] bg-white outline-none font-medium ${formData.priority === "Critical" ? "text-red-600" : formData.priority === "High" ? "text-orange-500" : "text-gray-700"}`}>
+                className={`border border-gray-400 rounded-[0.4vw] p-[0.6vw] bg-white outline-none font-medium ${formData.priority === "Critical" ? "text-red-600" : formData.priority === "High" ? "text-orange-500" : "text-gray-700"}`}>
                 {PRIORITIES.map(p => <option key={p}>{p}</option>)}
               </select>
             </div>
@@ -1108,15 +1135,15 @@ const ServiceCallForm = ({ initialData, customerDb, serviceCalls, partyTypes, em
         </div>
 
         {/* SECTION 2: Customer Information */}
-        <div className="bg-white rounded-[0.6vw] shadow-sm border border-gray-200 p-[1.2vw]">
-          <h3 className="text-[0.85vw] font-bold text-gray-500 uppercase tracking-wide mb-[1vw] pb-[0.5vw] border-b border-gray-100 flex items-center gap-[0.5vw]">
+        <div className="bg-white rounded-[0.6vw] shadow-sm border border-slate-400 p-[1.2vw]">
+          <h3 className="text-[0.85vw] font-bold text-gray-500 uppercase tracking-wide mb-[1vw] pb-[0.5vw] border-b border-slate-400 flex items-center gap-[0.5vw]">
             <User className="w-[1vw] h-[1vw] text-blue-500" />Customer Information
           </h3>
           <div className="grid grid-cols-4 gap-[1.2vw]">
             <div className="flex flex-col gap-[0.3vw]">
               <label className="font-semibold text-gray-600">Customer Type</label>
               <select value={formData.customerType} onChange={e => setFormData(p => ({ ...p, customerType: e.target.value, partyCode: "", customerName: "", products: [emptyProduct()] }))}
-                className="border border-gray-300 rounded-[0.4vw] p-[0.6vw] bg-white outline-none">
+                className="border border-gray-400 rounded-[0.4vw] p-[0.6vw] bg-white outline-none">
                 <option value="All">All Types</option>
                 {partyTypes.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
               </select>
@@ -1133,7 +1160,7 @@ const ServiceCallForm = ({ initialData, customerDb, serviceCalls, partyTypes, em
                     onChange={e => { set("customerName", e.target.value); setShowCustSearch(true); }}
                     onFocus={() => setShowCustSearch(true)}
                     placeholder="Search & select customer…"
-                    className="w-full border border-gray-300 rounded-[0.4vw] pl-[2.2vw] p-[0.6vw] bg-white focus:ring-2 ring-blue-100 outline-none" />
+                    className="w-full border border-gray-400 rounded-[0.4vw] pl-[2.2vw] p-[0.6vw] bg-white focus:ring-2 ring-blue-100 outline-none" />
                 </div>
                 <button type="button" onClick={() => { setNewCustomer({ partyCode: "", partyDescription: formData.customerName || "", partyType: partyTypes[0]?.name || "", items: [{ productSegment: "", itemCode: "", itemDescription: "", warrantyPeriodDays: "" }] }); setShowAddCustModal(true); }}
                   className="flex items-center gap-[0.3vw] bg-blue-600 hover:bg-blue-700 text-white px-[0.8vw] rounded-[0.4vw] cursor-pointer">
@@ -1141,7 +1168,7 @@ const ServiceCallForm = ({ initialData, customerDb, serviceCalls, partyTypes, em
                 </button>
               </div>
               {showCustSearch && (
-                <div className="absolute top-full left-0 w-full bg-white border border-gray-200 shadow-lg rounded-[0.4vw] mt-[0.3vw] max-h-[15vw] overflow-y-auto z-20">
+                <div className="absolute top-full left-0 w-full bg-white border border-slate-400 shadow-lg rounded-[0.4vw] mt-[0.3vw] max-h-[15vw] overflow-y-auto z-20">
                   {filteredCustomers.filter(c => c.name.toLowerCase().includes(formData.customerName.toLowerCase())).map((c, i) => (
                     <div key={i} onClick={() => selectCustomer(c.code, c.name, c.type)}
                       className="p-[0.6vw] hover:bg-blue-50 cursor-pointer border-b border-gray-50 last:border-0 flex justify-between items-center">
@@ -1157,15 +1184,15 @@ const ServiceCallForm = ({ initialData, customerDb, serviceCalls, partyTypes, em
             </div>
             <div className="flex flex-col gap-[0.3vw]">
               <label className="font-semibold text-gray-600">Contact Person</label>
-              <input value={formData.contactPerson} onChange={e => set("contactPerson", e.target.value)} className="border border-gray-300 rounded-[0.4vw] p-[0.6vw] outline-none" />
+              <input value={formData.contactPerson} onChange={e => set("contactPerson", e.target.value)} className="border border-gray-400 rounded-[0.4vw] p-[0.6vw] outline-none" />
             </div>
             <div className="flex flex-col gap-[0.3vw]">
               <label className="font-semibold text-gray-600">Contact Number</label>
-              <input value={formData.contactNumber} onChange={e => set("contactNumber", e.target.value)} className="border border-gray-300 rounded-[0.4vw] p-[0.6vw] outline-none" />
+              <input value={formData.contactNumber} onChange={e => set("contactNumber", e.target.value)} className="border border-gray-400 rounded-[0.4vw] p-[0.6vw] outline-none" />
             </div>
             <div className="flex flex-col gap-[0.3vw]">
               <label className="font-semibold text-gray-600">Email ID</label>
-              <input type="email" value={formData.emailId} onChange={e => set("emailId", e.target.value)} className="border border-gray-300 rounded-[0.4vw] p-[0.6vw] outline-none" />
+              <input type="email" value={formData.emailId} onChange={e => set("emailId", e.target.value)} className="border border-gray-400 rounded-[0.4vw] p-[0.6vw] outline-none" />
             </div>
             <div className="flex flex-col gap-[0.3vw]">
               <label className="font-semibold text-gray-600">Location Type</label>
@@ -1180,14 +1207,14 @@ const ServiceCallForm = ({ initialData, customerDb, serviceCalls, partyTypes, em
                   }
                   return { ...p, locationType: val, location: nextLoc };
                 });
-              }} className="border border-gray-300 rounded-[0.4vw] p-[0.6vw] bg-white outline-none">
+              }} className="border border-gray-400 rounded-[0.4vw] p-[0.6vw] bg-white outline-none">
                 <option value="IPR">IPR</option>
                 <option value="Site">Site</option>
               </select>
             </div>
             <div className="flex flex-col gap-[0.3vw]">
               <label className="font-semibold text-gray-600">{formData.locationType === "Site" ? "Site Address" : "Location"}</label>
-              <input value={formData.location} onChange={e => set("location", e.target.value)} className="border border-gray-300 rounded-[0.4vw] p-[0.6vw] outline-none" />
+              <input value={formData.location} onChange={e => set("location", e.target.value)} className="border border-gray-400 rounded-[0.4vw] p-[0.6vw] outline-none" />
             </div>
             {formData.partyCode && (
               <div className="col-span-4 flex flex-col gap-[0.3vw]">
@@ -1195,9 +1222,9 @@ const ServiceCallForm = ({ initialData, customerDb, serviceCalls, partyTypes, em
                   <History className="w-[1vw] h-[1vw] text-blue-500" />Customer History
                   {customerHistory.length > 0 && <span className="text-[0.7vw] bg-blue-50 text-blue-700 px-[0.6vw] py-[0.2vw] rounded-full font-bold border border-blue-100">{customerHistory.length} Call{customerHistory.length > 1 ? "s" : ""}</span>}
                 </label>
-                <div className="border border-gray-200 bg-gray-50/50 rounded-[0.4vw] p-[0.8vw] max-h-[15vw] overflow-y-auto space-y-[0.5vw]">
+                <div className="border border-slate-400 bg-gray-50/50 rounded-[0.4vw] p-[0.8vw] max-h-[15vw] overflow-y-auto space-y-[0.5vw]">
                   {customerHistory.length > 0 ? customerHistory.map((call, i) => (
-                    <div key={i} className="bg-white border border-gray-200 rounded-[0.4vw] p-[0.6vw] shadow-sm hover:border-blue-300 transition-colors">
+                    <div key={i} className="bg-white border border-slate-400 rounded-[0.4vw] p-[0.6vw] shadow-sm hover:border-blue-300 transition-colors">
                       <div className="flex justify-between items-center mb-[0.4vw]">
                         <div className="flex items-center gap-[0.6vw]">
                           <span className="font-mono text-[0.8vw] font-bold text-black">{call.callNumber}</span>
@@ -1207,7 +1234,7 @@ const ServiceCallForm = ({ initialData, customerDb, serviceCalls, partyTypes, em
                       </div>
                       <div className="flex flex-wrap gap-[0.4vw]">
                         {(call.products || []).map((p, pIdx) => (
-                          <div key={pIdx} className="flex items-center gap-[0.4vw] bg-gray-50 px-[0.4vw] py-[0.2vw] rounded border border-gray-100">
+                          <div key={pIdx} className="flex items-center gap-[0.4vw] bg-gray-50 px-[0.4vw] py-[0.2vw] rounded border border-slate-400">
                             <span className="text-[0.7vw] text-gray-600 font-medium">{p.productModel || p.itemCode || "Unknown Product"}</span>
                             {p.errorCode && (
                               <span className="text-[0.6vw] bg-blue-50 text-blue-600 border border-blue-200 px-[0.3vw] py-[0.05vw] rounded-[0.2vw] font-mono font-bold uppercase">
@@ -1231,7 +1258,7 @@ const ServiceCallForm = ({ initialData, customerDb, serviceCalls, partyTypes, em
         </div>
 
         {/* SECTION 3: Product Details */}
-        <div className="bg-white rounded-[0.6vw] shadow-sm border border-gray-200 p-[1.2vw]">
+        <div className="bg-white rounded-[0.6vw] shadow-sm border border-slate-400 p-[1.2vw]">
           <div className="flex justify-between items-center mb-[1vw]">
             <h3 className="text-[0.85vw] font-bold text-gray-500 uppercase tracking-wide flex items-center gap-[0.5vw]">
               <Package className="w-[1vw] h-[1vw] text-blue-500" />Product Details
@@ -1244,7 +1271,7 @@ const ServiceCallForm = ({ initialData, customerDb, serviceCalls, partyTypes, em
           </div>
           <div className="space-y-[1vw]">
             {formData.products.map((product, idx) => (
-              <div key={idx} className="border border-gray-200 rounded-[0.5vw] p-[1vw] bg-gray-50 relative">
+              <div key={idx} className="border border-slate-400 rounded-[0.5vw] p-[1vw] bg-gray-50 relative">
                 {formData.products.length > 1 && (
                   <button type="button" onClick={() => removeProduct(idx)} className="absolute top-[0.5vw] right-[0.5vw] text-red-500 hover:text-red-700 cursor-pointer"><Trash2 className="w-[1vw] h-[1vw]" /></button>
                 )}
@@ -1261,9 +1288,9 @@ const ServiceCallForm = ({ initialData, customerDb, serviceCalls, partyTypes, em
                         onFocus={() => { if (formData.partyCode) setShowProdSearch(p => ({ ...p, [idx]: true })); }}
                         disabled={!formData.partyCode}
                         placeholder={!formData.partyCode ? "Select customer first" : "Search product…"}
-                        className="w-full border border-gray-300 rounded-[0.4vw] pl-[2.2vw] p-[0.6vw] bg-white focus:ring-2 ring-blue-100 outline-none disabled:bg-gray-100 disabled:cursor-not-allowed" />
+                        className="w-full border border-gray-400 rounded-[0.4vw] pl-[2.2vw] p-[0.6vw] bg-white focus:ring-2 ring-blue-100 outline-none disabled:bg-gray-100 disabled:cursor-not-allowed" />
                       {showProdSearch[idx] && formData.partyCode && (
-                        <div className="absolute top-full left-0 w-full bg-white border border-gray-200 shadow-lg rounded-[0.4vw] mt-[0.3vw] max-h-[12vw] overflow-y-auto z-20">
+                        <div className="absolute top-full left-0 w-full bg-white border border-slate-400 shadow-lg rounded-[0.4vw] mt-[0.3vw] max-h-[12vw] overflow-y-auto z-20">
                           {availableProducts.filter(p => !product.productModel || p.itemDescription.toLowerCase().includes(product.productModel.toLowerCase()) || p.itemCode.toLowerCase().includes(product.productModel.toLowerCase()))
                             .map((prod, i) => (
                               <div key={i} onClick={() => selectProduct(idx, prod)} className="p-[0.6vw] hover:bg-blue-50 cursor-pointer border-b border-gray-50 last:border-0">
@@ -1277,34 +1304,34 @@ const ServiceCallForm = ({ initialData, customerDb, serviceCalls, partyTypes, em
                   </div>
                   <div className="col-span-1 flex flex-col gap-[0.3vw]">
                     <label className="font-semibold text-gray-600 text-[0.8vw]">Product Segment</label>
-                    <select value={product.productSegment || ""} onChange={e => changeProduct(idx, "productSegment", e.target.value)} className="border border-gray-300 rounded-[0.4vw] p-[0.6vw] bg-white outline-none text-[0.82vw] focus:border-blue-400">
+                    <select value={product.productSegment || ""} onChange={e => changeProduct(idx, "productSegment", e.target.value)} className="border border-gray-400 rounded-[0.4vw] p-[0.6vw] bg-white outline-none text-[0.82vw] focus:border-blue-400">
                       <option value="">-- Select Segment --</option>
                       {uniqueSegments.map((seg, i) => <option key={i}>{seg}</option>)}
                     </select>
                   </div>
                   <div className="col-span-1 flex flex-col gap-[0.3vw]">
                     <label className="font-semibold text-gray-600 text-[0.8vw]">Serial Number</label>
-                    <input value={product.serialNumber} onChange={e => changeProduct(idx, "serialNumber", e.target.value)} className="border border-gray-300 rounded-[0.4vw] p-[0.6vw] outline-none text-[0.82vw]" placeholder="SN-123" />
+                    <input value={product.serialNumber} onChange={e => changeProduct(idx, "serialNumber", e.target.value)} className="border border-gray-400 rounded-[0.4vw] p-[0.6vw] outline-none text-[0.82vw]" placeholder="SN-123" />
                   </div>
 
                   <div className="flex flex-col gap-[0.3vw]">
                     <label className="font-semibold text-gray-600 text-[0.8vw]">Warranty Days</label>
-                    <input type="number" min="0" value={product.warrantyPeriodDays || ""} onChange={e => changeProduct(idx, "warrantyPeriodDays", e.target.value)} className="border border-gray-300 rounded-[0.4vw] p-[0.6vw] outline-none text-[0.82vw]" placeholder="Days" />
+                    <input type="number" min="0" value={product.warrantyPeriodDays || ""} onChange={e => changeProduct(idx, "warrantyPeriodDays", e.target.value)} className="border border-gray-400 rounded-[0.4vw] p-[0.6vw] outline-none text-[0.82vw]" placeholder="Days" />
                   </div>
                   <div className="flex flex-col gap-[0.3vw]">
                     <label className="font-semibold text-gray-600 text-[0.8vw]">Warranty Status</label>
-                    <select value={product.warrantyStatus} onChange={e => changeProduct(idx, "warrantyStatus", e.target.value)} className="border border-gray-300 rounded-[0.4vw] p-[0.6vw] bg-white outline-none text-[0.82vw]">
+                    <select value={product.warrantyStatus} onChange={e => changeProduct(idx, "warrantyStatus", e.target.value)} className="border border-gray-400 rounded-[0.4vw] p-[0.6vw] bg-white outline-none text-[0.82vw]">
                       {WARRANTY_STATUS.map(s => <option key={s}>{s}</option>)}
                     </select>
                   </div>
                   <div className="flex flex-col gap-[0.3vw]">
                     <label className="font-semibold text-gray-600 text-[0.8vw]">Error Code</label>
-                    <input value={product.errorCode || ""} onChange={e => changeProduct(idx, "errorCode", e.target.value)} className="border border-gray-300 rounded-[0.4vw] p-[0.6vw] outline-none text-[0.82vw]" placeholder="e.g. E-404" />
+                    <input value={product.errorCode || ""} onChange={e => changeProduct(idx, "errorCode", e.target.value)} className="border border-gray-400 rounded-[0.4vw] p-[0.6vw] outline-none text-[0.82vw]" placeholder="e.g. E-404" />
                   </div>
 
                   <div className="flex flex-col gap-[0.3vw]">
                     <label className="font-semibold text-gray-600 text-[0.8vw]">Photo/Video Received?</label>
-                    <select value={product.mediaReceived || "No"} onChange={e => changeProduct(idx, "mediaReceived", e.target.value)} className="border border-gray-300 rounded-[0.4vw] p-[0.6vw] bg-white outline-none text-[0.82vw]">
+                    <select value={product.mediaReceived || "No"} onChange={e => changeProduct(idx, "mediaReceived", e.target.value)} className="border border-gray-400 rounded-[0.4vw] p-[0.6vw] bg-white outline-none text-[0.82vw]">
                       <option>Yes</option><option>No</option>
                     </select>
                   </div>
@@ -1312,7 +1339,7 @@ const ServiceCallForm = ({ initialData, customerDb, serviceCalls, partyTypes, em
                   <div className="col-span-2 flex flex-col gap-[0.3vw]">
                     <label className="font-semibold text-gray-600 text-[0.8vw]">Call Description / Fault</label>
                     <textarea rows="4" value={product.callDescription || ""} onChange={e => changeProduct(idx, "callDescription", e.target.value)}
-                      className="border border-gray-300 rounded-[0.4vw] p-[0.6vw] outline-none resize-none text-[0.82vw] h-full" placeholder="Describe the issue…" />
+                      className="border border-gray-400 rounded-[0.4vw] p-[0.6vw] outline-none resize-none text-[0.82vw] h-full" placeholder="Describe the issue…" />
                   </div>
 
                   <div className="col-span-2">
@@ -1321,7 +1348,7 @@ const ServiceCallForm = ({ initialData, customerDb, serviceCalls, partyTypes, em
                         <label className="font-semibold text-gray-600 text-[0.8vw] mb-[0.3vw]">Media Attachments</label>
                         <div
                           onClick={() => document.getElementById(`file-input-${idx}`).click()}
-                          className="flex-1 border-2 border-dashed border-gray-200 rounded-[0.6vw] p-[1vw] bg-blue-50/30 flex flex-col items-center justify-center gap-[0.3vw] hover:border-blue-300 transition-colors cursor-pointer min-h-[5vw]"
+                          className="flex-1 border-2 border-dashed border-slate-400 rounded-[0.6vw] p-[1vw] bg-blue-50/30 flex flex-col items-center justify-center gap-[0.3vw] hover:border-blue-300 transition-colors cursor-pointer min-h-[5vw]"
                         >
                           <Plus className="w-[1.2vw] h-[1.2vw] text-blue-400" />
                           <div className="text-center">
@@ -1347,7 +1374,7 @@ const ServiceCallForm = ({ initialData, customerDb, serviceCalls, partyTypes, em
                         {product.mediaFiles?.length > 0 && (
                           <div className="flex flex-wrap gap-[0.3vw] mt-[0.5vw]">
                             {product.mediaFiles.map((file, fIdx) => (
-                              <div key={fIdx} className="flex items-center gap-[0.3vw] bg-white border border-gray-200 px-[0.4vw] py-[0.2vw] rounded-[0.3vw] shadow-sm">
+                              <div key={fIdx} className="flex items-center gap-[0.3vw] bg-white border border-slate-400 px-[0.4vw] py-[0.2vw] rounded-[0.3vw] shadow-sm">
                                 <span className="text-[0.65vw] font-medium text-gray-700 truncate max-w-[6vw]" title={file.name}>{file.name}</span>
                                 <button
                                   type="button"
@@ -1368,7 +1395,7 @@ const ServiceCallForm = ({ initialData, customerDb, serviceCalls, partyTypes, em
                         )}
                       </div>
                     ) : (
-                      <div className="h-full flex items-center justify-center bg-gray-100/50 rounded-[0.6vw] border border-gray-100">
+                      <div className="h-full flex items-center justify-center bg-gray-100/50 rounded-[0.6vw] border border-slate-400">
                         <p className="text-[0.7vw] text-gray-400 italic">No media required</p>
                       </div>
                     )}
@@ -1382,7 +1409,7 @@ const ServiceCallForm = ({ initialData, customerDb, serviceCalls, partyTypes, em
 
         {/* Footer */}
         <div className="flex justify-end gap-[1vw] sticky bottom-0 bg-gray-100 py-[0.6vw] pr-[0.5vw]">
-          <button type="button" onClick={onBack} className="px-[1.5vw] py-[0.7vw] border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 rounded-[0.4vw] cursor-pointer flex items-center gap-[0.5vw] font-semibold">
+          <button type="button" onClick={onBack} className="px-[1.5vw] py-[0.7vw] border border-gray-400 bg-white hover:bg-gray-50 text-gray-700 rounded-[0.4vw] cursor-pointer flex items-center gap-[0.5vw] font-semibold">
             <X className="w-[1vw] h-[1vw]" />Cancel
           </button>
           <button type="submit" className="px-[1.5vw] py-[0.7vw] bg-blue-600 hover:bg-blue-700 text-white rounded-[0.4vw] flex items-center gap-[0.5vw] cursor-pointer font-semibold shadow-md">
@@ -1401,7 +1428,7 @@ const ServiceCallForm = ({ initialData, customerDb, serviceCalls, partyTypes, em
             exit={{ opacity: 0, scale: 0.95 }}
             className="bg-white w-[58vw] rounded-[0.8vw] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
           >
-            <div className="px-[1vw] py-[0.7vw] border-b border-gray-200 flex justify-between items-center bg-gray-50">
+            <div className="px-[1vw] py-[0.7vw] border-b border-slate-400 flex justify-between items-center bg-gray-50">
               <h2 className="text-[1.2vw] font-semibold text-gray-900">
                 Add Customer & Items
               </h2>
@@ -1416,7 +1443,7 @@ const ServiceCallForm = ({ initialData, customerDb, serviceCalls, partyTypes, em
               onSubmit={handleAddCustomerSubmit}
               className="p-[1vw] flex flex-col gap-[1vw] overflow-y-auto"
             >
-              <div className="bg-gray-50 p-[1vw] rounded-[0.5vw] border border-gray-200">
+              <div className="bg-gray-50 p-[1vw] rounded-[0.5vw] border border-slate-400">
                 <h3 className="text-[0.9vw] font-bold text-gray-700 mb-[0.8vw]">
                   Party Details
                 </h3>
@@ -1510,7 +1537,7 @@ const ServiceCallForm = ({ initialData, customerDb, serviceCalls, partyTypes, em
                 </div>
               </div>
 
-              <div className="bg-white border border-gray-200 rounded-[0.5vw] p-[1vw]">
+              <div className="bg-white border border-slate-400 rounded-[0.5vw] p-[1vw]">
                 <div className="flex justify-between items-center mb-[0.5vw]">
                   <h3 className="text-[0.9vw] font-bold text-gray-700">
                     Product Items
@@ -1527,7 +1554,7 @@ const ServiceCallForm = ({ initialData, customerDb, serviceCalls, partyTypes, em
                   {newCustomer.items.map((item, idx) => (
                     <div
                       key={idx}
-                      className="flex gap-[0.5vw] items-center border-b border-gray-100 pb-[0.5vw] last:border-0"
+                      className="flex gap-[0.5vw] items-center border-b border-slate-400 pb-[0.5vw] last:border-0"
                     >
                       <div className="flex-1 flex flex-col gap-[0.3vw]">
                         {idx === 0 && (
@@ -1690,7 +1717,7 @@ const AvatarStack = ({ people, onClick }) => {
 // ── Product Status chip only ──────────────────────────────────────────────────
 const ProductStatusCell = ({ prod, callStatus }) => {
   const status = getProductStatus(prod, callStatus);
-  const cfg    = PROD_STATUS_CFG[status];
+  const cfg    = getStatusCfg(status);
   return (
     <span className={`inline-flex items-center gap-[0.3vw] px-[0.5vw] py-[0.2vw] rounded text-[0.7vw] font-semibold border ${cfg.cls}`}>
       <span className={`w-[0.45vw] h-[0.45vw] rounded-full flex-shrink-0 ${cfg.dot}`} />
@@ -1796,9 +1823,16 @@ export default function ServiceCall() {
     const now = new Date();
     const callId = isEdit ? (formRow.id || formRow._id) : Date.now();
     
+    // Convert localized string to ISO string for backend to prevent CastError
+    let validDateTime = formRow.dateTime;
+    if (validDateTime && typeof validDateTime === 'string' && !validDateTime.includes('T')) {
+      validDateTime = formRow.timestamp || new Date().toISOString();
+    }
+
     // 1. Prepare the base call record — NEW calls start as "Registered"
     const finalCall = { 
       ...formRow, 
+      dateTime: validDateTime,
       id: callId,
       status: isEdit ? formRow.status : "Registered",
     };
@@ -1910,12 +1944,21 @@ export default function ServiceCall() {
     const s = searchTerm.toLowerCase();
     return enrichedCalls.filter(row => {
       const matchSearch   = !s || row.customerName?.toLowerCase().includes(s) || row.callNumber?.toLowerCase().includes(s) || row.assignedEngineerName?.toLowerCase().includes(s);
-      // Don't filter by call status here - filter by product status in the table instead
-      // This allows calls with mixed product statuses to show products of the selected status
       const matchPriority = filterPriority === "All" || row.priority === filterPriority;
-      return matchSearch && matchPriority;
+      
+      let matchStatus = true;
+      if (filterStatus !== "All") {
+        const allProducts = (row._products?.length > 0 ? row._products : row.products?.length > 0 ? row.products : [{}]);
+        matchStatus = allProducts.some(prod => {
+          const rawStatus = getProductStatus(prod || {});
+          const mappedLabel = getStatusCfg(rawStatus)?.label || "Registered";
+          return mappedLabel === filterStatus;
+        });
+      }
+      
+      return matchSearch && matchPriority && matchStatus;
     });
-  }, [enrichedCalls, searchTerm, filterPriority]);
+  }, [enrichedCalls, searchTerm, filterPriority, filterStatus]);
 
   useEffect(() => { setCurrentPage(1); }, [searchTerm, filterStatus, filterPriority]);
 
@@ -1953,8 +1996,8 @@ export default function ServiceCall() {
       const products = r._products || [{}];
       c.All += products.length;
       products.forEach(p => {
-        const rawStatus = getProductStatus(p, r.status);
-        const mappedLabel = PROD_STATUS_CFG[rawStatus]?.label || "Registered";
+        const rawStatus = getProductStatus(p);
+        const mappedLabel = getStatusCfg(rawStatus)?.label || "Registered";
         if (c[mappedLabel] !== undefined) {
           c[mappedLabel]++;
         }
@@ -1974,12 +2017,12 @@ export default function ServiceCall() {
           <motion.div key="table" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.2 }}>
 
             {/* Toolbar */}
-            <div className="flex items-center justify-between bg-white p-[0.7vw] rounded-[0.6vw] shadow-sm border border-gray-200 mb-[0.9vw]">
+            <div className="flex items-center justify-between bg-white p-[0.7vw] rounded-[0.6vw] shadow-sm border border-slate-400 mb-[0.9vw]">
               <div className="relative w-[30vw]">
                 <Search className="absolute left-[0.8vw] top-1/2 -translate-y-1/2 text-gray-400 w-[1vw] h-[1vw]" />
                 <input type="text" placeholder="Search by customer, call no, engineer…"
                   value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-                  className="w-full pl-[2.5vw] pr-[1vw] h-[2.5vw] border border-gray-300 rounded-[0.8vw] focus:outline-none focus:border-gray-800" />
+                  className="w-full pl-[2.5vw] pr-[1vw] h-[2.5vw] border border-gray-400 rounded-[0.8vw] focus:outline-none focus:border-gray-800" />
               </div>
               <div className="flex gap-[0.8vw] items-center">
                 <AnimatePresence>
@@ -1991,12 +2034,12 @@ export default function ServiceCall() {
                     </motion.button>
                   )}
                 </AnimatePresence>
-                <select value={filterPriority} onChange={e => setFilterPriority(e.target.value)} className="bg-transparent font-medium text-gray-700 border border-gray-300 p-[0.4vw] rounded-[0.3vw] outline-none cursor-pointer h-[2.4vw]">
+                <select value={filterPriority} onChange={e => setFilterPriority(e.target.value)} className="bg-transparent font-medium text-gray-700 border border-gray-400 p-[0.4vw] rounded-[0.3vw] outline-none cursor-pointer h-[2.4vw]">
                   <option value="All">All Priorities</option>
                   {PRIORITIES.map(p => <option key={p}>{p}</option>)}
                 </select>
                 {!isSupervisor && (
-                  <button onClick={goToForm} className="cursor-pointer flex items-center gap-[0.5vw] bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-[1vw] h-[2.4vw] rounded-[0.4vw]">
+                  <button onClick={goToForm} className="cursor-pointer flex items-center gap-[0.5vw] bg-white border border-gray-400 hover:bg-gray-50 text-gray-700 px-[1vw] h-[2.4vw] rounded-[0.4vw]">
                     <Plus className="w-[1.2vw] h-[1.2vw]" />Add
                   </button>
                 )}
@@ -2006,7 +2049,7 @@ export default function ServiceCall() {
             {/* Status Summary Bar */}
             <div className="flex gap-[1vw] mb-[0.9vw]">
               {[
-                { label: "All",        color: "bg-gray-100 text-gray-700 border-gray-200",   dot: "bg-gray-400"   },
+                { label: "All",        color: "bg-gray-100 text-gray-700 border-slate-400",   dot: "bg-gray-400"   },
                 { label: "Registered", color: "bg-purple-50 text-purple-700 border-purple-200", dot: "bg-purple-500" },
                 { label: "Assigned",   color: "bg-blue-50 text-blue-700 border-blue-200",    dot: "bg-blue-500"   },
                 { label: "Pending",    color: "bg-yellow-50 text-yellow-700 border-yellow-200", dot: "bg-yellow-500" },
@@ -2023,26 +2066,26 @@ export default function ServiceCall() {
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-[0.6vw] shadow-sm border border-gray-200 flex flex-col w-full overflow-hidden">
+            <div className="bg-white rounded-[0.6vw] shadow-sm border border-slate-400 flex flex-col w-full overflow-hidden">
               <div className="overflow-x-auto overflow-y-auto max-h-[65vh] min-h-[65vh] w-full rounded-t-[0.6vw]">
                 <table className="min-w-[120vw] w-full text-left border-collapse">
                   <thead className="bg-blue-50 sticky top-0 z-10 shadow-sm">
                     <tr>
                       {!isSupervisor && (
-                        <th className="p-[0.6vw] border-b border-r border-gray-200 w-[3%] text-center">
+                        <th className="p-[0.6vw] border-b border-r border-slate-400 w-[3%] text-center">
                           <button onClick={toggleSelectPage} className="flex items-center justify-center w-full cursor-pointer">
                             {isPageSelected ? <CheckSquare className="w-[1.1vw] h-[1.1vw] text-blue-600" /> : <Square className="w-[1.1vw] h-[1.1vw] text-gray-400" />}
                           </button>
                         </th>
                       )}
-                      <th className="p-[0.6vw] font-semibold text-gray-800 border-b border-r border-gray-200 text-center w-[3%] text-[0.78vw]">S.No</th>
+                      <th className="p-[0.6vw] font-semibold text-gray-800 border-b border-r border-slate-400 text-center w-[3%] text-[0.78vw]">S.No</th>
                       {["Call Info", "Category", "Customer", "Product", "Segment", "Error Code", "Mode", "Priority", "Assigned", "Status"].map(h => (
-                        <th key={h} className="p-[0.6vw] font-semibold text-center text-gray-800 border-b border-r border-gray-200 whitespace-nowrap text-[0.78vw]">{h}</th>
+                        <th key={h} className="p-[0.6vw] font-semibold text-center text-gray-800 border-b border-r border-slate-400 whitespace-nowrap text-[0.78vw]">{h}</th>
                       ))}
-                      <th className="p-[0.6vw] font-semibold text-center text-gray-800 border-b border-gray-200 whitespace-nowrap text-[0.78vw] sticky right-0 bg-blue-50 z-20">Actions</th>
+                      <th className="p-[0.6vw] font-semibold text-center text-gray-800 border-b border-slate-400 whitespace-nowrap text-[0.78vw] sticky right-0 bg-blue-50 z-20">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-slate-300">
                     {isLoading ? (
                       <tr>
                         <td colSpan={13} className="py-[10vh] text-center">
@@ -2061,7 +2104,7 @@ export default function ServiceCall() {
                       if (filterStatus !== "All") {
                         displayProducts = allProducts.filter(prod => {
                           const rawStatus = getProductStatus(prod, row.status);
-                          const mappedLabel = PROD_STATUS_CFG[rawStatus]?.label || "Registered";
+                          const mappedLabel = getStatusCfg(rawStatus).label || "Registered";
                           return mappedLabel === filterStatus;
                         });
                       }
@@ -2075,9 +2118,12 @@ export default function ServiceCall() {
 
                       return displayProducts.map((prod, pIdx) => {
                         const isCritical = prod?._isCritical === true || row.status === "Critical";
-                        const criticalCellClass = isCritical ? "border-t-[0.15vw] border-b-[0.15vw] border-red-300 first:border-l-[0.15vw] last:border-r-[0.15vw]" : "border-gray-200";
+                        const isResolved = row.status === "Resolved" || deriveCallStatus(allProducts, row.status) === "resolved";
+                        const criticalCellClass = isCritical ? "border-t-[0.15vw] border-b-[0.15vw] border-red-300 first:border-l-[0.15vw] last:border-r-[0.15vw]" : "border-slate-400";
+                        const bgClass = isSelected ? "bg-blue-50" : (isResolved ? "bg-emerald-50/60 hover:bg-emerald-100/60" : "hover:bg-gray-50");
+                        
                         return (
-                          <tr key={`${row.id}-${pIdx}`} className={`transition-colors border-b ${isSelected ? "bg-blue-50" : "hover:bg-gray-50"}`}>
+                          <tr key={`${row.id}-${pIdx}`} className={`transition-colors border-b border-slate-400 ${bgClass}`}>
                           {/* 0. Select + S.No (rowSpan) */}
                           {pIdx === 0 && (
                             <>
@@ -2226,7 +2272,7 @@ export default function ServiceCall() {
                                 status = "open";
                               }
                               
-                              const cfg    = PROD_STATUS_CFG[status];
+                              const cfg    = getStatusCfg(status);
                               const isProdCritical = prod?._isCritical === true;
                               return (
                                 <div className="flex flex-col items-center gap-[0.2vw]">
@@ -2245,7 +2291,7 @@ export default function ServiceCall() {
 
                           {/* 11. Actions (rowSpan) */}
                           {pIdx === 0 && (
-                            <td rowSpan={rowCount} className={`px-[1vw] py-[0.4vw] text-center align-middle whitespace-nowrap sticky right-0 bg-white z-10 shadow-[-4px_0_12px_-4px_rgba(0,0,0,0.1)] ${criticalCellClass} border-l border-gray-100`}>
+                            <td rowSpan={rowCount} className={`px-[1vw] py-[0.4vw] text-center align-middle whitespace-nowrap sticky right-0 bg-white z-10 shadow-[-4px_0_12px_-4px_rgba(0,0,0,0.1)] ${criticalCellClass} border-l border-slate-400`}>
                               <div className="flex items-center justify-center gap-[0.8vw]">
                                 {/* Edit Button */}
                                 {!isSupervisor && (
@@ -2254,7 +2300,7 @@ export default function ServiceCall() {
                                     title="Edit Call Details"
                                     className="group flex flex-col items-center gap-[0.2vw] text-gray-400 hover:text-blue-600 transition-all cursor-pointer"
                                   >
-                                    <div className="p-[0.4vw] rounded-[0.5vw] bg-gray-50 border border-gray-100 group-hover:bg-blue-50 group-hover:border-blue-200 group-hover:shadow-sm transition-all">
+                                    <div className="p-[0.4vw] rounded-[0.5vw] bg-gray-50 border border-slate-400 group-hover:bg-blue-50 group-hover:border-blue-200 group-hover:shadow-sm transition-all">
                                       <Edit3 className="w-[1vw] h-[1vw]" />
                                     </div>
                                     <span className="text-[0.52vw] font-bold uppercase tracking-wider group-hover:text-blue-700">Edit</span>
@@ -2267,7 +2313,7 @@ export default function ServiceCall() {
                                   title="View Escalation & Assignment Flow"
                                   className="group flex flex-col items-center gap-[0.2vw] text-gray-400 hover:text-purple-600 transition-all cursor-pointer"
                                 >
-                                  <div className="p-[0.4vw] rounded-[0.5vw] bg-gray-50 border border-gray-100 group-hover:bg-purple-50 group-hover:border-purple-200 group-hover:shadow-sm transition-all">
+                                  <div className="p-[0.4vw] rounded-[0.5vw] bg-gray-50 border border-slate-400 group-hover:bg-purple-50 group-hover:border-purple-200 group-hover:shadow-sm transition-all">
                                     <Activity className="w-[1vw] h-[1vw]" />
                                   </div>
                                   <span className="text-[0.52vw] font-bold uppercase tracking-wider group-hover:text-purple-700 whitespace-nowrap">Flow Info</span>
@@ -2286,12 +2332,12 @@ export default function ServiceCall() {
               </div>
 
               {/* Pagination */}
-              <div className="border-t border-blue-100 p-[0.6vw] bg-blue-50 flex justify-between items-center rounded-b-[0.6vw]">
+              <div className="border-t border-slate-400 p-[0.6vw] bg-blue-50 flex justify-between items-center rounded-b-[0.6vw]">
                 <div className="text-[0.8vw] text-gray-500">
                   Showing <span className="font-semibold text-gray-800">{paginatedData.length > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0}</span> to <span className="font-semibold text-gray-800">{Math.min(currentPage * ITEMS_PER_PAGE, filteredData.length)}</span> of <span className="font-bold text-gray-800">{filteredData.length}</span> entries
                 </div>
                 <div className="flex items-center gap-[1.2vw]">
-                  <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="p-[0.4vw] border border-gray-300 rounded-[0.3vw] hover:bg-white disabled:opacity-50 bg-white shadow-sm cursor-pointer"><ChevronLeft className="w-[1vw] h-[1vw] text-gray-600" /></button>
+                  <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="p-[0.4vw] border border-slate-400 rounded-[0.3vw] hover:bg-white disabled:opacity-50 bg-white shadow-sm cursor-pointer"><ChevronLeft className="w-[1vw] h-[1vw] text-gray-600" /></button>
                   <div className="flex gap-[0.7vw]">
                     {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                       let pNum = i + 1;
@@ -2299,13 +2345,13 @@ export default function ServiceCall() {
                       if (pNum > totalPages) return null;
                       return (
                         <button key={pNum} onClick={() => setCurrentPage(pNum)}
-                          className={`w-[1.8vw] h-[1.8vw] flex items-center justify-center rounded-[0.3vw] text-[0.8vw] font-medium cursor-pointer ${currentPage === pNum ? "bg-blue-600 text-white" : "bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"}`}>
+                          className={`w-[1.8vw] h-[1.8vw] flex items-center justify-center rounded-[0.3vw] text-[0.8vw] font-medium cursor-pointer ${currentPage === pNum ? "bg-blue-600 text-white" : "bg-white border border-slate-400 text-gray-600 hover:bg-gray-50"}`}>
                           {pNum}
                         </button>
                       );
                     })}
                   </div>
-                  <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages || totalPages === 0} className="p-[0.4vw] border border-gray-300 rounded-[0.3vw] hover:bg-white disabled:opacity-50 bg-white shadow-sm cursor-pointer"><ChevronRight className="w-[1vw] h-[1vw] text-gray-600" /></button>
+                  <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages || totalPages === 0} className="p-[0.4vw] border border-slate-400 rounded-[0.3vw] hover:bg-white disabled:opacity-50 bg-white shadow-sm cursor-pointer"><ChevronRight className="w-[1vw] h-[1vw] text-gray-600" /></button>
                 </div>
               </div>
             </div>

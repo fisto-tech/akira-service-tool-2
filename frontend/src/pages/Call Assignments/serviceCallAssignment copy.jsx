@@ -52,7 +52,7 @@ const Avatar = ({ name, size = "md" }) => {
 
 // Segment color palette
 const SEG_COLORS = [
-  { badge: "bg-blue-100 text-blue-700 border-blue-300",   dot: "bg-blue-500",   ring: "ring-blue-200",   header: "bg-blue-50 border-blue-200"   },
+  { badge: "bg-blue-100 text-blue-700 border-blue-300",   dot: "bg-blue-500",   ring: "ring-blue-200",   header: "bg-blue-50 border-slate-400"   },
   { badge: "bg-purple-100 text-purple-700 border-purple-300", dot: "bg-purple-500", ring: "ring-purple-200", header: "bg-purple-50 border-purple-200" },
   { badge: "bg-teal-100 text-teal-700 border-teal-300",   dot: "bg-teal-500",   ring: "ring-teal-200",   header: "bg-teal-50 border-teal-200"   },
   { badge: "bg-orange-100 text-orange-700 border-orange-300", dot: "bg-orange-500",ring: "ring-orange-200", header: "bg-orange-50 border-orange-200" },
@@ -389,15 +389,15 @@ export default function ServiceCallAssignment() {
     High:     "bg-orange-100 text-orange-600 border-orange-200",
     Medium:   "bg-yellow-100 text-yellow-600 border-yellow-200",
     Low:      "bg-green-100 text-green-600 border-green-200",
-  }[p] || "bg-gray-100 text-gray-500 border-gray-200");
+  }[p] || "bg-gray-100 text-gray-500 border-slate-400");
 
   const getTypeColor = (type) => {
     switch (type) {
-      case "OEM":           return "bg-blue-100 text-blue-700 border-blue-200";
+      case "OEM":           return "bg-blue-100 text-blue-700 border-slate-400";
       case "End Customer":  return "bg-green-100 text-green-700 border-green-200";
       case "Distributor":   return "bg-purple-100 text-purple-700 border-purple-200";
       case "Dealer":        return "bg-orange-100 text-orange-700 border-orange-200";
-      default:              return "bg-gray-100 text-gray-700 border-gray-200";
+      default:              return "bg-gray-100 text-gray-700 border-slate-400";
     }
   };
 
@@ -423,10 +423,10 @@ export default function ServiceCallAssignment() {
     <div className="w-full h-full font-sans text-[0.85vw] flex gap-[1vw] bg-gray-50 overflow-hidden">
 
       {/* ── LEFT: Unassigned Segment Groups ────────────────────────────────── */}
-      <div className="w-[38%] bg-white border-r border-gray-200 flex flex-col rounded-xl shadow-sm max-h-[90vh]">
+      <div className="w-[38%] bg-white border-r border-slate-400 flex flex-col rounded-xl shadow-sm max-h-[90vh]">
 
         {/* Header */}
-        <div className="px-[1.2vw] pt-[1vw] border-b border-gray-100 flex flex-col gap-[0.7vw]">
+        <div className="px-[1.2vw] pt-[1vw] border-b border-slate-400 flex flex-col gap-[0.7vw]">
           {/* Sidebar Header */}
           <div className="mb-[1.5vw]">
             <div className="flex items-center justify-between mb-[1vw]">
@@ -450,7 +450,7 @@ export default function ServiceCallAssignment() {
                   placeholder="Search customers, calls, segments…"
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
-                  className="w-full bg-white border border-gray-200 rounded-[0.7vw] pl-[2.4vw] pr-[1vw] py-[0.7vw] text-[0.82vw] outline-none focus:border-indigo-400 focus:ring-4 ring-indigo-50 transition-all shadow-sm"
+                  className="w-full bg-white border border-slate-400 rounded-[0.7vw] pl-[2.4vw] pr-[1vw] py-[0.7vw] text-[0.82vw] outline-none focus:border-indigo-400 focus:ring-4 ring-indigo-50 transition-all shadow-sm"
                 />
               </div>
 
@@ -465,7 +465,7 @@ export default function ServiceCallAssignment() {
                       onClick={() => setPriorityFilter(p)}
                       className={`flex-1 flex justify-center gap-[0.5vw] items-center py-[0.4vw] rounded-[0.4vw] transition-all cursor-pointer ${
                         isActive 
-                          ? "bg-white text-indigo-600 shadow-sm border border-gray-200/50" 
+                          ? "bg-white text-indigo-600 shadow-sm border border-slate-400/50" 
                           : "text-gray-400 hover:text-gray-600 hover:bg-gray-200/50"
                       }`}
                     >
@@ -488,9 +488,9 @@ export default function ServiceCallAssignment() {
             </div>
           ) : (
             groupedByCall.map(callRow => (
-              <div key={callRow.callId} className="border border-gray-100 rounded-[0.8vw] overflow-hidden bg-white shadow-sm hover:shadow-md transition-all duration-200">
+              <div key={callRow.callId} className="border border-slate-400 rounded-[0.8vw] overflow-hidden bg-white shadow-sm hover:shadow-md transition-all duration-200">
                 {/* Call header: Professional layout */}
-                <div className="px-[1vw] py-[0.75vw] bg-gray-50 border-b border-gray-100 flex items-center justify-between group/call">
+                <div className="px-[1vw] py-[0.75vw] bg-gray-50 border-b border-slate-400 flex items-center justify-between group/call">
                   <div className="flex flex-col gap-[0.2vw]">
                     <div className="flex items-center gap-[0.6vw]">
                       <span className="font-mono text-[0.75vw] font-black text-indigo-600 tracking-tight">{callRow.callNumber}</span>
@@ -731,12 +731,12 @@ export default function ServiceCallAssignment() {
               {/* ── Employee Picker + Summary ─────────────────────────────── */}
               <div className="flex gap-[1vw] items-start">
                 {/* Employee list */}
-                <div className="w-[62%] bg-white rounded-[0.8vw] border border-gray-200 shadow-sm flex flex-col max-h-[55vh]">
-                  <div className="p-[0.9vw] border-b border-gray-100">
+                <div className="w-[62%] bg-white rounded-[0.8vw] border border-slate-400 shadow-sm flex flex-col max-h-[55vh]">
+                  <div className="p-[0.9vw] border-b border-slate-400">
                     <h4 className="text-[0.9vw] font-bold text-gray-800 mb-[0.6vw] flex items-center gap-[0.4vw]">
                       <User className="w-[0.95vw] h-[0.95vw] text-indigo-500" />
                       Select Employee
-                      <span className="ml-auto text-[0.65vw] bg-gray-50 text-gray-400 border border-gray-200 px-[0.5vw] py-[0.05vw] rounded font-bold">
+                      <span className="ml-auto text-[0.65vw] bg-gray-50 text-gray-400 border border-slate-400 px-[0.5vw] py-[0.05vw] rounded font-bold">
                         {employees.length} total
                       </span>
                     </h4>
@@ -747,7 +747,7 @@ export default function ServiceCallAssignment() {
                         placeholder="Search name, dept, ID…"
                         value={engSearch}
                         onChange={e => setEngSearch(e.target.value)}
-                        className="w-full pl-[1.9vw] pr-[0.7vw] py-[0.4vw] bg-gray-50 border border-gray-200 rounded-[0.4vw] text-[0.78vw] outline-none focus:ring-2 ring-indigo-50 focus:border-indigo-300 transition-all"
+                        className="w-full pl-[1.9vw] pr-[0.7vw] py-[0.4vw] bg-gray-50 border border-slate-400 rounded-[0.4vw] text-[0.78vw] outline-none focus:ring-2 ring-indigo-50 focus:border-indigo-300 transition-all"
                       />
                     </div>
                   </div>
@@ -766,7 +766,7 @@ export default function ServiceCallAssignment() {
                           className={`flex items-center gap-[0.7vw] p-[0.7vw] rounded-[0.5vw] border cursor-pointer transition-all ${
                             selectedEngineer?.userId === emp.userId
                               ? "bg-indigo-50 border-indigo-300 ring-2 ring-indigo-100"
-                              : "bg-white border-gray-100 hover:border-gray-300 hover:bg-gray-50"
+                              : "bg-white border-slate-400 hover:border-gray-400 hover:bg-gray-50"
                           }`}
                         >
                           <div className={`w-[2.2vw] h-[2.2vw] rounded-full bg-gradient-to-br ${(() => { const colors = ["from-blue-400 to-blue-600","from-purple-400 to-purple-600","from-green-400 to-green-600","from-orange-400 to-orange-600","from-pink-400 to-pink-600","from-teal-400 to-teal-600"]; let h = 0; for (let i = 0; i < emp.name.length; i++) h = emp.name.charCodeAt(i) + ((h << 5) - h); return colors[Math.abs(h) % colors.length]; })()} flex items-center justify-center text-white text-[0.8vw] font-bold shadow-sm relative`}>
@@ -788,7 +788,7 @@ export default function ServiceCallAssignment() {
                                 </div>
                               )} */}
                               {emp.isEligible && !emp.isRecommended && (
-                                <span className="text-[0.5vw] bg-blue-50 text-blue-600 border border-blue-200 px-[0.35vw] py-[0.02vw] rounded-full font-black uppercase tracking-wider">
+                                <span className="text-[0.5vw] bg-blue-50 text-blue-600 border border-slate-400 px-[0.35vw] py-[0.02vw] rounded-full font-black uppercase tracking-wider">
                                   Eligible
                                 </span>
                               )}
@@ -814,8 +814,8 @@ export default function ServiceCallAssignment() {
 
                 {/* Assignment Preview Card */}
                 <div className="w-[38%] flex flex-col gap-[0.8vw]">
-                  <div className="bg-white rounded-[0.8vw] border border-gray-200 p-[1.2vw] shadow-sm flex flex-col gap-[1.1vw]">
-                    <div className="flex items-center gap-[0.5vw] border-b border-gray-100 pb-[0.8vw]">
+                  <div className="bg-white rounded-[0.8vw] border border-slate-400 p-[1.2vw] shadow-sm flex flex-col gap-[1.1vw]">
+                    <div className="flex items-center gap-[0.5vw] border-b border-slate-400 pb-[0.8vw]">
                       <Shield className="w-[1vw] h-[1vw] text-indigo-500" />
                       <h4 className="text-[0.9vw] font-bold text-gray-800">Assignment View</h4>
                     </div>
@@ -833,7 +833,7 @@ export default function ServiceCallAssignment() {
                       </div>
 
                       {/* SLA Control */}
-                      <div className="bg-gray-50 border border-gray-100 rounded-[0.6vw] p-[0.8vw]">
+                      <div className="bg-gray-50 border border-slate-400 rounded-[0.6vw] p-[0.8vw]">
                         <div className="flex items-center justify-between mb-[0.5vw]">
                           <span className="text-[0.62vw] text-gray-400 uppercase font-bold tracking-wider">Set Resolution SLA</span>
                           <Clock className="w-[0.75vw] h-[0.75vw] text-gray-400" />
@@ -846,7 +846,7 @@ export default function ServiceCallAssignment() {
                               min="0"
                               value={resHours}
                               onChange={e => setResHours(Math.max(0, parseInt(e.target.value) || 0))}
-                              className="w-full bg-white border border-gray-200 rounded-[0.4vw] px-[0.5vw] py-[0.35vw] text-[0.8vw] font-bold outline-none focus:border-indigo-400 transition-all"
+                              className="w-full bg-white border border-slate-400 rounded-[0.4vw] px-[0.5vw] py-[0.35vw] text-[0.8vw] font-bold outline-none focus:border-indigo-400 transition-all"
                             />
                           </div>
                           <div className="flex-1">
@@ -857,7 +857,7 @@ export default function ServiceCallAssignment() {
                               max="59"
                               value={resMins}
                               onChange={e => setResMins(Math.min(59, Math.max(0, parseInt(e.target.value) || 0)))}
-                              className="w-full bg-white border border-gray-200 rounded-[0.4vw] px-[0.5vw] py-[0.35vw] text-[0.8vw] font-bold outline-none focus:border-indigo-400 transition-all"
+                              className="w-full bg-white border border-slate-400 rounded-[0.4vw] px-[0.5vw] py-[0.35vw] text-[0.8vw] font-bold outline-none focus:border-indigo-400 transition-all"
                             />
                           </div>
                         </div>
@@ -876,7 +876,7 @@ export default function ServiceCallAssignment() {
                             </div>
                           </div>
                         ) : (
-                          <div className="border border-dashed border-gray-200 rounded-[0.5vw] py-[1.2vw] text-center text-gray-300 text-[0.68vw] font-medium bg-gray-50/30 italic">
+                          <div className="border border-dashed border-slate-400 rounded-[0.5vw] py-[1.2vw] text-center text-gray-300 text-[0.68vw] font-medium bg-gray-50/30 italic">
                             Waiting for selection
                           </div>
                         )}
@@ -889,12 +889,12 @@ export default function ServiceCallAssignment() {
                       className={`w-full mt-[0.5vw] py-[0.8vw] rounded-[0.6vw] flex items-center justify-center gap-[0.6vw] font-bold text-[0.85vw] transition-all active:scale-[0.98] ${
                         selectedEngineer && !isAssigning
                           ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md cursor-pointer"
-                          : "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
+                          : "bg-gray-100 text-gray-400 cursor-not-allowed border border-slate-400"
                       }`}
                     >
                       {isAssigning ? (
                         <>
-                          <div className="w-[1vw] h-[1vw] border-2 border-gray-300 border-t-white rounded-full animate-spin" />
+                          <div className="w-[1vw] h-[1vw] border-2 border-gray-400 border-t-white rounded-full animate-spin" />
                           Assigning...
                         </>
                       ) : (
@@ -927,7 +927,7 @@ export default function ServiceCallAssignment() {
                 Select a pending segment group from the list on the left to initialize assignment.
               </p>
               {groups.length > 0 && (
-                <div className="mt-[1.5vw] flex items-center gap-[0.6vw] bg-white border border-gray-200 rounded-[0.7vw] px-[1.2vw] py-[0.6vw] shadow-sm">
+                <div className="mt-[1.5vw] flex items-center gap-[0.6vw] bg-white border border-slate-400 rounded-[0.7vw] px-[1.2vw] py-[0.6vw] shadow-sm">
                   <div className="w-[0.5vw] h-[0.5vw] rounded-full bg-orange-400 animate-pulse" />
                   <span className="text-[0.75vw] text-gray-500 font-bold">
                     {groups.length} group{groups.length !== 1 ? "s" : ""} awaiting action

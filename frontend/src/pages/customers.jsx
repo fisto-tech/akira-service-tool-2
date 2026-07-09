@@ -151,7 +151,7 @@ function AutocompleteInput({ value, onChange, suggestions, placeholder, classNam
         placeholder={placeholder}
       />
       {showDropdown && (
-        <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-[0.4vw] shadow-lg max-h-[14vw] overflow-y-auto">
+        <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-slate-400 rounded-[0.4vw] shadow-lg max-h-[14vw] overflow-y-auto">
           {filtered.map((s, i) => (
             <div
               key={i}
@@ -903,7 +903,7 @@ const CustomerDatabase = () => {
   const visibleCols = CUSTOMER_DB_COLUMNS.filter((c) => colVis[c.key] !== false);
 
   const renderHeaderCell = (col) => (
-    <th key={col.key} className="p-[0.6vw] font-semibold text-gray-800 border-b-[1.5px] border-r-[1.5px] border-gray-300">
+    <th key={col.key} className="p-[0.6vw] font-semibold text-gray-800 border-b-[1.5px] border-r-[1.5px] border-gray-400">
       {col.label}
     </th>
   );
@@ -913,7 +913,7 @@ const CustomerDatabase = () => {
     if (isSpanned && isSameParty) return null;
 
     const spanProps = isSpanned && !isSameParty ? { rowSpan } : {};
-    const baseClass = `p-[0.9vw] border-r-[1.5px] border-gray-300 ${isSpanned ? "bg-white align-middle" : ""}`;
+    const baseClass = `p-[0.9vw] border-r-[1.5px] border-gray-400 ${isSpanned ? "bg-white align-middle" : ""}`;
 
     switch (col.key) {
       case "partyType":
@@ -988,7 +988,7 @@ const CustomerDatabase = () => {
     <div className="w-full h-full font-sans text-[0.85vw]">
       {/* Toolbar */}
       <div className="flex flex-col gap-[1.5vw] mb-[0.9vw]">
-        <div className="flex items-center justify-between bg-white p-[0.7vw] rounded-[0.6vw] shadow-sm border border-gray-200">
+        <div className="flex items-center justify-between bg-white p-[0.7vw] rounded-[0.6vw] shadow-sm border border-slate-400">
           <div className="relative w-[35vw]">
             <Search className="absolute left-[0.8vw] top-1/2 -translate-y-1/2 text-gray-400 w-[1vw] h-[1vw]" />
             <input
@@ -996,7 +996,7 @@ const CustomerDatabase = () => {
               placeholder="Search Party or Item..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-[2.5vw] pr-[1vw] h-[2.5vw] border border-gray-300 rounded-[0.8vw] focus:outline-none focus:border-gray-800"
+              className="w-full pl-[2.5vw] pr-[1vw] h-[2.5vw] border border-gray-400 rounded-[0.8vw] focus:outline-none focus:border-gray-800"
             />
           </div>
           <div className="flex gap-[1vw] items-center">
@@ -1016,7 +1016,7 @@ const CustomerDatabase = () => {
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="bg-transparent font-medium text-gray-700 border border-gray-300 p-[0.4vw] rounded-[0.3vw] outline-none cursor-pointer h-[2.4vw]"
+              className="bg-transparent font-medium text-gray-700 border border-gray-400 p-[0.4vw] rounded-[0.3vw] outline-none cursor-pointer h-[2.4vw]"
             >
               <option value="All">All Types</option>
               {partyTypes.map((t) => (
@@ -1027,7 +1027,7 @@ const CustomerDatabase = () => {
               <>
                 <button
                   onClick={openAddModal}
-                  className="cursor-pointer flex items-center gap-[0.5vw] bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-[1vw] h-[2.4vw] rounded-[0.4vw]"
+                  className="cursor-pointer flex items-center gap-[0.5vw] bg-white border border-gray-400 hover:bg-gray-50 text-gray-700 px-[1vw] h-[2.4vw] rounded-[0.4vw]"
                 >
                   <UserPlus className="w-[1.2vw] h-[1.2vw]" /> Add
                 </button>
@@ -1044,13 +1044,13 @@ const CustomerDatabase = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-[0.6vw] shadow-sm border-[1.5px] border-gray-300 flex flex-col">
+      <div className="bg-white rounded-[0.6vw] shadow-sm border-[1.5px] border-gray-400 flex flex-col">
         <div className="overflow-y-auto max-h-[73vh] min-h-[73vh] w-full rounded-t-[0.6vw]">
           <table className="w-full text-left border-collapse">
             <thead className="bg-blue-50 sticky top-0 z-10 shadow-sm">
               <tr>
                 {!isSupervisor && (
-                  <th className="p-[0.6vw] border-b-[1.5px] border-r-[1.5px] border-gray-300 w-[3%] text-center">
+                  <th className="p-[0.6vw] border-b-[1.5px] border-r-[1.5px] border-gray-400 w-[3%] text-center">
                     <button
                       onClick={() => handleSelectAllPage(paginatedData)}
                       className="flex items-center justify-center w-full cursor-pointer"
@@ -1063,12 +1063,12 @@ const CustomerDatabase = () => {
                     </button>
                   </th>
                 )}
-                <th className="p-[0.6vw] font-semibold text-gray-800 border-b-[1.5px] border-r-[1.5px] border-gray-300 w-[4%] text-center">
+                <th className="p-[0.6vw] font-semibold text-gray-800 border-b-[1.5px] border-r-[1.5px] border-gray-400 w-[4%] text-center">
                   S.No
                 </th>
                 {visibleCols.map(renderHeaderCell)}
                 {!isSupervisor && (
-                  <th className="p-[0.6vw] font-semibold text-gray-800 border-b-[1.5px] border-r-[1.5px] border-gray-300 w-[4%] text-center">
+                  <th className="p-[0.6vw] font-semibold text-gray-800 border-b-[1.5px] border-r-[1.5px] border-gray-400 w-[4%] text-center">
                     Actions
                   </th>
                 )}
@@ -1103,7 +1103,7 @@ const CustomerDatabase = () => {
                       className={`transition-colors ${isSelected ? "bg-blue-50" : "hover:bg-gray-50"}`}
                     >
                       {!isSupervisor && (
-                        <td className="p-[1vw] border-r-[1.5px] border-gray-300 text-center">
+                        <td className="p-[1vw] border-r-[1.5px] border-gray-400 text-center">
                           <button
                             onClick={() => handleSelectItem(row.itemCode)}
                             className="flex items-center justify-center w-full cursor-pointer"
@@ -1116,7 +1116,7 @@ const CustomerDatabase = () => {
                           </button>
                         </td>
                       )}
-                      <td className="p-[0.9vw] text-gray-600 font-medium border-r-[1.5px] border-gray-300 text-center">
+                      <td className="p-[0.9vw] text-gray-600 font-medium border-r-[1.5px] border-gray-400 text-center">
                         {serialNumber}
                       </td>
                       {visibleCols.map((col) =>
@@ -1126,7 +1126,7 @@ const CustomerDatabase = () => {
                       {!isSameParty && !isSupervisor ? (
                         <td
                           rowSpan={rowSpan}
-                          className="border-r-[1.5px] border-gray-300 text-center align-middle bg-white"
+                          className="border-r-[1.5px] border-gray-400 text-center align-middle bg-white"
                         >
                           <div className="flex items-center gap-[0.15vw] px-[.5vw]">
                             <button
@@ -1179,7 +1179,7 @@ const CustomerDatabase = () => {
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="p-[0.4vw] border border-gray-300 rounded-[0.3vw] hover:bg-white disabled:opacity-50 bg-white shadow-sm cursor-pointer"
+              className="p-[0.4vw] border border-gray-400 rounded-[0.3vw] hover:bg-white disabled:opacity-50 bg-white shadow-sm cursor-pointer"
             >
               <ChevronLeft className="w-[1vw] h-[1vw] text-gray-600" />
             </button>
@@ -1192,7 +1192,7 @@ const CustomerDatabase = () => {
                   <button
                     key={pNum}
                     onClick={() => setCurrentPage(pNum)}
-                    className={`w-[1.8vw] h-[1.8vw] flex items-center justify-center rounded-[0.3vw] text-[0.8vw] font-medium cursor-pointer ${currentPage === pNum ? "bg-blue-600 text-white" : "bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"}`}
+                    className={`w-[1.8vw] h-[1.8vw] flex items-center justify-center rounded-[0.3vw] text-[0.8vw] font-medium cursor-pointer ${currentPage === pNum ? "bg-blue-600 text-white" : "bg-white border border-gray-400 text-gray-600 hover:bg-gray-50"}`}
                   >
                     {pNum}
                   </button>
@@ -1202,7 +1202,7 @@ const CustomerDatabase = () => {
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages || totalPages === 0}
-              className="p-[0.4vw] border border-gray-300 rounded-[0.3vw] hover:bg-white disabled:opacity-50 bg-white shadow-sm cursor-pointer"
+              className="p-[0.4vw] border border-gray-400 rounded-[0.3vw] hover:bg-white disabled:opacity-50 bg-white shadow-sm cursor-pointer"
             >
               <ChevronRight className="w-[1vw] h-[1vw] text-gray-600" />
             </button>
@@ -1220,14 +1220,14 @@ const CustomerDatabase = () => {
               exit={{ opacity: 0, scale: 0.95 }}
               className="bg-white w-[58vw] rounded-[0.8vw] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
             >
-              <div className="px-[1vw] py-[0.7vw] border-b border-gray-200 flex justify-between items-center bg-gray-50">
+              <div className="px-[1vw] py-[0.7vw] border-b border-slate-400 flex justify-between items-center bg-gray-50">
                 <h2 className="text-[1.2vw] font-semibold text-gray-900">Add Customer & Items</h2>
                 <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-red-500 cursor-pointer">
                   <X className="w-[1.2vw] h-[1.2vw]" />
                 </button>
               </div>
               <form onSubmit={handleManualSubmit} className="p-[1vw] flex flex-col gap-[1vw] overflow-y-auto">
-                <div className="bg-gray-50 p-[1vw] rounded-[0.5vw] border border-gray-200">
+                <div className="bg-gray-50 p-[1vw] rounded-[0.5vw] border border-slate-400">
                   <h3 className="text-[0.9vw] font-bold text-gray-700 mb-[0.8vw]">Party Details</h3>
                   <div className="grid grid-cols-2 gap-[1.5vw] mb-[0.8vw]">
                     <div className="flex flex-col gap-[0.4vw]">
@@ -1290,7 +1290,7 @@ const CustomerDatabase = () => {
                 </div>
 
                 {/* Items section */}
-                <div className="bg-white border border-gray-200 rounded-[0.5vw] p-[1vw]">
+                <div className="bg-white border border-slate-400 rounded-[0.5vw] p-[1vw]">
                   <div className="flex justify-between items-center mb-[0.5vw]">
                     <h3 className="text-[0.9vw] font-bold text-gray-700">Product Items</h3>
                     <button
@@ -1307,7 +1307,7 @@ const CustomerDatabase = () => {
                       return (
                         <div
                           key={idx}
-                          className={`flex gap-[0.5vw] items-center border-b border-gray-100 pb-[0.5vw] last:border-0 ${isExisting ? "bg-blue-50/40 rounded-[0.3vw] px-[0.3vw]" : ""}`}
+                          className={`flex gap-[0.5vw] items-center border-b border-slate-400 pb-[0.5vw] last:border-0 ${isExisting ? "bg-blue-50/40 rounded-[0.3vw] px-[0.3vw]" : ""}`}
                         >
                           {/* Existing badge */}
                           {isExisting && (
@@ -1409,7 +1409,7 @@ const CustomerDatabase = () => {
               exit={{ opacity: 0, scale: 0.95 }}
               className="bg-white w-[58vw] rounded-[0.8vw] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
             >
-              <div className="px-[1vw] py-[0.7vw] border-b border-gray-200 flex justify-between items-center bg-gray-50">
+              <div className="px-[1vw] py-[0.7vw] border-b border-slate-400 flex justify-between items-center bg-gray-50">
                 <h2 className="text-[1.2vw] font-semibold text-gray-900 flex items-center gap-[0.5vw]">
                   <Edit2 className="w-[1.1vw] h-[1.1vw] text-blue-600" />
                   Edit Customer — <span className="text-blue-700">{editingPartyCode}</span>
@@ -1423,7 +1423,7 @@ const CustomerDatabase = () => {
               </div>
               <form onSubmit={handleEditSubmit} className="p-[1vw] flex flex-col gap-[1vw] overflow-y-auto">
                 {/* Party Details */}
-                <div className="bg-gray-50 p-[1vw] rounded-[0.5vw] border border-gray-200">
+                <div className="bg-gray-50 p-[1vw] rounded-[0.5vw] border border-slate-400">
                   <h3 className="text-[0.9vw] font-bold text-gray-700 mb-[0.8vw]">Party Details</h3>
                   <div className="grid grid-cols-2 gap-[1.5vw] mb-[0.8vw]">
                     <div className="flex flex-col gap-[0.4vw]">
@@ -1484,7 +1484,7 @@ const CustomerDatabase = () => {
                 </div>
 
                 {/* Items */}
-                <div className="bg-white border border-gray-200 rounded-[0.5vw] p-[1vw]">
+                <div className="bg-white border border-slate-400 rounded-[0.5vw] p-[1vw]">
                   <div className="flex justify-between items-center mb-[0.5vw]">
                     <h3 className="text-[0.9vw] font-bold text-gray-700">Product Items</h3>
                     <button
@@ -1499,7 +1499,7 @@ const CustomerDatabase = () => {
                     {editEntry.items.map((item, idx) => (
                       <div
                         key={idx}
-                        className="flex gap-[0.5vw] items-center border-b border-gray-100 pb-[0.5vw] last:border-0"
+                        className="flex gap-[0.5vw] items-center border-b border-slate-400 pb-[0.5vw] last:border-0"
                       >
                         <div className="flex-1 flex flex-col gap-[0.3vw]">
                           {idx === 0 && <label className="text-[0.75vw] text-gray-500">Item Code</label>}
@@ -1588,7 +1588,7 @@ const CustomerDatabase = () => {
               exit={{ opacity: 0, scale: 0.95 }}
               className="bg-white w-[55vw] rounded-[0.8vw] shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
             >
-              <div className="px-[1vw] py-[0.7vw] border-b border-gray-200 flex justify-between items-center bg-gray-50">
+              <div className="px-[1vw] py-[0.7vw] border-b border-slate-400 flex justify-between items-center bg-gray-50">
                 <h2 className="text-[1.2vw] font-semibold text-gray-900">Upload client data</h2>
                 <button onClick={resetUpload} className="text-gray-400 hover:text-red-500 cursor-pointer">
                   <X className="w-[1.4vw] h-[1.4vw]" />
@@ -1601,7 +1601,7 @@ const CustomerDatabase = () => {
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
                     onClick={() => fileInputRef.current.click()}
-                    className={`flex flex-col items-center justify-center h-[20vw] border-[0.2vw] border-dashed rounded-[1vw] cursor-pointer group ${isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300 bg-gray-50 hover:bg-blue-50"}`}
+                    className={`flex flex-col items-center justify-center h-[20vw] border-[0.2vw] border-dashed rounded-[1vw] cursor-pointer group ${isDragging ? "border-blue-500 bg-blue-50" : "border-gray-400 bg-gray-50 hover:bg-blue-50"}`}
                   >
                     <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept=".xlsx,.xls" />
                     <UploadCloud className="w-[2.5vw] h-[2.5vw] text-blue-500 mb-[1vw]" />
@@ -1632,7 +1632,7 @@ const CustomerDatabase = () => {
                 {uploadStep === 3 && (
                   <div className="flex gap-[2vw] h-full items-stretch">
                     <div className="w-[18vw] flex flex-col gap-[1vw]">
-                      <div className="bg-gray-50 p-[1.5vw] rounded-[0.6vw] border border-gray-200 space-y-[0.8vw]">
+                      <div className="bg-gray-50 p-[1.5vw] rounded-[0.6vw] border border-slate-400 space-y-[0.8vw]">
                         <h4 className="font-bold text-gray-500 uppercase tracking-wider mb-[1vw]">Summary</h4>
                         <div className="flex justify-between">
                           <span className="text-gray-500">Total</span>
@@ -1648,8 +1648,8 @@ const CustomerDatabase = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="flex-1 border border-gray-200 rounded-[0.6vw] flex flex-col overflow-hidden">
-                      <div className="bg-gray-100 px-[1.5vw] py-[0.8vw] border-b border-gray-200 font-semibold text-gray-700">
+                    <div className="flex-1 border border-slate-400 rounded-[0.6vw] flex flex-col overflow-hidden">
+                      <div className="bg-gray-100 px-[1.5vw] py-[0.8vw] border-b border-slate-400 font-semibold text-gray-700">
                         Issues Found ({validationResult.issues.length})
                       </div>
                       <div className="overflow-y-auto flex-1 p-[1vw] space-y-[0.8vw] max-h-[20vw] bg-white">
@@ -1711,7 +1711,7 @@ const CustomerDatabase = () => {
 
                     <button
                       onClick={resetUpload}
-                      className="px-[3vw] py-[0.8vw] text-[0.9vw] font-medium border border-gray-300 rounded-[0.4vw] hover:bg-gray-50 cursor-pointer"
+                      className="px-[3vw] py-[0.8vw] text-[0.9vw] font-medium border border-gray-400 rounded-[0.4vw] hover:bg-gray-50 cursor-pointer"
                     >
                       Exit
                     </button>
@@ -1719,10 +1719,10 @@ const CustomerDatabase = () => {
                 )}
               </div>
               {uploadStep === 3 && (
-                <div className="px-[1.5vw] py-[1vw] border-t border-gray-200 bg-gray-50 flex justify-end gap-[1vw]">
+                <div className="px-[1.5vw] py-[1vw] border-t border-slate-400 bg-gray-50 flex justify-end gap-[1vw]">
                   <button
                     onClick={resetUpload}
-                    className="px-[2vw] py-[0.6vw] border border-gray-300 rounded-[0.4vw] bg-white hover:bg-gray-50 cursor-pointer"
+                    className="px-[2vw] py-[0.6vw] border border-gray-400 rounded-[0.4vw] bg-white hover:bg-gray-50 cursor-pointer"
                   >
                     Cancel
                   </button>

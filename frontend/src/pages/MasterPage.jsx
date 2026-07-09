@@ -201,7 +201,7 @@ const LEVEL_BG_LIGHT = [
   "bg-blue-100 border-blue-300 text-blue-800",
   "bg-blue-200/60 border-blue-300 text-blue-900",
   "bg-blue-200 border-blue-400 text-blue-900",
-  "bg-slate-100 border-slate-300 text-slate-800",
+  "bg-slate-100 border-slate-400 text-slate-800",
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -395,7 +395,7 @@ const PartyTypesSection = ({ partyTypes, setPartyTypes }) => {
           <p className="text-[0.75vw] font-semibold text-gray-800 uppercase tracking-wide mb-[0.6vw]">
             Existing Categories
           </p>
-          <div className="border border-slate-200 rounded-[0.5vw] max-h-[64vh] min-h-[64vh] overflow-auto">
+          <div className="border border-slate-400 rounded-[0.5vw] max-h-[64vh] min-h-[64vh] overflow-auto">
             {partyTypes.length === 0 ? (
               <div className="p-[2vw] text-center text-slate-400 text-[0.78vw]">
                 No categories yet
@@ -410,7 +410,7 @@ const PartyTypesSection = ({ partyTypes, setPartyTypes }) => {
                 return (
                   <div
                     key={type.id}
-                    className="flex items-center gap-[0.8vw] px-[0.9vw] py-[0.65vw] hover:bg-slate-50 border-b border-slate-100 last:border-0 group transition-colors"
+                    className="flex items-center gap-[0.8vw] px-[0.9vw] py-[0.65vw] hover:bg-slate-50 border-b border-slate-400 last:border-0 group transition-colors"
                   >
                     {editingType && (editingType._id === type._id || editingType.id === type.id) ? (
                       <div className="flex flex-1 items-center gap-[0.5vw]">
@@ -492,7 +492,7 @@ const PartyTypesSection = ({ partyTypes, setPartyTypes }) => {
                 onChange={(e) => setNewTypeName(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAdd()}
                 placeholder="e.g. Distributor, Reseller…"
-                className="flex-1 border border-slate-200 rounded-[0.4vw] px-[0.7vw] py-[0.5vw] text-[0.82vw] outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+                className="flex-1 border border-slate-400 rounded-[0.4vw] px-[0.7vw] py-[0.5vw] text-[0.82vw] outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
               />
               <button
                 type="button"
@@ -505,7 +505,7 @@ const PartyTypesSection = ({ partyTypes, setPartyTypes }) => {
             </div>
           </div>
           {partyTypes.length > 0 && (
-            <div className="bg-slate-50 border border-slate-200 rounded-[0.4vw] p-[0.7vw]">
+            <div className="bg-slate-50 border border-slate-400 rounded-[0.4vw] p-[0.7vw]">
               <p className="text-[0.68vw] font-semibold text-gray-800 mb-[0.5vw]">
                 Preview
               </p>
@@ -626,7 +626,7 @@ const ProductSegmentsSection = ({ segments, setSegments }) => {
           <p className="text-[0.75vw] font-semibold text-gray-800 uppercase tracking-wide mb-[0.6vw]">
             Active Segments
           </p>
-          <div className="border border-slate-200 rounded-[0.5vw] max-h-[64vh] min-h-[64vh] overflow-auto">
+          <div className="border border-slate-400 rounded-[0.5vw] max-h-[64vh] min-h-[64vh] overflow-auto">
             {segments.length === 0 ? (
               <div className="p-[2vw] text-center text-slate-400 text-[0.78vw]">
                 No segments defined
@@ -639,7 +639,7 @@ const ProductSegmentsSection = ({ segments, setSegments }) => {
                 return (
                   <div
                     key={seg.id}
-                    className="flex items-center gap-[0.8vw] px-[0.9vw] py-[0.65vw] hover:bg-slate-50 border-b border-slate-100 last:border-0 group transition-colors"
+                    className="flex items-center gap-[0.8vw] px-[0.9vw] py-[0.65vw] hover:bg-slate-50 border-b border-slate-400 last:border-0 group transition-colors"
                   >
                     {editingSegment && (editingSegment._id === seg._id || editingSegment.id === seg.id) ? (
                       <div className="flex-1 flex gap-2">
@@ -713,7 +713,7 @@ const ProductSegmentsSection = ({ segments, setSegments }) => {
               value={newSegmentName}
               onChange={(e) => setNewSegmentName(e.target.value)}
               placeholder="e.g. Inverters, Stabilizers…"
-              className="flex-1 border border-slate-200 rounded-[0.4vw] px-[0.7vw] py-[0.5vw] text-[0.82vw] outline-none focus:border-blue-400 transition-all font-semibold"
+              className="flex-1 border border-slate-400 rounded-[0.4vw] px-[0.7vw] py-[0.5vw] text-[0.82vw] outline-none focus:border-blue-400 transition-all font-semibold"
             />
             <button onClick={handleAdd} disabled={!newSegmentName.trim()} className="flex items-center gap-[0.4vw] bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white px-[1vw] py-[0.5vw] rounded-[0.4vw] cursor-pointer text-[0.8vw] font-bold">
               <Plus className="w-[0.9vw] h-[0.9vw]" /> Add
@@ -807,12 +807,12 @@ const FourMCategoriesSection = ({ items, setItems }) => {
       <div className="p-[1.2vw] grid grid-cols-2 gap-[1.5vw]">
         <div>
           <p className="text-[0.75vw] font-semibold text-gray-800 uppercase tracking-wide mb-[0.6vw]">Existing 4M Categories</p>
-          <div className="border border-slate-200 rounded-[0.5vw] max-h-[64vh] min-h-[64vh] overflow-auto">
+          <div className="border border-slate-400 rounded-[0.5vw] max-h-[64vh] min-h-[64vh] overflow-auto">
             {items.length === 0 ? (
               <div className="p-[2vw] text-center text-slate-400 text-[0.78vw]">No 4M Categories yet</div>
             ) : (
               items.map((seg) => (
-                <div key={seg.id} className="flex items-center gap-[0.8vw] px-[0.9vw] py-[0.65vw] hover:bg-slate-50 border-b border-slate-100 last:border-0 group transition-colors">
+                <div key={seg.id} className="flex items-center gap-[0.8vw] px-[0.9vw] py-[0.65vw] hover:bg-slate-50 border-b border-slate-400 last:border-0 group transition-colors">
                   {editingItem && (editingItem._id === seg._id || editingItem.id === seg.id) ? (
                     <div className="flex flex-1 items-center gap-[0.5vw]">
                       <input autoFocus type="text" value={editingItem.name} onChange={(e) => setEditingItem({ ...editingItem, name: e.target.value })} className="flex-1 border border-blue-300 rounded-[0.3vw] px-[0.5vw] py-[0.35vw] text-[0.82vw] outline-none shadow-sm" />
@@ -838,7 +838,7 @@ const FourMCategoriesSection = ({ items, setItems }) => {
         <div>
           <p className="text-[0.75vw] font-semibold text-gray-800 uppercase tracking-wide mb-[0.6vw]">Add New 4M Category</p>
           <div className="flex gap-[0.5vw]">
-            <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. Man, Machine…" className="flex-1 border border-slate-200 rounded-[0.4vw] px-[0.7vw] py-[0.5vw] text-[0.82vw] outline-none focus:border-blue-400 transition-all font-semibold" />
+            <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. Man, Machine…" className="flex-1 border border-slate-400 rounded-[0.4vw] px-[0.7vw] py-[0.5vw] text-[0.82vw] outline-none focus:border-blue-400 transition-all font-semibold" />
             <button onClick={handleAdd} disabled={!newName.trim()} className="flex items-center gap-[0.4vw] bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white px-[1vw] py-[0.5vw] rounded-[0.4vw] cursor-pointer text-[0.8vw] font-bold"><Plus className="w-[0.9vw] h-[0.9vw]" /> Add</button>
           </div>
         </div>
@@ -973,7 +973,7 @@ const ServiceMaterialEscalationSection = ({ departments }) => {
           <button
             type="button"
             onClick={handleReset}
-            className="flex items-center gap-[0.4vw] px-[0.9vw] py-[0.42vw] border border-slate-200 bg-white hover:bg-slate-50 rounded-[0.4vw] text-slate-600 text-[0.78vw] font-semibold cursor-pointer transition-all"
+            className="flex items-center gap-[0.4vw] px-[0.9vw] py-[0.42vw] border border-slate-400 bg-white hover:bg-slate-50 rounded-[0.4vw] text-slate-600 text-[0.78vw] font-semibold cursor-pointer transition-all"
           >
             <RotateCcw className="w-[0.85vw] h-[0.85vw]" /> Reset
           </button>
@@ -1031,13 +1031,13 @@ const ServiceMaterialEscalationSection = ({ departments }) => {
           <Plus className="w-[0.9vw] h-[0.9vw]" /> Add Level
         </button>
         {showPicker && availableToAdd.length > 0 && (
-          <div className="absolute top-full left-0 mt-[0.4vw] bg-white border border-slate-200 rounded-[0.4vw] shadow-lg z-40 overflow-hidden min-w-[12vw]">
+          <div className="absolute top-full left-0 mt-[0.4vw] bg-white border border-slate-400 rounded-[0.4vw] shadow-lg z-40 overflow-hidden min-w-[12vw]">
             {availableToAdd.map((d) => (
               <button
                 key={d}
                 type="button"
                 onClick={() => addStep(d)}
-                className="w-full text-left px-[0.8vw] py-[0.5vw] hover:bg-blue-50 text-[0.78vw] font-semibold text-slate-700 border-b border-slate-100 last:border-0 cursor-pointer transition-colors"
+                className="w-full text-left px-[0.8vw] py-[0.5vw] hover:bg-blue-50 text-[0.78vw] font-semibold text-slate-700 border-b border-slate-400 last:border-0 cursor-pointer transition-colors"
               >
                 {d}
               </button>
@@ -1104,7 +1104,7 @@ const ColumnVisibilitySection = ({ colVis, setColVis }) => {
           <button
             type="button"
             onClick={enableAll}
-            className="flex items-center gap-[0.35vw] border border-slate-200 text-slate-600 hover:bg-slate-50 px-[0.8vw] py-[0.4vw] rounded-[0.4vw] cursor-pointer text-[0.78vw] transition-all"
+            className="flex items-center gap-[0.35vw] border border-slate-400 text-slate-600 hover:bg-slate-50 px-[0.8vw] py-[0.4vw] rounded-[0.4vw] cursor-pointer text-[0.78vw] transition-all"
           >
             <Eye className="w-[0.85vw] h-[0.85vw]" /> Show All
           </button>
@@ -1134,10 +1134,10 @@ const ColumnVisibilitySection = ({ colVis, setColVis }) => {
               className={`flex items-center justify-between px-[0.9vw] py-[0.7vw] rounded-[0.5vw] border transition-all cursor-pointer select-none
                 ${
                   isRequired
-                    ? "opacity-60 cursor-not-allowed bg-slate-50 border-slate-200"
+                    ? "opacity-60 cursor-not-allowed bg-slate-50 border-slate-400"
                     : isOn
                       ? "bg-blue-50 border-blue-200 hover:border-blue-300"
-                      : "bg-white border-slate-200 hover:border-slate-300"
+                      : "bg-white border-slate-400 hover:border-slate-400"
                 }`}
             >
               <div className="flex flex-col gap-[0.1vw] flex-1 min-w-0">
@@ -1178,7 +1178,7 @@ const ColumnVisibilitySection = ({ colVis, setColVis }) => {
       </div>
 
       {/* Live preview strip */}
-      <div className="mt-[1vw] bg-slate-50 border border-slate-200 rounded-[0.4vw] p-[0.7vw]">
+      <div className="mt-[1vw] bg-slate-50 border border-slate-400 rounded-[0.4vw] p-[0.7vw]">
         <p className="text-[0.68vw] font-semibold text-gray-800 mb-[0.4vw]">
           Table Header Preview
         </p>
@@ -1247,7 +1247,7 @@ const EngineerPicker = ({ dept, employees = [], selectedIds, otherLevelsIds = []
     <div className="relative" ref={pickerRef}>
       <div
         onClick={() => setOpen(!open)}
-        className={`min-h-[2.2vw] border rounded-[0.4vw] px-[0.6vw] py-[0.35vw] bg-white cursor-pointer flex items-center gap-[0.35vw] flex-wrap transition-all duration-200 ${open ? "border-blue-400 ring-2 ring-blue-100 shadow-sm" : "border-slate-200 hover:border-blue-300"}`}
+        className={`min-h-[2.2vw] border rounded-[0.4vw] px-[0.6vw] py-[0.35vw] bg-white cursor-pointer flex items-center gap-[0.35vw] flex-wrap transition-all duration-200 ${open ? "border-blue-400 ring-2 ring-blue-100 shadow-sm" : "border-slate-400 hover:border-blue-300"}`}
       >
         {selectedEngs.length === 0 ? (
           <span className="text-slate-400 text-[0.72vw] italic select-none flex-1">
@@ -1283,9 +1283,9 @@ const EngineerPicker = ({ dept, employees = [], selectedIds, otherLevelsIds = []
         />
       </div>
       {open && (
-        <div className="absolute top-full left-0 w-full mt-[0.3vw] bg-white border border-slate-200 rounded-[0.4vw] shadow-lg z-40 overflow-hidden">
+        <div className="absolute top-full left-0 w-full mt-[0.3vw] bg-white border border-slate-400 rounded-[0.4vw] shadow-lg z-40 overflow-hidden">
           {deptEngs.length > 3 && (
-            <div className="p-[0.5vw] border-b border-slate-100">
+            <div className="p-[0.5vw] border-b border-slate-400">
               <div className="relative">
                 <Search className="absolute left-[0.5vw] top-1/2 -translate-y-1/2 w-[0.85vw] h-[0.85vw] text-slate-400" />
                 <input
@@ -1294,13 +1294,13 @@ const EngineerPicker = ({ dept, employees = [], selectedIds, otherLevelsIds = []
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search engineer..."
-                  className="w-full pl-[1.8vw] pr-[0.5vw] py-[0.4vw] text-[0.78vw] border border-slate-200 rounded-[0.3vw] outline-none focus:border-blue-400"
+                  className="w-full pl-[1.8vw] pr-[0.5vw] py-[0.4vw] text-[0.78vw] border border-slate-400 rounded-[0.3vw] outline-none focus:border-blue-400"
                 />
               </div>
             </div>
           )}
           {deptEngs.length > 0 && (
-            <div className="flex gap-[0.5vw] px-[0.7vw] py-[0.4vw] border-b border-slate-100 bg-slate-50/50">
+            <div className="flex gap-[0.5vw] px-[0.7vw] py-[0.4vw] border-b border-slate-400 bg-slate-50/50">
               <button
                 type="button"
                 onClick={() => onChange(deptEngs.map((e) => e.userId))}
@@ -1339,7 +1339,7 @@ const EngineerPicker = ({ dept, employees = [], selectedIds, otherLevelsIds = []
                     className={`flex items-center gap-[0.6vw] px-[0.7vw] py-[0.55vw] cursor-pointer transition-colors border-b border-slate-50 last:border-0 ${selected ? "bg-blue-50/70" : "hover:bg-slate-50"}`}
                   >
                     <div
-                      className={`w-[1vw] h-[1vw] rounded-[0.2vw] border-2 flex items-center justify-center flex-shrink-0 ${selected ? "bg-blue-600 border-blue-600" : "border-slate-300"}`}
+                      className={`w-[1vw] h-[1vw] rounded-[0.2vw] border-2 flex items-center justify-center flex-shrink-0 ${selected ? "bg-blue-600 border-blue-600" : "border-slate-400"}`}
                     >
                       {selected && (
                         <CheckCircle className="w-[0.65vw] h-[0.65vw] text-white" />
@@ -1366,7 +1366,7 @@ const EngineerPicker = ({ dept, employees = [], selectedIds, otherLevelsIds = []
               })
             )}
           </div>
-          <div className="px-[0.7vw] py-[0.5vw] border-t border-slate-100 bg-slate-50/50 flex justify-between items-center">
+          <div className="px-[0.7vw] py-[0.5vw] border-t border-slate-400 bg-slate-50/50 flex justify-between items-center">
             <span className="text-[0.68vw] text-slate-400">
               {selectedIds.length === 0
                 ? "Auto-assign (load balanced)"
@@ -1414,7 +1414,7 @@ const DurationPicker = ({ hours = 0, mins = 0, onChange }) => {
         <select
           value={hours}
           onChange={(e) => onChange(Number(e.target.value), mins)}
-          className="border border-slate-200 rounded-[0.3vw] px-[0.4vw] py-[0.25vw] text-[0.75vw] font-semibold text-slate-700 bg-white outline-none focus:border-blue-400 cursor-pointer"
+          className="border border-slate-400 rounded-[0.3vw] px-[0.4vw] py-[0.25vw] text-[0.75vw] font-semibold text-slate-700 bg-white outline-none focus:border-blue-400 cursor-pointer"
         >
           {[0, 1, 2, 3, 4, 6, 8, 12, 24, 48].map((h) => (
             <option key={h} value={h}>
@@ -1425,7 +1425,7 @@ const DurationPicker = ({ hours = 0, mins = 0, onChange }) => {
         <select
           value={mins}
           onChange={(e) => onChange(hours, Number(e.target.value))}
-          className="border border-slate-200 rounded-[0.3vw] px-[0.4vw] py-[0.25vw] text-[0.75vw] font-semibold text-slate-700 bg-white outline-none focus:border-blue-400 cursor-pointer"
+          className="border border-slate-400 rounded-[0.3vw] px-[0.4vw] py-[0.25vw] text-[0.75vw] font-semibold text-slate-700 bg-white outline-none focus:border-blue-400 cursor-pointer"
         >
           {[0, 2, 5, 15, 30, 45].map((m) => (
             <option key={m} value={m}>
@@ -1443,7 +1443,7 @@ const DurationPicker = ({ hours = 0, mins = 0, onChange }) => {
               key={p.label}
               type="button"
               onClick={() => onChange(p.hours, p.mins)}
-              className={`text-[0.62vw] px-[0.45vw] py-[0.18vw] rounded-[0.25vw] border cursor-pointer transition-all ${isActive ? "bg-blue-600 text-white border-blue-600" : "border-slate-200 text-gray-800 hover:border-blue-300 hover:text-blue-600"}`}
+              className={`text-[0.62vw] px-[0.45vw] py-[0.18vw] rounded-[0.25vw] border cursor-pointer transition-all ${isActive ? "bg-blue-600 text-white border-blue-600" : "border-slate-400 text-gray-800 hover:border-blue-300 hover:text-blue-600"}`}
             >
               {p.label}
             </button>
@@ -1497,10 +1497,10 @@ const StepCard = ({
       onDragEnter={onDragEnter}
       onDragEnd={onDragEnd}
       onDragOver={(e) => e.preventDefault()}
-      className={`border rounded-[0.5vw] bg-white overflow-visible transition-all duration-200 ${isDragOver ? "border-blue-400 shadow-md ring-2 ring-blue-100" : "border-slate-200 hover:border-blue-200 shadow-sm"}`}
+      className={`border rounded-[0.5vw] bg-white overflow-visible transition-all duration-200 ${isDragOver ? "border-blue-400 shadow-md ring-2 ring-blue-100" : "border-slate-400 hover:border-blue-200 shadow-sm"}`}
     >
       {/* Header row */}
-      <div className="flex items-center gap-[0.5vw] px-[0.7vw] py-[0.45vw] bg-slate-50/70 border-b border-slate-100">
+      <div className="flex items-center gap-[0.5vw] px-[0.7vw] py-[0.45vw] bg-slate-50/70 border-b border-slate-400">
         <GripVertical className="w-[1vw] h-[1vw] text-slate-300 cursor-grab active:cursor-grabbing flex-shrink-0 hover:text-slate-400" />
         <div
           className={`w-[1.6vw] h-[1.6vw] rounded-full ${LEVEL_COLORS[index] || "bg-slate-500"} flex items-center justify-center flex-shrink-0 shadow-sm`}
@@ -1514,7 +1514,7 @@ const StepCard = ({
           onChange={(e) =>
             onUpdate({ ...step, dept: e.target.value, engineerIds: [] })
           }
-          className="flex-1 border border-slate-200 rounded-[0.4vw] px-[0.7vw] py-[0.55vw] text-[0.85vw] font-bold text-slate-700 bg-white outline-none focus:border-blue-400 cursor-pointer shadow-sm hover:border-blue-300 transition-all"
+          className="flex-1 border border-slate-400 rounded-[0.4vw] px-[0.7vw] py-[0.55vw] text-[0.85vw] font-bold text-slate-700 bg-white outline-none focus:border-blue-400 cursor-pointer shadow-sm hover:border-blue-300 transition-all"
         >
           {availableToSwitch.map((d) => (
             <option key={d} value={d}>
@@ -1555,7 +1555,7 @@ const StepCard = ({
       </div>
 
       {/* Engineers row */}
-      <div className="px-[0.8vw] py-[0.5vw] flex items-start gap-[0.5vw] border-b border-slate-100">
+      <div className="px-[0.8vw] py-[0.5vw] flex items-start gap-[0.5vw] border-b border-slate-400">
         <div className="text-[0.7vw] text-gray-800 font-semibold whitespace-nowrap mt-[0.55vw] flex-shrink-0 flex items-center gap-[0.25vw] w-[4.5vw]">
           <Users className="w-[0.8vw] h-[0.8vw]" /> Engineers
         </div>
@@ -1631,7 +1631,7 @@ const FlowEditor = ({ steps, departments, employees = [], onChange }) => {
   return (
     <div className="flex flex-col gap-[0.5vw]">
       {steps.length === 0 ? (
-        <div className="text-center py-[1.5vw] text-slate-400 text-[0.78vw] border-2 border-dashed border-slate-200 rounded-[0.4vw] bg-slate-50/50">
+        <div className="text-center py-[1.5vw] text-slate-400 text-[0.78vw] border-2 border-dashed border-slate-400 rounded-[0.4vw] bg-slate-50/50">
           No levels yet — add at least one escalation level
         </div>
       ) : (
@@ -1665,7 +1665,7 @@ const FlowEditor = ({ steps, departments, employees = [], onChange }) => {
           <Plus className="w-[0.9vw] h-[0.9vw]" /> Add Escalation Level
         </button>
         {showPicker && (
-          <div className="absolute top-full left-0 w-full mt-[0.3vw] bg-white border border-slate-200 shadow-lg rounded-[0.4vw] z-20 overflow-hidden">
+          <div className="absolute top-full left-0 w-full mt-[0.3vw] bg-white border border-slate-400 shadow-lg rounded-[0.4vw] z-20 overflow-hidden">
             {availableToAdd.map((dept) => {
               const cnt = loadEmployees().filter(
                 (e) => (e.department || "").trim().toLowerCase() === (dept || "").trim().toLowerCase(),
@@ -1705,7 +1705,7 @@ const ChainPreview = ({ steps, employees = [] }) => {
     return `${h}h ${m}m`;
   };
   return (
-    <div className="bg-slate-50/80 border border-slate-200 rounded-[0.5vw] p-[0.8vw]">
+    <div className="bg-slate-50/80 border border-slate-400 rounded-[0.5vw] p-[0.8vw]">
       <h4 className="text-[0.78vw] font-bold text-slate-700 mb-[0.6vw] flex items-center gap-[0.3vw]">
         <ArrowRight className="w-[0.85vw] h-[0.85vw] text-blue-500" />{" "}
         Escalation Chain Preview
@@ -1746,7 +1746,7 @@ const ChainPreview = ({ steps, employees = [] }) => {
                     </div>
                   )}
                 </div>
-                <div className="flex-1 bg-white rounded-[0.3vw] border border-slate-200 px-[0.55vw] py-[0.3vw]">
+                <div className="flex-1 bg-white rounded-[0.3vw] border border-slate-400 px-[0.55vw] py-[0.3vw]">
                   <div className="flex items-center justify-between">
                     <div className="text-[0.75vw] font-bold text-slate-700">
                       {step.dept}
@@ -1905,7 +1905,7 @@ const EscalationSection = ({ partyTypes, segments, flows, setFlows, departments,
 
   return (
     <div>
-      <div className="flex items-center justify-between px-[1.2vw] py-[0.7vw] border-b border-slate-100">
+      <div className="flex items-center justify-between px-[1.2vw] py-[0.7vw] border-b border-slate-400">
         <div className="flex items-center gap-[0.6vw]">
           {hasChanges && (
             <span className="text-[0.72vw] text-amber-700 bg-amber-50 border border-amber-200 px-[0.6vw] py-[0.3vw] rounded-[0.3vw] font-bold flex items-center gap-[0.3vw] uppercase tracking-wider">
@@ -1916,7 +1916,7 @@ const EscalationSection = ({ partyTypes, segments, flows, setFlows, departments,
         <div className="flex items-center gap-[0.6vw]">
           <button
             onClick={handleResetAll}
-            className="flex items-center gap-[0.4vw] border border-slate-200 text-slate-600 hover:bg-slate-50 px-[0.8vw] py-[0.4vw] rounded-[0.4vw] cursor-pointer text-[0.78vw] font-medium transition-all"
+            className="flex items-center gap-[0.4vw] border border-slate-400 text-slate-600 hover:bg-slate-50 px-[0.8vw] py-[0.4vw] rounded-[0.4vw] cursor-pointer text-[0.78vw] font-medium transition-all"
           >
             <RotateCcw className="w-[0.85vw] h-[0.85vw]" /> Reset All
           </button>
@@ -1936,7 +1936,7 @@ const EscalationSection = ({ partyTypes, segments, flows, setFlows, departments,
 
       <div className="p-[1.2vw] flex flex-col gap-[1vw]">
         {partyTypes.length === 0 ? (
-          <div className="bg-slate-50 border border-slate-200 rounded-[0.6vw] p-[3vw] text-center">
+          <div className="bg-slate-50 border border-slate-400 rounded-[0.6vw] p-[3vw] text-center">
             <Shield className="w-[3vw] h-[3vw] text-slate-300 mx-auto mb-[1vw]" />
             <p className="text-slate-400 text-[1vw]">
               No party types configured
@@ -1968,7 +1968,7 @@ const EscalationSection = ({ partyTypes, segments, flows, setFlows, departments,
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-[0.55vw] flex-wrap">
                         <span
-                          className={`text-[0.8vw] font-bold px-[0.7vw] py-[0.25vw] rounded-[0.4vw] ${color.badge} shadow-sm border border-slate-200/20`}
+                          className={`text-[0.8vw] font-bold px-[0.7vw] py-[0.25vw] rounded-[0.4vw] ${color.badge} shadow-sm border border-slate-400/20`}
                         >
                           {type.name}
                         </span>
@@ -1985,9 +1985,9 @@ const EscalationSection = ({ partyTypes, segments, flows, setFlows, departments,
                     </div>
                   </div>
                 {isExpanded && (
-                  <div className="flex border-t border-slate-100 min-h-[25vw]">
+                  <div className="flex border-t border-slate-400 min-h-[25vw]">
                     {/* Left Side: Segment Selector Sidebar */}
-                    <div className="w-[12vw] bg-slate-50/50 border-r border-slate-100 p-[0.6vw] flex flex-col gap-[0.4vw]">
+                    <div className="w-[12vw] bg-slate-50/50 border-r border-slate-400 p-[0.6vw] flex flex-col gap-[0.4vw]">
                       <p className="text-[0.65vw] font-bold text-slate-400 uppercase tracking-widest px-[0.4vw] mb-[0.2vw]">Product Segments</p>
                       
                       <button 
@@ -2037,7 +2037,7 @@ const EscalationSection = ({ partyTypes, segments, flows, setFlows, departments,
                                 });
                                 if (confirmed) resetType(type.name, curSeg);
                               }}
-                              className="text-[0.68vw] text-slate-400 hover:text-slate-700 border border-slate-200 hover:border-slate-300 bg-white px-[0.6vw] py-[0.3vw] rounded-[0.3vw] cursor-pointer flex items-center gap-[0.3vw] transition-all font-bold"
+                              className="text-[0.68vw] text-slate-400 hover:text-slate-700 border border-slate-400 hover:border-slate-400 bg-white px-[0.6vw] py-[0.3vw] rounded-[0.3vw] cursor-pointer flex items-center gap-[0.3vw] transition-all font-bold"
                             >
                               <RotateCcw className="w-[0.7vw] h-[0.7vw]" /> Reset Segment
                             </button>
@@ -2055,7 +2055,7 @@ const EscalationSection = ({ partyTypes, segments, flows, setFlows, departments,
                         </div>
                         <div className="col-span-2 flex flex-col gap-[0.8vw]">
                           <ChainPreview steps={steps} employees={employees} />
-                          <div className="bg-slate-50/80 border border-slate-200 rounded-[0.5vw] p-[0.7vw]">
+                          <div className="bg-slate-50/80 border border-slate-400 rounded-[0.5vw] p-[0.7vw]">
                             <h4 className="text-[0.72vw] font-bold text-slate-600 mb-[0.4vw]">
                               Legend
                             </h4>
@@ -2150,8 +2150,8 @@ const DepartmentMasterModal = ({ isOpen, onClose, departments, onSave }) => {
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-[2vw]">
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-[1vw] shadow-2xl border border-slate-200 w-full max-w-[28vw] overflow-hidden flex flex-col max-h-[80vh]">
-        <div className="p-[1.2vw] border-b border-slate-100 flex items-center justify-between bg-slate-50">
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-[1vw] shadow-2xl border border-slate-400 w-full max-w-[28vw] overflow-hidden flex flex-col max-h-[80vh]">
+        <div className="p-[1.2vw] border-b border-slate-400 flex items-center justify-between bg-slate-50">
           <h3 className="text-[1vw] font-bold text-slate-900 flex items-center gap-[0.5vw]">
             <Briefcase className="w-[1.1vw] h-[1.1vw] text-blue-600" />
             Manage Departments
@@ -2166,7 +2166,7 @@ const DepartmentMasterModal = ({ isOpen, onClose, departments, onSave }) => {
               value={newDept}
               onChange={(e) => setNewDept(e.target.value)}
               placeholder="Enter department name..."
-              className="flex-1 border border-slate-200 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw]"
+              className="flex-1 border border-slate-400 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw]"
               onKeyDown={(e) => e.key === "Enter" && handleAdd()}
             />
             <button onClick={handleAdd} className="bg-blue-600 text-white px-[1vw] rounded-[0.4vw] hover:bg-blue-700 transition-colors"><Plus className="w-[1vw] h-[1vw]" /></button>
@@ -2174,7 +2174,7 @@ const DepartmentMasterModal = ({ isOpen, onClose, departments, onSave }) => {
 
           <div className="flex flex-col gap-[0.4vw]">
             {localDepts.map((dept, idx) => (
-              <div key={idx} className="flex items-center justify-between p-[0.6vw] bg-slate-50 border border-slate-100 rounded-[0.4vw] hover:bg-slate-100 transition-colors group">
+              <div key={idx} className="flex items-center justify-between p-[0.6vw] bg-slate-50 border border-slate-400 rounded-[0.4vw] hover:bg-slate-100 transition-colors group">
                 <span className="text-[0.82vw] font-medium text-slate-700">{dept}</span>
                 <button onClick={() => handleRemove(dept)} className="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-[0.9vw] h-[0.9vw]" /></button>
               </div>
@@ -2183,7 +2183,7 @@ const DepartmentMasterModal = ({ isOpen, onClose, departments, onSave }) => {
           </div>
         </div>
 
-        <div className="p-[1vw] border-t border-slate-100 bg-slate-50 flex justify-end gap-[0.6vw]">
+        <div className="p-[1vw] border-t border-slate-400 bg-slate-50 flex justify-end gap-[0.6vw]">
           <button onClick={onClose} className="px-[1vw] py-[0.5vw] text-slate-600 hover:bg-slate-200 rounded-[0.4vw] text-[0.82vw] font-semibold">Cancel</button>
           <button onClick={handleSave} className="bg-blue-600 text-white px-[1.2vw] py-[0.5vw] rounded-[0.4vw] text-[0.82vw] font-bold shadow-lg hover:bg-blue-700 transition-all">Save Changes</button>
         </div>
@@ -2316,7 +2316,7 @@ const EmployeeManagementSection = ({ employees, setEmployees, departments, setDe
           <input 
             type="text" 
             placeholder="Search employees by name, ID or department..."
-            className="w-full pl-[2.4vw] pr-[1vw] py-[0.6vw] border border-slate-200 rounded-[0.5vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw]"
+            className="w-full pl-[2.4vw] pr-[1vw] py-[0.6vw] border border-slate-400 rounded-[0.5vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw]"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -2324,7 +2324,7 @@ const EmployeeManagementSection = ({ employees, setEmployees, departments, setDe
         <div className="flex gap-[0.6vw]">
           <button 
             onClick={() => setShowDeptModal(true)}
-            className="flex items-center gap-[0.5vw] border border-slate-200 text-slate-600 hover:bg-slate-50 px-[1vw] py-[0.6vw] rounded-[0.5vw] font-semibold text-[0.82vw] cursor-pointer transition-all"
+            className="flex items-center gap-[0.5vw] border border-slate-400 text-slate-600 hover:bg-slate-50 px-[1vw] py-[0.6vw] rounded-[0.5vw] font-semibold text-[0.82vw] cursor-pointer transition-all"
           >
             <Briefcase className="w-[1vw] h-[1vw]" /> Dept Master
           </button>
@@ -2337,10 +2337,10 @@ const EmployeeManagementSection = ({ employees, setEmployees, departments, setDe
         </div>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-[0.8vw] overflow-hidden shadow-sm">
+      <div className="bg-white border border-slate-400 rounded-[0.8vw] overflow-hidden shadow-sm">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-slate-50 border-b border-slate-200">
+            <tr className="bg-slate-50 border-b border-slate-400">
               <th className="px-[1vw] py-[0.8vw] text-[0.75vw] font-bold text-gray-800 uppercase tracking-wider">S. No.</th>
               <th className="px-[1vw] py-[0.8vw] text-[0.75vw] font-bold text-gray-800 uppercase tracking-wider">Employee</th>
               <th className="px-[1vw] py-[0.8vw] text-[0.75vw] font-bold text-gray-800 uppercase tracking-wider">ID</th>
@@ -2401,7 +2401,7 @@ const EmployeeManagementSection = ({ employees, setEmployees, departments, setDe
         )}
 
         {/* Pagination UI */}
-        <div className="border-t border-slate-100 p-[0.8vw] bg-slate-50 flex justify-between items-center">
+        <div className="border-t border-slate-400 p-[0.8vw] bg-slate-50 flex justify-between items-center">
           <div className="text-[0.75vw] text-slate-500 font-medium">
             Showing <span className="text-slate-900 font-bold">{paginatedData.length > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0}</span> to <span className="text-slate-900 font-bold">{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)}</span> of <span className="text-slate-900 font-bold">{filtered.length}</span> employees
           </div>
@@ -2409,7 +2409,7 @@ const EmployeeManagementSection = ({ employees, setEmployees, departments, setDe
             <button 
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="p-[0.4vw] border border-slate-200 rounded-[0.4vw] hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed bg-white shadow-sm transition-all cursor-pointer"
+              className="p-[0.4vw] border border-slate-400 rounded-[0.4vw] hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed bg-white shadow-sm transition-all cursor-pointer"
             >
               <ChevronLeft className="w-[1vw] h-[1vw] text-slate-600" />
             </button>
@@ -2425,7 +2425,7 @@ const EmployeeManagementSection = ({ employees, setEmployees, departments, setDe
                   <button
                     key={pNum}
                     onClick={() => setCurrentPage(pNum)}
-                    className={`w-[1.8vw] h-[1.8vw] flex items-center justify-center rounded-[0.4vw] text-[0.75vw] font-bold transition-all cursor-pointer ${currentPage === pNum ? "bg-blue-600 text-white shadow-md shadow-blue-100" : "bg-white border border-slate-200 text-slate-600 hover:border-blue-400 hover:text-blue-600"}`}
+                    className={`w-[1.8vw] h-[1.8vw] flex items-center justify-center rounded-[0.4vw] text-[0.75vw] font-bold transition-all cursor-pointer ${currentPage === pNum ? "bg-blue-600 text-white shadow-md shadow-blue-100" : "bg-white border border-slate-400 text-slate-600 hover:border-blue-400 hover:text-blue-600"}`}
                   >
                     {pNum}
                   </button>
@@ -2435,7 +2435,7 @@ const EmployeeManagementSection = ({ employees, setEmployees, departments, setDe
             <button 
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages || totalPages === 0}
-              className="p-[0.4vw] border border-slate-200 rounded-[0.4vw] hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed bg-white shadow-sm transition-all cursor-pointer"
+              className="p-[0.4vw] border border-slate-400 rounded-[0.4vw] hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed bg-white shadow-sm transition-all cursor-pointer"
             >
               <ChevronRight className="w-[1vw] h-[1vw] text-slate-600" />
             </button>
@@ -2447,8 +2447,8 @@ const EmployeeManagementSection = ({ employees, setEmployees, departments, setDe
       <AnimatePresence>
         {showRegModal && (
           <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-[2vw]">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="bg-white rounded-[1.2vw] shadow-2xl border border-slate-200 w-full max-w-[50vw] overflow-hidden flex flex-col max-h-[90vh]">
-              <div className="p-[1.5vw] border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="bg-white rounded-[1.2vw] shadow-2xl border border-slate-400 w-full max-w-[50vw] overflow-hidden flex flex-col max-h-[90vh]">
+              <div className="p-[1.5vw] border-b border-slate-400 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white">
                 <div className="flex items-center gap-[0.8vw]">
                   <div className="w-[2.2vw] h-[2.2vw] rounded-[0.5vw] bg-blue-600 flex items-center justify-center">
                     <UserPlus className="w-[1.1vw] h-[1.1vw] text-white" />
@@ -2463,34 +2463,34 @@ const EmployeeManagementSection = ({ employees, setEmployees, departments, setDe
 
               <form onSubmit={handleRegSubmit} className="p-[1.5vw] overflow-y-auto grid grid-cols-2 gap-[1.2vw]">
                 {/* Personal Details */}
-                <div className="col-span-2 flex items-center gap-[0.5vw] pb-[0.4vw] border-b border-slate-100 mb-[0.4vw]">
+                <div className="col-span-2 flex items-center gap-[0.5vw] pb-[0.4vw] border-b border-slate-400 mb-[0.4vw]">
                   <User className="w-[1vw] h-[1vw] text-blue-600" />
                   <span className="text-[0.85vw] font-bold text-slate-800 uppercase tracking-wider">Personal Details</span>
                 </div>
                 
                 <div className="space-y-[0.4vw]">
                   <label className="text-[0.8vw] font-bold text-slate-700 flex items-center gap-[0.4vw]"><Users className="w-[0.9vw] h-[0.9vw] text-slate-400" /> Full Name *</label>
-                  <input type="text" required value={regData.name} onChange={e => setRegData({...regData, name: e.target.value})} className="w-full border border-slate-200 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw]" placeholder="John Doe" />
+                  <input type="text" required value={regData.name} onChange={e => setRegData({...regData, name: e.target.value})} className="w-full border border-slate-400 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw]" placeholder="John Doe" />
                 </div>
                 <div className="space-y-[0.4vw]">
                   <label className="text-[0.8vw] font-bold text-slate-700 flex items-center gap-[0.4vw]"><ShieldCheck className="w-[0.9vw] h-[0.9vw] text-slate-400" /> Employee ID *</label>
-                  <input type="text" required value={regData.userId} onChange={e => setRegData({...regData, userId: e.target.value})} className="w-full border border-slate-200 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw]" placeholder="EMP001" />
+                  <input type="text" required value={regData.userId} onChange={e => setRegData({...regData, userId: e.target.value})} className="w-full border border-slate-400 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw]" placeholder="EMP001" />
                 </div>
                 <div className="space-y-[0.4vw]">
                   <label className="text-[0.8vw] font-bold text-slate-700 flex items-center gap-[0.4vw]"><Mail className="w-[0.9vw] h-[0.9vw] text-slate-400" /> Email Address *</label>
-                  <input type="email" required value={regData.email} onChange={e => setRegData({...regData, email: e.target.value})} className="w-full border border-slate-200 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw]" placeholder="john@akira.com" />
+                  <input type="email" required value={regData.email} onChange={e => setRegData({...regData, email: e.target.value})} className="w-full border border-slate-400 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw]" placeholder="john@akira.com" />
                 </div>
                 <div className="space-y-[0.4vw]">
                   <label className="text-[0.8vw] font-bold text-slate-700 flex items-center gap-[0.4vw]"><Phone className="w-[0.9vw] h-[0.9vw] text-slate-400" /> Phone Number</label>
-                  <input type="tel" value={regData.phoneNumber} onChange={e => setRegData({...regData, phoneNumber: e.target.value})} className="w-full border border-slate-200 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw]" placeholder="+91 ..." />
+                  <input type="tel" value={regData.phoneNumber} onChange={e => setRegData({...regData, phoneNumber: e.target.value})} className="w-full border border-slate-400 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw]" placeholder="+91 ..." />
                 </div>
                 <div className="space-y-[0.4vw]">
                   <label className="text-[0.8vw] font-bold text-slate-700 flex items-center gap-[0.4vw]"><Calendar className="w-[0.9vw] h-[0.9vw] text-slate-400" /> Date of Birth *</label>
-                  <input type="date" required value={regData.dob} onChange={e => setRegData({...regData, dob: e.target.value})} className="w-full border border-slate-200 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw]" />
+                  <input type="date" required value={regData.dob} onChange={e => setRegData({...regData, dob: e.target.value})} className="w-full border border-slate-400 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw]" />
                 </div>
                 <div className="space-y-[0.4vw]">
                   <label className="text-[0.8vw] font-bold text-slate-700 flex items-center gap-[0.4vw]"><Users className="w-[0.9vw] h-[0.9vw] text-slate-400" /> Gender *</label>
-                  <select required value={regData.gender} onChange={e => setRegData({...regData, gender: e.target.value})} className="w-full border border-slate-200 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw] bg-white">
+                  <select required value={regData.gender} onChange={e => setRegData({...regData, gender: e.target.value})} className="w-full border border-slate-400 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw] bg-white">
                     <option value="">Select Gender</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
@@ -2499,7 +2499,7 @@ const EmployeeManagementSection = ({ employees, setEmployees, departments, setDe
                 </div>
 
                 {/* Professional Details */}
-                <div className="col-span-2 flex items-center gap-[0.5vw] pb-[0.4vw] border-b border-slate-100 mb-[0.4vw] mt-[0.8vw]">
+                <div className="col-span-2 flex items-center gap-[0.5vw] pb-[0.4vw] border-b border-slate-400 mb-[0.4vw] mt-[0.8vw]">
                   <Briefcase className="w-[1vw] h-[1vw] text-blue-600" />
                   <span className="text-[0.85vw] font-bold text-slate-800 uppercase tracking-wider">Professional Details</span>
                 </div>
@@ -2507,7 +2507,7 @@ const EmployeeManagementSection = ({ employees, setEmployees, departments, setDe
                 <div className="space-y-[0.4vw]">
                   <label className="text-[0.8vw] font-bold text-slate-700 flex items-center gap-[0.4vw]"><Briefcase className="w-[0.9vw] h-[0.9vw] text-slate-400" /> Department *</label>
                   <div className="flex gap-[0.4vw]">
-                    <select required value={regData.department} onChange={e => setRegData({...regData, department: e.target.value})} className="flex-1 border border-slate-200 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw] bg-white">
+                    <select required value={regData.department} onChange={e => setRegData({...regData, department: e.target.value})} className="flex-1 border border-slate-400 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw] bg-white">
                       <option value="">Select Department</option>
                       {departments.map(d => <option key={d} value={d}>{d}</option>)}
                     </select>
@@ -2516,11 +2516,11 @@ const EmployeeManagementSection = ({ employees, setEmployees, departments, setDe
                 </div>
                 <div className="space-y-[0.4vw]">
                   <label className="text-[0.8vw] font-bold text-slate-700 flex items-center gap-[0.4vw]"><Tag className="w-[0.9vw] h-[0.9vw] text-slate-400" /> Designation *</label>
-                  <input type="text" required value={regData.designation} onChange={e => setRegData({...regData, designation: e.target.value})} className="w-full border border-slate-200 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw]" placeholder="Senior Engineer" />
+                  <input type="text" required value={regData.designation} onChange={e => setRegData({...regData, designation: e.target.value})} className="w-full border border-slate-400 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw]" placeholder="Senior Engineer" />
                 </div>
                 <div className="space-y-[0.4vw]">
                   <label className="text-[0.8vw] font-bold text-slate-700 flex items-center gap-[0.4vw]"><ShieldCheck className="w-[0.9vw] h-[0.9vw] text-slate-400" /> Role *</label>
-                  <select required value={regData.role} onChange={e => setRegData({...regData, role: e.target.value})} className="w-full border border-slate-200 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw] bg-white">
+                  <select required value={regData.role} onChange={e => setRegData({...regData, role: e.target.value})} className="w-full border border-slate-400 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw] bg-white">
                     <option value="User">User</option>
                     <option value="Supervisor">Supervisor</option>
                     <option value="Admin">Admin</option>
@@ -2528,15 +2528,15 @@ const EmployeeManagementSection = ({ employees, setEmployees, departments, setDe
                 </div>
                 <div className="space-y-[0.4vw]">
                   <label className="text-[0.8vw] font-bold text-slate-700 flex items-center gap-[0.4vw]"><IndianRupee className="w-[0.9vw] h-[0.9vw] text-slate-400" /> CTC (Annual)</label>
-                  <input type="number" value={regData.ctc} onChange={e => setRegData({...regData, ctc: e.target.value})} className="w-full border border-slate-200 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw]" placeholder="Enter amount" />
+                  <input type="number" value={regData.ctc} onChange={e => setRegData({...regData, ctc: e.target.value})} className="w-full border border-slate-400 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw]" placeholder="Enter amount" />
                 </div>
                 <div className="space-y-[0.4vw]">
                   <label className="text-[0.8vw] font-bold text-slate-700 flex items-center gap-[0.4vw]"><Calendar className="w-[0.9vw] h-[0.9vw] text-slate-400" /> Date of Joining *</label>
-                  <input type="date" required value={regData.dateOfJoining} onChange={e => setRegData({...regData, dateOfJoining: e.target.value})} className="w-full border border-slate-200 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw]" />
+                  <input type="date" required value={regData.dateOfJoining} onChange={e => setRegData({...regData, dateOfJoining: e.target.value})} className="w-full border border-slate-400 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw]" />
                 </div>
                 <div className="space-y-[0.4vw]">
                   <label className="text-[0.8vw] font-bold text-slate-700 flex items-center gap-[0.4vw]"><Activity className="w-[0.9vw] h-[0.9vw] text-slate-400" /> Working Status *</label>
-                  <select required value={regData.workingStatus} onChange={e => setRegData({...regData, workingStatus: e.target.value})} className="w-full border border-slate-200 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw] bg-white">
+                  <select required value={regData.workingStatus} onChange={e => setRegData({...regData, workingStatus: e.target.value})} className="w-full border border-slate-400 p-[0.6vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw] bg-white">
                     <option value="Active">Active</option>
                     <option value="Inactive">Inactive</option>
                     <option value="On Leave">On Leave</option>
@@ -2544,13 +2544,13 @@ const EmployeeManagementSection = ({ employees, setEmployees, departments, setDe
                 </div>
 
                 {/* Profile Picture */}
-                <div className="col-span-2 space-y-[0.6vw] p-[1vw] bg-slate-50 rounded-[0.8vw] border border-slate-100">
+                <div className="col-span-2 space-y-[0.6vw] p-[1vw] bg-slate-50 rounded-[0.8vw] border border-slate-400">
                   <div className="flex items-center justify-between">
                     <label className="text-[0.8vw] font-bold text-slate-700 flex items-center gap-[0.4vw]"><ImageIcon className="w-[1vw] h-[1vw] text-blue-600" /> Profile Picture</label>
                     <span className="text-[0.7vw] text-slate-400">Optional: Max 2MB</span>
                   </div>
                   <div className="flex items-center gap-[1.2vw]">
-                    <div className="w-[4vw] h-[4vw] rounded-full bg-white border-2 border-slate-200 flex items-center justify-center overflow-hidden shadow-inner">
+                    <div className="w-[4vw] h-[4vw] rounded-full bg-white border-2 border-slate-400 flex items-center justify-center overflow-hidden shadow-inner">
                       {regData.profilePicture ? (
                         <img src={regData.profilePicture} className="w-full h-full object-cover" />
                       ) : (
@@ -2581,7 +2581,7 @@ const EmployeeManagementSection = ({ employees, setEmployees, departments, setDe
                 </div>
 
                 {/* Security */}
-                <div className="col-span-2 flex items-center gap-[0.5vw] pb-[0.4vw] border-b border-slate-100 mb-[0.4vw] mt-[0.8vw]">
+                <div className="col-span-2 flex items-center gap-[0.5vw] pb-[0.4vw] border-b border-slate-400 mb-[0.4vw] mt-[0.8vw]">
                   <Lock className="w-[1vw] h-[1vw] text-blue-600" />
                   <span className="text-[0.85vw] font-bold text-slate-800 uppercase tracking-wider">Security</span>
                 </div>
@@ -2593,7 +2593,7 @@ const EmployeeManagementSection = ({ employees, setEmployees, departments, setDe
                       required={!editingEmp}
                       value={regData.password} 
                       onChange={e => setRegData({...regData, password: e.target.value})} 
-                      className="w-full border border-slate-200 p-[0.6vw] pr-[2.5vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw]" 
+                      className="w-full border border-slate-400 p-[0.6vw] pr-[2.5vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw]" 
                     />
                     <button 
                       type="button"
@@ -2612,7 +2612,7 @@ const EmployeeManagementSection = ({ employees, setEmployees, departments, setDe
                       required={!editingEmp}
                       value={regData.confirmPassword} 
                       onChange={e => setRegData({...regData, confirmPassword: e.target.value})} 
-                      className="w-full border border-slate-200 p-[0.6vw] pr-[2.5vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw]" 
+                      className="w-full border border-slate-400 p-[0.6vw] pr-[2.5vw] rounded-[0.4vw] outline-none focus:ring-2 focus:ring-blue-500/20 text-[0.85vw]" 
                     />
                     <button 
                       type="button"
@@ -2624,7 +2624,7 @@ const EmployeeManagementSection = ({ employees, setEmployees, departments, setDe
                   </div>
                 </div>
                 
-                <div className="col-span-2 pt-[1.5vw] mt-[0.5vw] border-t border-slate-100 flex justify-end gap-[0.8vw]">
+                <div className="col-span-2 pt-[1.5vw] mt-[0.5vw] border-t border-slate-400 flex justify-end gap-[0.8vw]">
                   <button type="button" onClick={() => setShowRegModal(false)} className="px-[1.5vw] py-[0.7vw] text-slate-600 hover:bg-slate-100 rounded-[0.6vw] text-[0.85vw] font-semibold transition-all">Cancel</button>
                   <button type="submit" className="px-[2vw] py-[0.7vw] bg-blue-600 text-white rounded-[0.6vw] text-[0.85vw] font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all">
                     {editingEmp ? "Update Profile" : "Complete Registration"}
@@ -2739,7 +2739,7 @@ const SystemSettingsPage = () => {
   return (
     <div className="w-full max-h-[90vh] font-sans text-[0.85vw] overflow-y-auto pr-[0.4vw]">
       {isLoading ? (
-        <div className="w-full h-[60vh] flex flex-col items-center justify-center gap-[1vw] bg-white border border-slate-200 rounded-[0.6vw] shadow-sm">
+        <div className="w-full h-[60vh] flex flex-col items-center justify-center gap-[1vw] bg-white border border-slate-400 rounded-[0.6vw] shadow-sm">
           <Loader2 className="w-[3.5vw] h-[3.5vw] animate-spin text-blue-600" />
           <div className="flex flex-col items-center">
             <span className="text-[1.1vw] font-bold text-slate-800 uppercase tracking-widest">Loading Master Settings</span>
@@ -2748,8 +2748,8 @@ const SystemSettingsPage = () => {
         </div>
       ) : (
         /* Tab bar */
-        <div className="bg-white border border-slate-200 rounded-[0.6vw] shadow-sm mb-[1vw] overflow-hidden">
-          <div className="flex border-b border-slate-200 bg-slate-50">
+        <div className="bg-white border border-slate-400 rounded-[0.6vw] shadow-sm mb-[1vw] overflow-hidden">
+          <div className="flex border-b border-slate-400 bg-slate-50">
             {TABS.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -2770,7 +2770,7 @@ const SystemSettingsPage = () => {
           {/* ── Tab: Categories ── */}
           {activeTab === "categories" && (
             <div>
-              <div className="flex items-center gap-[0.8vw] px-[1.2vw] py-[0.7vw] border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
+              <div className="flex items-center gap-[0.8vw] px-[1.2vw] py-[0.7vw] border-b border-slate-400 bg-gradient-to-r from-slate-50 to-white">
                 <div className="w-[1.8vw] h-[1.8vw] rounded-[0.4vw] bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0">
                   <Tags className="w-[0.9vw] h-[0.9vw] text-white" />
                 </div>
@@ -2796,7 +2796,7 @@ const SystemSettingsPage = () => {
           {/* ── Tab: Product Segments ── */}
           {activeTab === "segments" && (
             <div>
-              <div className="flex items-center gap-[0.8vw] px-[1.2vw] py-[0.7vw] border-b border-slate-100 bg-gradient-to-r from-teal-50 to-white">
+              <div className="flex items-center gap-[0.8vw] px-[1.2vw] py-[0.7vw] border-b border-slate-400 bg-gradient-to-r from-teal-50 to-white">
                 <div className="w-[1.8vw] h-[1.8vw] rounded-[0.4vw] bg-gradient-to-br from-teal-600 to-teal-700 flex items-center justify-center flex-shrink-0">
                   <Package className="w-[0.9vw] h-[0.9vw] text-white" />
                 </div>
@@ -2815,7 +2815,7 @@ const SystemSettingsPage = () => {
           {/* ── Tab: 4M Categories ── */}
           {activeTab === "four-m" && (
             <div>
-              <div className="flex items-center gap-[0.8vw] px-[1.2vw] py-[0.7vw] border-b border-slate-100 bg-gradient-to-r from-cyan-50 to-white">
+              <div className="flex items-center gap-[0.8vw] px-[1.2vw] py-[0.7vw] border-b border-slate-400 bg-gradient-to-r from-cyan-50 to-white">
                 <div className="w-[1.8vw] h-[1.8vw] rounded-[0.4vw] bg-gradient-to-br from-cyan-600 to-cyan-700 flex items-center justify-center flex-shrink-0">
                   <Columns className="w-[0.9vw] h-[0.9vw] text-white" />
                 </div>
@@ -2834,7 +2834,7 @@ const SystemSettingsPage = () => {
           {/* ── Tab: Escalation ── */}
           {activeTab === "escalation" && (
             <div>
-              <div className="flex items-center gap-[0.8vw] px-[1.2vw] py-[0.7vw] border-b border-slate-100 bg-gradient-to-r from-blue-50/60 to-white">
+              <div className="flex items-center gap-[0.8vw] px-[1.2vw] py-[0.7vw] border-b border-slate-400 bg-gradient-to-r from-blue-50/60 to-white">
                 <div className="w-[1.8vw] h-[1.8vw] rounded-[0.4vw] bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center flex-shrink-0">
                   <PhoneCall className="w-[0.9vw] h-[0.9vw] text-white" />
                 </div>
@@ -2861,7 +2861,7 @@ const SystemSettingsPage = () => {
           {/* ── Tab: Service Material Escalation ── */}
           {activeTab === "service-escalation" && (
             <div>
-              <div className="flex items-center gap-[0.8vw] px-[1.2vw] py-[0.7vw] border-b border-slate-100 bg-gradient-to-r from-orange-50/60 to-white">
+              <div className="flex items-center gap-[0.8vw] px-[1.2vw] py-[0.7vw] border-b border-slate-400 bg-gradient-to-r from-orange-50/60 to-white">
                 <div className="w-[1.8vw] h-[1.8vw] rounded-[0.4vw] bg-gradient-to-br from-orange-600 to-orange-700 flex items-center justify-center flex-shrink-0">
                   <Wrench className="w-[0.9vw] h-[0.9vw] text-white" />
                 </div>
@@ -2881,7 +2881,7 @@ const SystemSettingsPage = () => {
           {/* ── Tab: Employees ── */}
           {activeTab === "employees" && (
             <div>
-              <div className="flex items-center gap-[0.8vw] px-[1.2vw] py-[0.7vw] border-b border-slate-100 bg-gradient-to-r from-purple-50 to-white">
+              <div className="flex items-center gap-[0.8vw] px-[1.2vw] py-[0.7vw] border-b border-slate-400 bg-gradient-to-r from-purple-50 to-white">
                 <div className="w-[1.8vw] h-[1.8vw] rounded-[0.4vw] bg-gradient-to-br from-purple-600 to-purple-700 flex items-center justify-center flex-shrink-0">
                   <Users className="w-[0.9vw] h-[0.9vw] text-white" />
                 </div>
@@ -2902,7 +2902,7 @@ const SystemSettingsPage = () => {
           {/* ── Tab: Columns ── */}
           {activeTab === "columns" && (
             <div>
-              <div className="flex items-center gap-[0.8vw] px-[1.2vw] py-[0.7vw] border-b border-slate-100 bg-gradient-to-r from-indigo-50/60 to-white">
+              <div className="flex items-center gap-[0.8vw] px-[1.2vw] py-[0.7vw] border-b border-slate-400 bg-gradient-to-r from-indigo-50/60 to-white">
                 <div className="w-[1.8vw] h-[1.8vw] rounded-[0.4vw] bg-gradient-to-br from-indigo-600 to-indigo-700 flex items-center justify-center flex-shrink-0">
                   <Columns className="w-[0.9vw] h-[0.9vw] text-white" />
                 </div>

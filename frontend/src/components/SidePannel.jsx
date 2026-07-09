@@ -190,7 +190,7 @@ export default function Sidebar() {
       className={`
         flex flex-col bg-white relative
         transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]
-        border-r border-gray-100 shadow-[4px_0_24px_-8px_rgba(0,0,0,0.08)]
+        border-r border-slate-300 shadow-[4px_0_24px_-8px_rgba(0,0,0,0.08)]
         ${isCollapsed ? "min-w-[4vw] max-w-[4vw]" : "min-w-[16vw] max-w-[16vw]"}
       `}
       style={{ height: "100vh" }}
@@ -327,7 +327,7 @@ export default function Sidebar() {
                       }`}
                     >
                       <div className="mx-[0.5vw] mt-[0.6vh] mb-[0.3vh]">
-                        <div className="bg-gradient-to-br from-slate-50 to-blue-50/30 rounded-xl border border-gray-100/80 p-[0.5vw] shadow-inner">
+                        <div className="bg-gradient-to-br from-slate-50 to-blue-50/30 rounded-xl border border-slate-300/80 p-[0.5vw] shadow-inner">
                           <ul className="flex flex-col gap-[0.4vh]">
                             {item.subItems.map((subItem, subIndex) => {
                               const isSubActive = location.pathname === subItem.path;

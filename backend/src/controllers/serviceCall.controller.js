@@ -3,6 +3,7 @@ const EscalationFlow = require('../models/escalationFlow.model');
 const User           = require('../models/user.model');
 const SupportRequest = require('../models/supportRequest.model');
 const FieldVisit     = require('../models/fieldVisit.model');
+const Notification   = require('../models/notification.model');
 
 // ── Helper: resolve SLA steps for customerType + segment ─────────────────────
 async function resolveFlow(customerType, segment) {
@@ -78,7 +79,18 @@ exports.getPendingAssignments = async (req, res) => {
 // ── POST /api/service-calls ───────────────────────────────────────────────────
 exports.createCall = async (req, res) => {
   try {
-    const call = await ServiceCall.create(req.body);
+    const payload = { ...req.body };
+    
+    // Fallback: If dateTime is an invalid format (like a locale string), Mongoose will throw a CastError.
+    // We intercept and replace it with a valid timestamp to prevent a 500 Internal Server Error.
+    if (payload.dateTime) {
+      const parsedDate = new Date(payload.dateTime);
+      if (isNaN(parsedDate.getTime())) {
+        payload.dateTime = payload.timestamp || new Date().toISOString();
+      }
+    }
+
+    const call = await ServiceCall.create(payload);
     
     // Trigger Critical notification if priority is Critical
     if (call.priority === 'Critical') {
@@ -218,6 +230,24 @@ exports.closeProduct = async (req, res) => {
 
     call.markModified('products');
     await call.save();
+
+    if (allAssignedDone) {
+      // Send notification to all admins
+      const admins = await User.find({ role: 'Admin' });
+      const notifications = admins.map(admin => ({
+        recipient: admin.userId,
+        sender: 'System',
+        type: 'Activity',
+        title: `Call Resolved: ${call.callNumber}`,
+        message: `Service call ${call.callNumber} has been fully resolved and closed by the assigned engineer.`,
+        data: { callId: call._id, callNumber: call.callNumber },
+        priority: 'Medium'
+      }));
+      if (notifications.length > 0) {
+        await Notification.insertMany(notifications);
+      }
+    }
+
     res.json(call);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -238,6 +268,22 @@ exports.attendProduct = async (req, res) => {
     
     call.markModified('products');
     await call.save();
+
+    // Send notification to admins that call is attended
+    const admins = await User.find({ role: 'Admin' });
+    const notifications = admins.map(admin => ({
+      recipient: admin.userId,
+      sender: 'System',
+      type: 'Activity',
+      title: `Call Attended: ${call.callNumber}`,
+      message: `Service call ${call.callNumber} is currently being attended by the assigned engineer.`,
+      data: { callId: call._id, callNumber: call.callNumber },
+      priority: 'Low'
+    }));
+    if (notifications.length > 0) {
+      await Notification.insertMany(notifications);
+    }
+
     res.json(call);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -367,7 +413,15 @@ exports.closeFieldVisit = async (req, res) => {
 // ── PATCH /api/service-calls/:id ──────────────────────────────────────────────
 exports.updateCall = async (req, res) => {
   try {
-    const call = await ServiceCall.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const payload = { ...req.body };
+    if (payload.dateTime) {
+      const parsedDate = new Date(payload.dateTime);
+      if (isNaN(parsedDate.getTime())) {
+        payload.dateTime = payload.timestamp || new Date().toISOString();
+      }
+    }
+
+    const call = await ServiceCall.findByIdAndUpdate(req.params.id, payload, { new: true });
     if (!call) return res.status(404).json({ message: 'Call not found' });
 
     // Trigger Critical notification if priority changed to Critical or is updated as Critical

@@ -41,7 +41,7 @@ function MainLayout() {
       <Sidebar />
       <main
         className={`
-          flex-1 bg-gray-50 min-h-screen px-[1.2vw] py-[0.4vh] 
+          flex-1 bg-slate-100 min-h-screen px-[1.2vw] py-[0.4vh] 
           overflow-hidden
           transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]
         `}

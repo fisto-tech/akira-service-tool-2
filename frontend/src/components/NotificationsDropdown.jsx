@@ -92,7 +92,7 @@ const NotificationsDropdown = () => {
           setIsOpen(!isOpen);
           requestPermission();
         }}
-        className={`relative p-[0.5vw] rounded-full border transition-all cursor-pointer group ${isOpen ? 'bg-blue-50 border-blue-200' : 'bg-white border-slate-200 hover:border-blue-300'}`}
+        className={`relative p-[0.5vw] rounded-full border transition-all cursor-pointer group ${isOpen ? 'bg-blue-50 border-blue-200' : 'bg-white border-slate-350 hover:border-blue-300'}`}
       >
         <Bell className={`w-[1.1vw] h-[1.1vw] transition-colors ${isOpen ? 'text-blue-600' : 'text-black group-hover:text-blue-600'}`} />
         {unreadCount > 0 && (
@@ -109,10 +109,10 @@ const NotificationsDropdown = () => {
             initial={{ opacity: 0, y: 10, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.98 }}
-            className="absolute right-0 mt-[0.6vw] w-[34vw] bg-white rounded-[1vw] border border-slate-200 z-[2000] overflow-hidden"
+            className="absolute right-0 mt-[0.6vw] w-[34vw] bg-white rounded-[1vw] border border-slate-350 z-[2000] overflow-hidden"
           >
             {/* Header */}
-            <div className="p-[1vw] border-b border-slate-100 bg-slate-50/30">
+            <div className="p-[1vw] border-b border-slate-300 bg-slate-50/30">
               <div className="flex items-center justify-between mb-[0.8vw]">
                 <h3 className="text-[1.1vw] font-semibold text-black">Notifications</h3>
                 <div className="flex items-center gap-[0.8vw]">
@@ -135,7 +135,7 @@ const NotificationsDropdown = () => {
               </div>
 
               {/* Main Tabs */}
-              <div className="flex items-center gap-[1.2vw] mb-[0.6vw] border-b border-slate-100">
+              <div className="flex items-center gap-[1.2vw] mb-[0.6vw] border-b border-slate-300">
                 {mainTabs.map(tab => {
                   const count = getUnreadCount(tab);
                   return (
@@ -170,7 +170,7 @@ const NotificationsDropdown = () => {
                       <button
                         key={tab}
                         onClick={() => setActiveSubTab(tab)}
-                        className={`px-[0.6vw] py-[0.2vw] rounded-full text-[0.7vw] font-medium transition-all border cursor-pointer flex items-center gap-[0.25vw] ${activeSubTab === tab ? 'bg-blue-600 text-white border-blue-700' : 'bg-white text-black border-slate-200 hover:border-blue-300'}`}
+                        className={`px-[0.6vw] py-[0.2vw] rounded-full text-[0.7vw] font-medium transition-all border cursor-pointer flex items-center gap-[0.25vw] ${activeSubTab === tab ? 'bg-blue-600 text-white border-blue-700' : 'bg-white text-black border-slate-350 hover:border-blue-300'}`}
                       >
                         {tab === 'all' ? 'All' : tab === 'Assignment' ? 'Assignments' : tab === 'Escalation' ? 'Escalations' : tab}
                         {count > 0 && (
@@ -198,7 +198,7 @@ const NotificationsDropdown = () => {
             <div className="max-h-[28vw] overflow-y-auto bg-white p-[0.6vw] space-y-[0.6vw]">
               {filteredNotifications.length === 0 ? (
                 <div className="py-[3vw] flex flex-col items-center justify-center text-center">
-                  <div className="w-[3.5vw] h-[3.5vw] rounded-full border border-slate-100 bg-slate-50 flex items-center justify-center mb-[0.8vw]">
+                  <div className="w-[3.5vw] h-[3.5vw] rounded-full border border-slate-300 bg-slate-50 flex items-center justify-center mb-[0.8vw]">
                     <Bell className="w-[1.8vw] h-[1.8vw] text-slate-200" />
                   </div>
                   <p className="text-[0.9vw] font-medium text-black">No notifications yet</p>
@@ -210,11 +210,11 @@ const NotificationsDropdown = () => {
                     key={n._id}
                     initial={{ opacity: 0, x: -5 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className={`group relative bg-white border border-slate-100 rounded-[0.6vw] p-[0.8vw] transition-all hover:border-blue-300 ${!n.isRead ? 'bg-blue-50/20 border-l-[0.2vw] border-l-blue-600' : ''}`}
+                    className={`group relative bg-white border border-slate-300 rounded-[0.6vw] p-[0.8vw] transition-all hover:border-blue-300 ${!n.isRead ? 'bg-blue-50/20 border-l-[0.2vw] border-l-blue-600' : ''}`}
                     onClick={() => !n.isRead && markAsRead(n._id)}
                   >
                     <div className="flex gap-[0.8vw]">
-                      <div className="w-[2.8vw] h-[2.8vw] rounded-[0.6vw] bg-slate-50 border border-slate-100 flex items-center justify-center flex-shrink-0 group-hover:bg-white group-hover:border-blue-100 transition-all">
+                      <div className="w-[2.8vw] h-[2.8vw] rounded-[0.6vw] bg-slate-50 border border-slate-300 flex items-center justify-center flex-shrink-0 group-hover:bg-white group-hover:border-blue-100 transition-all">
                         {getTypeIcon(n.type)}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -256,7 +256,7 @@ const NotificationsDropdown = () => {
             </div>
 
             {/* Footer */}
-            <div className="p-[0.6vw] border-t border-slate-100 bg-slate-50/50 flex justify-center">
+            <div className="p-[0.6vw] border-t border-slate-300 bg-slate-50/50 flex justify-center">
               <button className="text-[0.75vw] font-medium text-black opacity-70 hover:opacity-100 flex items-center gap-[0.3vw] transition-all cursor-pointer">
                 <Settings className="w-[0.8vw] h-[0.8vw]" /> Notification Settings
               </button>
